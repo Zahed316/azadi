@@ -4,7 +4,7 @@ import { BranchRepository } from '../repositories';
 import { MyContext } from '../types/context';
 
 export const branchesMenu = new Menu<MyContext>('branches-menu')
-  .text('📍 View Branches', async (ctx) => {
+  .text('📍 مشاهده شعب', async (ctx) => {
     try {
       const repo = new BranchRepository(ctx.env.DB);
       const branches = await repo.getAllBranches();
@@ -15,14 +15,14 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
       }
       
       if (branches.length === 0) {
-        await ctx.reply('No branches currently available.');
+        await ctx.reply('در حال حاضر شعبه‌ای موجود نیست.');
       } else {
-        await ctx.reply('Select a branch:', { reply_markup: kb });
+        await ctx.reply('یک شعبه انتخاب کنید:', { reply_markup: kb });
       }
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ Failed to load branches.' }).catch(() => {});
+      await ctx.answerCallbackQuery({ text: '❌ بارگذاری شعب ناموفق بود.' }).catch(() => {});
     }
   })
   .row()
-  .back('↩️ Back');
+  .back('↩️ بازگشت');

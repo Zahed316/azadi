@@ -1,4 +1,4 @@
-import { Bot, session } from "grammy";
+import { Bot, session, type SessionFlavor } from "grammy";
 import { conversations, createConversation } from "@grammyjs/conversations";
 import { mainMenu } from "./menus/mainMenu";
 import { beansMenu, cakesMenu } from "./menus/productsMenu";
@@ -10,6 +10,7 @@ import { setupMessageHandlers } from "./handlers/message";
 import { setupCallbackHandlers } from "./handlers/callbackQuery";
 import { MyContext } from "./types/context";
 import { getEnv, getExecCtx } from "./requestContext";
+import { D1SessionStorage } from "./database/sessionStorage";
 
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
@@ -27,7 +28,10 @@ export function createBot(env: Env) {
     await next();
   });
 
-  bot.use(session({ initial: () => ({}) }));
+  bot.use(session({
+    initial: () => ({}),
+    storage: new D1SessionStorage(env.DB),
+  }));
   bot.use(conversations());
 
   // Register Menus
@@ -41,7 +45,7 @@ export function createBot(env: Env) {
   // Define commands
   bot.command(["start", "restart"], async (ctx) => {
     await ctx.conversation.exitAll();
-    return ctx.reply("Welcome to Azadi Coffee Roastery! ☕\n\nHow can I help you today?", {
+    return ctx.reply("به روستری قهوه آزادی خوش آمدید! ☕\n\nچطور می‌توانم کمکتان کنم؟", {
       reply_markup: mainMenu,
     });
   });
@@ -51,14 +55,14 @@ export function createBot(env: Env) {
     const hasActive = Object.values(active).some(count => count > 0);
     if (hasActive) {
       await ctx.conversation.exitAll();
-      await ctx.reply("❌ Cancelled. Use /start to return to the main menu.");
+      await ctx.reply("❌ لغو شد. برای بازگشت به منوی اصلی از /start استفاده کنید.");
     } else {
-      await ctx.reply("No active operation to cancel.");
+      await ctx.reply("هیچ عملیات فعالی برای لغو وجود ندارد.");
     }
   });
 
   bot.command("help", (ctx) => {
-    return ctx.reply("<b>Available commands:</b>\n\n/start - Open main menu\n/help - Show this help message\n\n<b>Admin commands:</b>\n/add_product - Add a product\n/update_stock - Update product stock\n/toggle_product - Toggle product availability\n/delete_product - Delete a product\n/list_products - List all products\n/add_faq - Add a FAQ\n/delete_faq - Delete a FAQ\n/add_branch - Add a branch\n/list_branches - List all branches", { parse_mode: "HTML" });
+    return ctx.reply("<b>دستورات موجود:</b>\n\n/start - منوی اصلی\n/help - نمایش این پیام راهنما\n\n<b>دستورات مدیریت:</b>\n/add_product - افزودن محصول\n/update_stock - به‌روزرسانی موجودی\n/toggle_product - تغییر وضعیت محصول\n/delete_product - حذف محصول\n/list_products - لیست همه محصولات\n/add_faq - افزودن سوال متداول\n/delete_faq - حذف سوال متداول\n/add_branch - افزودن شعبه\n/delete_branch - حذف شعبه\n/list_branches - لیست شعب", { parse_mode: "HTML" });
   });
 
   setupAdminCommands(bot, env);

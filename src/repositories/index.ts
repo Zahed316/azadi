@@ -83,6 +83,10 @@ export class BranchRepository {
   async updateBranch(id: number, data: Partial<typeof branches.$inferInsert>) {
     return await this.db.update(branches).set(data).where(eq(branches.id, id)).returning();
   }
+
+  async deleteBranch(id: number) {
+    return await this.db.delete(branches).where(eq(branches.id, id)).returning();
+  }
 }
 
 export class FaqRepository {

@@ -3,7 +3,7 @@ import { InlineKeyboard } from 'grammy';
 import { ProductRepository, CategoryRepository } from '../repositories';
 import { MyContext } from '../types/context';
 
-const VAT_NOTE = '\n\n<i>All prices include 10% VAT.</i>';
+const VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
 
 export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   .dynamic(async (ctx, range) => {
@@ -22,16 +22,16 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
 
             if (items.length === 0) {
               if (cat.id === 7) {
-                await ctx.reply('☕ <b>Specialty Brew</b>\n\nAsk our barista for today\'s specialty brew selection.' + VAT_NOTE, { parse_mode: 'HTML' });
+                await ctx.reply('☕ <b>قهوه‌های دمی تخصصی</b>\n\nبرای اطلاع از قهوه‌های دمی تخصصی امروز از باریستا سوال کنید.' + VAT_NOTE, { parse_mode: 'HTML' });
               } else {
-                await ctx.reply(`No ${cat.name} currently available.`);
+                await ctx.reply(`در حال حاضر ${cat.name} موجود نیست.`);
               }
               return;
             }
 
             const kb = new InlineKeyboard();
             for (const p of items) {
-              const priceLabel = p.priceOnRequest ? '(Ask in store)' : `${p.price} T`;
+              const priceLabel = p.priceOnRequest ? '(سوال در کافه)' : `${p.price} T`;
               const seasonal = p.isSeasonal ? ' 🌿' : '';
               kb.text(`${p.name}${seasonal} — ${priceLabel}`, `product:${p.id}`).row();
             }
@@ -39,13 +39,13 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
             await ctx.reply(`<b>${cat.emoji ? cat.emoji + ' ' : ''}${cat.name}</b>${VAT_NOTE}`, { parse_mode: 'HTML', reply_markup: kb });
           } catch (e) {
             console.error(e);
-            await ctx.answerCallbackQuery({ text: '❌ Failed to load products.' }).catch(() => {});
+            await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات ناموفق بود.' }).catch(() => {});
           }
         }).row();
       }
     } catch (e) {
       console.error(e);
-      range.text('❌ Error loading categories').row();
+      range.text('❌ خطا در بارگذاری دسته‌بندی‌ها').row();
     }
   })
-  .back('↩️ Back');
+  .back('↩️ بازگشت');

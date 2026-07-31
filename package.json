@@ -6,7 +6,8 @@
   "scripts": {
     "test": "vitest run",
     "deploy": "/data/data/com.termux/files/usr/local/bin/wrangler deploy",
-    "deploy:dry": "/data/data/com.termux/files/usr/local/bin/wrangler deploy --dry-run --outdir ~/wrangler-dry"
+    "deploy:dry": "/data/data/com.termux/files/usr/local/bin/wrangler deploy --dry-run --outdir ~/wrangler-dry",
+    "setup:webhook": "curl -s -X POST \"https://api.telegram.org/bot$(grep TELEGRAM_BOT_TOKEN ~/.env | cut -d= -f2)/setWebhook\" -d \"url=https://azadi-coffee-bot.zahedrastgar316.workers.dev/webhook&secret_token=461a03d30f18426098bb038d353169e2428645f62c6eac73\" | python3 -m json.tool"
   },
   "keywords": [],
   "author": "",

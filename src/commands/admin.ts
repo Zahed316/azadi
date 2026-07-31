@@ -8,15 +8,15 @@ import { ProductRepository, CategoryRepository, BranchRepository, FaqRepository 
 type MyConversation = Conversation<MyContext>;
 
 async function addProductConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply('📦 Product name?');
+  await ctx.reply('📦 نام محصول؟');
   const nameMsg = await conversation.waitFor('message:text');
   const name = nameMsg.message.text;
 
-  await ctx.reply('💰 Price (in Tomans)?');
+  await ctx.reply('💰 قیمت (به تومان)؟');
   const priceMsg = await conversation.waitFor('message:text');
   const price = parseFloat(priceMsg.message.text);
   if (isNaN(price)) {
-    await ctx.reply('❌ Invalid price. Aborting.');
+    await ctx.reply('❌ قیمت نامعتبر است. عملیات لغو شد.');
     return;
   }
 
@@ -24,33 +24,33 @@ async function addProductConversation(conversation: MyConversation, ctx: MyConte
   const categories = await categoryRepo.getAllCategories();
   const catText = categories.map((c: any) => `${c.id} for ${c.name}`).join(', ');
 
-  await ctx.reply(`📂 Category ID? (${catText})`);
+  await ctx.reply(`📂 شناسه دسته‌بندی؟ (${catText})`);
   const catMsg = await conversation.waitFor('message:text');
   const categoryId = parseInt(catMsg.message.text);
   if (isNaN(categoryId)) {
-    await ctx.reply('❌ Invalid category ID. Aborting.');
+    await ctx.reply('❌ شناسه دسته‌بندی نامعتبر است. عملیات لغو شد.');
     return;
   }
 
-  await ctx.reply('📝 Description?');
+  await ctx.reply('📝 توضیحات؟');
   const descMsg = await conversation.waitFor('message:text');
   const description = descMsg.message.text;
 
-  await ctx.reply('📦 Initial Stock?');
+  await ctx.reply('📦 موجودی اولیه؟');
   const stockMsg = await conversation.waitFor('message:text');
   const stock = parseInt(stockMsg.message.text);
   if (isNaN(stock)) {
-    await ctx.reply('❌ Invalid stock quantity. Aborting.');
+    await ctx.reply('❌ مقدار موجودی نامعتبر است. عملیات لغو شد.');
     return;
   }
 
-  await ctx.reply('💰 Is price on request? (y/n)');
+  await ctx.reply('💰 آیا قیمت توافقی/سوال در کافه است؟ (ب/خ)');
   const porMsg = await conversation.waitFor('message:text');
-  const priceOnRequest = porMsg.message.text.toLowerCase() === 'y';
+  const priceOnRequest = ['ب', 'y', 'yes', 'بله'].includes(porMsg.message.text.toLowerCase());
 
-  await ctx.reply('🌿 Is this a seasonal item? (y/n)');
+  await ctx.reply('🌿 آیا این محصول مخصوص این فصل است؟ (ب/خ)');
   const seasonalMsg = await conversation.waitFor('message:text');
-  const isSeasonal = seasonalMsg.message.text.toLowerCase() === 'y';
+  const isSeasonal = ['ب', 'y', 'yes', 'بله'].includes(seasonalMsg.message.text.toLowerCase());
 
   const repo = new ProductRepository(ctx.env.DB);
   await repo.addProduct({ 
@@ -60,118 +60,137 @@ async function addProductConversation(conversation: MyConversation, ctx: MyConte
     createdAt: new Date(), updatedAt: new Date()
   });
   
-  await ctx.reply(`✅ Product "${name}" added successfully!`);
+  await ctx.reply(`✅ محصول "${name}" با موفقیت اضافه شد!`);
 }
 
 async function updateStockConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply('🆔 Enter Product ID to update stock:');
+  await ctx.reply('🆔 شناسه محصول برای به‌روزرسانی موجودی را وارد کنید:');
   const idMsg = await conversation.waitFor('message:text');
   const productId = parseInt(idMsg.message.text);
   if (isNaN(productId)) {
-    await ctx.reply('❌ Invalid Product ID. Aborting.');
+    await ctx.reply('❌ شناسه محصول نامعتبر است. عملیات لغو شد.');
     return;
   }
 
-  await ctx.reply('📦 Enter new stock quantity:');
+  await ctx.reply('📦 مقدار موجودی جدید را وارد کنید:');
   const stockMsg = await conversation.waitFor('message:text');
   const newStock = parseInt(stockMsg.message.text);
   if (isNaN(newStock)) {
-    await ctx.reply('❌ Invalid stock quantity. Aborting.');
+    await ctx.reply('❌ مقدار موجودی نامعتبر است. عملیات لغو شد.');
     return;
   }
 
   const repo = new ProductRepository(ctx.env.DB);
   await repo.updateStock(productId, newStock);
-  await ctx.reply(`✅ Stock updated for Product ${productId} to ${newStock}.`);
+  await ctx.reply(`✅ موجودی محصول ${productId} به ${newStock} به‌روزرسانی شد.`);
 }
 
 async function addFaqConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply('❓ Enter the FAQ question:');
+  await ctx.reply('❓ متن سوال را وارد کنید:');
   const qMsg = await conversation.waitFor('message:text');
   const question = qMsg.message.text;
 
-  await ctx.reply('💬 Enter the FAQ answer:');
+  await ctx.reply('💬 متن پاسخ را وارد کنید:');
   const aMsg = await conversation.waitFor('message:text');
   const answer = aMsg.message.text;
 
   const repo = new FaqRepository(ctx.env.DB);
   await repo.add(question, answer);
-  await ctx.reply('✅ FAQ added successfully!');
+  await ctx.reply('✅ سوال متداول با موفقیت اضافه شد!');
 }
 
 async function deleteFaqConversation(conversation: MyConversation, ctx: MyContext) {
   const repo = new FaqRepository(ctx.env.DB);
   const faqs = await repo.getAll();
   if (faqs.length === 0) {
-    await ctx.reply('No FAQs to delete.');
+    await ctx.reply('هیچ سوال متداولی برای حذف وجود ندارد.');
     return;
   }
   const text = faqs.map((f: any) => `🆔 ${f.id} - ${f.question}`).join('\n');
-  await ctx.reply(`❓ FAQs:\n\n${text}\n\n🆔 Enter FAQ ID to delete:`);
+  await ctx.reply(`❓ سوالات متداول:\n\n${text}\n\n🆔 شناسه سوال برای حذف را وارد کنید:`);
   const idMsg = await conversation.waitFor('message:text');
   const id = parseInt(idMsg.message.text);
   if (isNaN(id)) {
-    await ctx.reply('❌ Invalid FAQ ID. Aborting.');
+    await ctx.reply('❌ شناسه نامعتبر است. عملیات لغو شد.');
     return;
   }
   await repo.delete(id);
-  await ctx.reply('✅ FAQ deleted successfully!');
+  await ctx.reply('✅ سوال متداول با موفقیت حذف شد!');
 }
 
 async function addBranchConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply('📍 Enter the branch name:');
+  await ctx.reply('📍 نام شعبه را وارد کنید:');
   const nameMsg = await conversation.waitFor('message:text');
   const name = nameMsg.message.text;
 
-  await ctx.reply('🏢 Enter the address:');
+  await ctx.reply('🏢 آدرس را وارد کنید:');
   const addressMsg = await conversation.waitFor('message:text');
   const address = addressMsg.message.text;
 
-  await ctx.reply('📞 Enter the phone number (or skip by typing -):');
+  await ctx.reply('📞 شماره تلفن را وارد کنید (برای رد کردن - بزنید):');
   const phoneMsg = await conversation.waitFor('message:text');
   const phone = phoneMsg.message.text !== '-' ? phoneMsg.message.text : null;
 
-  await ctx.reply('⏰ Enter the opening hours (or skip by typing -):');
+  await ctx.reply('⏰ ساعت کاری را وارد کنید (برای رد کردن - بزنید):');
   const hoursMsg = await conversation.waitFor('message:text');
   const openingHours = hoursMsg.message.text !== '-' ? hoursMsg.message.text : null;
 
   const repo = new BranchRepository(ctx.env.DB);
   await repo.addBranch({ name, address, phone, openingHours, isActive: true });
-  await ctx.reply(`✅ Branch "${name}" added successfully!`);
+  await ctx.reply(`✅ شعبه "${name}" با موفقیت اضافه شد!`);
 }
 
 async function toggleProductConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply('🆔 Enter Product ID to toggle availability:');
+  await ctx.reply('🆔 شناسه محصول برای تغییر وضعیت را وارد کنید:');
   const idMsg = await conversation.waitFor('message:text');
   const productId = parseInt(idMsg.message.text);
   if (isNaN(productId)) {
-    await ctx.reply('❌ Invalid Product ID. Aborting.');
+    await ctx.reply('❌ شناسه محصول نامعتبر است. عملیات لغو شد.');
     return;
   }
 
   const repo = new ProductRepository(ctx.env.DB);
   const product = await repo.getProductById(productId);
   if (!product) {
-    await ctx.reply('❌ Product not found.');
+    await ctx.reply('❌ محصول یافت نشد.');
     return;
   }
 
   await repo.toggleAvailability(productId, !product.available);
-  await ctx.reply(`✅ Product availability changed to ${!product.available ? 'AVAILABLE' : 'UNAVAILABLE'}.`);
+  await ctx.reply(`✅ وضعیت محصول به ${!product.available ? 'موجود' : 'ناموجود'} تغییر یافت.`);
 }
 
 async function deleteProductConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply('🆔 Enter Product ID to delete:');
+  await ctx.reply('🆔 شناسه محصول برای حذف را وارد کنید:');
   const idMsg = await conversation.waitFor('message:text');
   const productId = parseInt(idMsg.message.text);
   if (isNaN(productId)) {
-    await ctx.reply('❌ Invalid Product ID. Aborting.');
+    await ctx.reply('❌ شناسه محصول نامعتبر است. عملیات لغو شد.');
     return;
   }
 
   const repo = new ProductRepository(ctx.env.DB);
   await repo.deleteProduct(productId);
-  await ctx.reply(`✅ Product deleted.`);
+  await ctx.reply(`✅ محصول با موفقیت حذف شد.`);
+}
+
+async function deleteBranchConversation(conversation: MyConversation, ctx: MyContext) {
+  const repo = new BranchRepository(ctx.env.DB);
+  const branches = await repo.getAllBranches();
+  if (branches.length === 0) {
+    await ctx.reply('هیچ شعبه‌ای برای حذف وجود ندارد.');
+    return;
+  }
+  const text = branches.map((b: any) => `🆔 ${b.id} - ${b.name}`).join('\n');
+  await ctx.reply(`📍 شعب:\n\n${text}\n\n🆔 شناسه شعبه برای حذف را وارد کنید:`);
+  const idMsg = await conversation.waitFor('message:text');
+  const id = parseInt(idMsg.message.text);
+  if (isNaN(id)) {
+    await ctx.reply('❌ شناسه نامعتبر است. عملیات لغو شد.');
+    return;
+  }
+  await repo.deleteBranch(id);
+  await ctx.reply('✅ شعبه با موفقیت حذف شد!');
 }
 
 export function setupAdminCommands(bot: Bot<MyContext>, env: Env) {
@@ -182,6 +201,7 @@ export function setupAdminCommands(bot: Bot<MyContext>, env: Env) {
   bot.use(createConversation(addFaqConversation));
   bot.use(createConversation(deleteFaqConversation));
   bot.use(createConversation(addBranchConversation));
+  bot.use(createConversation(deleteBranchConversation));
 
   bot.command('add_product', adminAuth, async (ctx) => {
     await ctx.conversation.enter('addProductConversation');
@@ -199,7 +219,7 @@ export function setupAdminCommands(bot: Bot<MyContext>, env: Env) {
     const repo = new ProductRepository(ctx.env.DB);
     const products = await repo.getAllProducts();
     if (products.length === 0) {
-      await ctx.reply("No products found.");
+      await ctx.reply("هیچ محصولی یافت نشد.");
       return;
     }
     const text = products.map((p: any) => `🆔 ${p.id} - ${p.name} (${p.stock} in stock)`).join('\n');
@@ -222,11 +242,15 @@ export function setupAdminCommands(bot: Bot<MyContext>, env: Env) {
     await ctx.conversation.enter('addBranchConversation');
   });
 
+  bot.command('delete_branch', adminAuth, async (ctx) => {
+    await ctx.conversation.enter('deleteBranchConversation');
+  });
+
   bot.command('list_branches', adminAuth, async (ctx) => {
     const repo = new BranchRepository(ctx.env.DB);
     const branches = await repo.getAllBranches();
     if (branches.length === 0) {
-      await ctx.reply("No branches found.");
+      await ctx.reply("هیچ شعبه‌ای یافت نشد.");
       return;
     }
     const text = branches.map((b: any) => `🆔 ${b.id} - ${b.name}`).join('\n');
@@ -239,9 +263,9 @@ export function setupAdminCommands(bot: Bot<MyContext>, env: Env) {
         { command: 'start', description: 'Open main menu' },
         { command: 'help', description: 'Show help' }
       ]);
-      await ctx.reply("✅ Commands registered successfully.");
+      await ctx.reply("✅ دستورات با موفقیت ثبت شدند.");
     } catch (e: any) {
-      await ctx.reply(`❌ Error setting commands: ${e.message}`);
+      await ctx.reply(`❌ خطا در ثبت دستورات: ${e.message}`);
     }
   });
 }

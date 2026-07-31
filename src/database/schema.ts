@@ -70,3 +70,8 @@ export const aiConversationLogs = sqliteTable('ai_conversation_logs', {
   response: text('response').notNull(),
   timestamp: integer('timestamp', { mode: 'timestamp' }).notNull()
 });
+
+export const sessions = sqliteTable('sessions', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull()
+});

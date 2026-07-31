@@ -1,57 +1,57 @@
 -- Truncate old data
-DELETE FROM coffee_details; DELETE FROM products; DELETE FROM categories;
+DELETE FROM coffee_details; DELETE FROM products; DELETE FROM categories; DELETE FROM branches; DELETE FROM faq;
 
 -- Categories (IDs explicit to match product inserts)
 INSERT INTO categories (id, name, description, emoji, sort_order) VALUES
-  (1, 'Hot Coffee',           'Espresso-based hot drinks',       '🔥', 1),
-  (9, 'Coffee Beans',         'Single-origin and blended beans', '🌱', 9),
-  (10, 'Equipment',            'Brewing equipment',               '🛠️', 10),
-  (4, 'Tea & Herbal Tea',     'Black, green, and herbal teas',   '🍵', 2),
-  (5, 'Cold Coffee',          'Cold brew, iced lattes',          '🧊', 3),
-  (6, 'Smoothies & Refreshers','Fresh blended drinks',           '🥤', 4),
-  (7, 'Specialty Brew Coffee','Pour-over, Aeropress, Chemex',    '☕', 5),
-  (8, 'Cakes & Cookies',      'Freshly baked daily',             '🍰', 6);
+  (1, 'قهوه گرم',           'نوشیدنی‌های گرم بر پایه اسپرسو',       '🔥', 1),
+  (9, 'دانه‌های قهوه',         'قهوه‌های تک‌خاستگاه و بلند', '🌱', 9),
+  (10, 'تجهیزات',            'تجهیزات دم‌آوری',               '🛠️', 10),
+  (4, 'چای و دمنوش',     'چای سیاه، سبز و دمنوش',   '🍵', 2),
+  (5, 'قهوه سرد',          'کلد برو و لاته یخی',          '🧊', 3),
+  (6, 'اسموتی و نوشیدنی‌های خنک','نوشیدنی‌های تازه و خنک',           '🥤', 4),
+  (7, 'قهوه‌های دمی تخصصی','پوراوور، ایروپرس و کمکس',    '☕', 5),
+  (8, 'کیک و کوکی',      'هر روز تازه پخته می‌شود',             '🍰', 6);
 
 -- Hot Coffee (cat 1)
 INSERT INTO products (category_id, name, description, price, stock, unit, available, featured, created_at, updated_at) VALUES
-  (1, 'Espresso',       'Single / Double', 85,  999, 'cup', 1, 1, unixepoch(), unixepoch()),
-  (1, 'Americano',      '',                150, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (1, 'Cappuccino',     '',                170, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (1, 'Latte',          'Add syrup +20',   190, 999, 'cup', 1, 1, unixepoch(), unixepoch()),
-  (1, 'Hot Chocolate',  '',                170, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (1, 'Masala',         '',                180, 999, 'cup', 1, 0, unixepoch(), unixepoch());
+  (1, 'اسپرسو',       'تکی / دوبل', 85,  999, 'cup', 1, 1, unixepoch(), unixepoch()),
+  (1, 'آمریکانو',      '',                150, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (1, 'کاپوچینو',     '',                170, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (1, 'لاته',          'افزودن سیروپ ۲۰+',   190, 999, 'cup', 1, 1, unixepoch(), unixepoch()),
+  (1, 'هات چاکلت',  '',                170, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (1, 'ماسالا',         '',                180, 999, 'cup', 1, 0, unixepoch(), unixepoch());
 
 -- Tea (cat 4)
 INSERT INTO products (category_id, name, description, price, stock, unit, available, featured, created_at, updated_at) VALUES
-  (4, 'Black Tea',          '',               90,  999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (4, 'Green Tea',          '',               120, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (4, 'Herbal — Apple Paradise',   '',        170, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (4, 'Herbal — Lemongrass Ginger','',        170, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (4, 'Herbal — Victoria Sunset',  '',        170, 999, 'cup', 1, 0, unixepoch(), unixepoch());
+  (4, 'چای سیاه',          '',               90,  999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (4, 'چای سبز',          '',               120, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (4, 'دمنوش — بهشت سیب',   '',        170, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (4, 'دمنوش — لمونگراس و زنجبیل','',        170, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (4, 'دمنوش — غروب ویکتوریا',  '',        170, 999, 'cup', 1, 0, unixepoch(), unixepoch());
 
 -- Cold Coffee (cat 5)
 INSERT INTO products (category_id, name, description, price, price_on_request, stock, unit, available, featured, created_at, updated_at) VALUES
-  (5, 'Iced Americano', '',                    160,  0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (5, 'Iced Latte',     'Add syrup +20',       200,  0, 999, 'cup', 1, 1, unixepoch(), unixepoch()),
-  (5, 'Cold Brew',      'Ask in store',        NULL, 1, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (5, 'Affogato',       'Espresso over ice cream', 195, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch());
+  (5, 'آمریکانو یخ', '',                    160,  0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (5, 'لاته یخ',     'افزودن سیروپ ۲۰+',       200,  0, 999, 'cup', 1, 1, unixepoch(), unixepoch()),
+  (5, 'کلد برو',      'سوال در کافه',        NULL, 1, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (5, 'افوگاتو',       'اسپرسو روی بستنی', 195, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch());
 
 -- Smoothies (cat 6)
 INSERT INTO products (category_id, name, description, price, is_seasonal, stock, unit, available, featured, created_at, updated_at) VALUES
-  (6, 'Seasonal Smoothie',         'Changes weekly',  200, 1, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (6, 'Lotus Shake',               '',                220, 0, 999, 'cup', 1, 1, unixepoch(), unixepoch()),
-  (6, 'Berry Shake',               '',                220, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (6, 'Refresher — Mango',         '',                280, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (6, 'Refresher — Mulberry',      '',                280, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (6, 'Refresher — Pineapple',     '',                280, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
-  (6, 'Refresher — Strawberry',    '',                280, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch());
+  (6, 'اسموتی فصلی',         'هر هفته عوض می‌شود',  200, 1, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (6, 'شیک لوتوس',               '',                220, 0, 999, 'cup', 1, 1, unixepoch(), unixepoch()),
+  (6, 'شیک توت',               '',                220, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (6, 'ریفرشر — انبه',         '',                280, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (6, 'ریفرشر — توت',      '',                280, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (6, 'ریفرشر — آناناس',     '',                280, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch()),
+  (6, 'ریفرشر — توت فرنگی',    '',                280, 0, 999, 'cup', 1, 0, unixepoch(), unixepoch());
 
 -- Specialty Brew (cat 7) — empty by default, shown as "Ask barista"
 
 -- Cakes & Cookies (cat 8)
 INSERT INTO products (category_id, name, description, price, stock, unit, available, featured, created_at, updated_at) VALUES
-  (8, 'Cake of the Day', 'Ask in store for today''s selection', 220, 10, 'slice', 1, 1, unixepoch(), unixepoch()),
-  (8, 'Cookie',          '',                                    95,  50, 'piece', 1, 0, unixepoch(), unixepoch());
+  (8, 'کیک روز', 'برای اطلاع از کیک امروز از کافه بپرسید', 220, 10, 'slice', 1, 1, unixepoch(), unixepoch()),
+  (8, 'کوکی',          '',                                    95,  50, 'piece', 1, 0, unixepoch(), unixepoch());
 
 -- Branches (re-add since we truncated earlier maybe not, wait we didn't truncate branches)
 -- Actually let's just keep the original branches and FAQ seed parts just in case

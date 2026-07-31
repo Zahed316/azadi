@@ -13,12 +13,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       if (branch) {
         await ctx.reply(formatBranch(branch), { parse_mode: 'HTML' });
       } else {
-        await ctx.reply("Branch not found.");
+        await ctx.reply("شعبه مورد نظر یافت نشد.");
       }
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ An error occurred' }).catch(() => {});
-      await ctx.reply("❌ An error occurred while fetching branch details.");
+      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
+      await ctx.reply("❌ خطایی در دریافت اطلاعات شعبه رخ داد.");
     }
   });
 
@@ -31,12 +31,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       if (product) {
         await ctx.reply(formatProduct(product), { parse_mode: 'HTML' });
       } else {
-        await ctx.reply("Product not found.");
+        await ctx.reply("محصول مورد نظر یافت نشد.");
       }
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ An error occurred' }).catch(() => {});
-      await ctx.reply("❌ An error occurred while fetching product details.");
+      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
+      await ctx.reply("❌ خطایی در دریافت اطلاعات محصول رخ داد.");
     }
   });
 }

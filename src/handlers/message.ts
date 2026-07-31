@@ -7,9 +7,14 @@ import { buildMinimalContext } from '../utils/menuContext';
 
 export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
   bot.on('message:text', async (ctx) => {
+    // If any admin conversation is active (e.g. /toggle_product waiting for an ID),
+    // do NOT run the AI handler — let the conversation plugin handle this message.
+    const activeConversations = ctx.conversation.active();
+    if (Object.values(activeConversations).some(count => count > 0)) return;
+
     if (!ctx.message.text.startsWith('/')) {
       if (!ctx.env.AI) {
-        return ctx.reply("AI is currently disabled or not bound.");
+        return ctx.reply("دستیار هوشمند در حال حاضر غیرفعال است.");
       }
       
       try {
@@ -35,7 +40,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
         );
         const answer = await Promise.race([aiPromise, timeoutPromise]);
         
-        await ctx.reply(answer, { parse_mode: 'HTML' });
+        await ctx.reply(answer, { parse_mode: 'HTML' }).catch(() => {});
 
         const logRepo = new AiLogRepository(db);
         if (ctx.execCtx) {
@@ -47,9 +52,9 @@ export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
       } catch (e: any) {
         console.error(e);
         if (e?.message === 'AI_TIMEOUT') {
-          await ctx.reply("⏳ The AI is taking too long. Please try again in a moment.", { parse_mode: 'HTML' });
+          await ctx.reply("⏳ پاسخگویی دستیار هوشمند طول کشید. لطفاً کمی بعد دوباره تلاش کنید.", { parse_mode: 'HTML' });
         } else {
-          await ctx.reply("❌ Sorry, something went wrong while processing your request.", { parse_mode: 'HTML' });
+          await ctx.reply("❌ متأسفانه در پردازش درخواست شما خطایی رخ داد.", { parse_mode: 'HTML' });
         }
       }
     }

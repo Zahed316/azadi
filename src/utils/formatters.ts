@@ -1,27 +1,36 @@
+const unitMap: Record<string, string> = {
+  cup:   'فنجان',
+  kg:    'کیلوگرم',
+  piece: 'عدد',
+  slice: 'برش',
+  item:  'عدد',
+};
+
 export function formatProduct(p: any): string {
   let text = `📦 <b>${p.name}</b>\n`;
   if (p.description) text += `\n${p.description}\n`;
   if (p.priceOnRequest) {
-    text += `\n💰 Price: Ask in store`;
+    text += `\n💰 قیمت: سوال در کافه`;
   } else {
-    text += `\n💰 Price: ${p.price} Tomans`;
+    text += `\n💰 قیمت: ${p.price} تومان`;
   }
-  if (p.isSeasonal) text += `\n🌿 <i>Seasonal item</i>`;
-  if (p.sizeOptions) text += `\n📐 Sizes: ${JSON.parse(p.sizeOptions).join(', ')}`;
-  if (p.syrupOptions) text += `\n🍯 Syrups: ${JSON.parse(p.syrupOptions).join(', ')}`;
+  if (p.isSeasonal) text += `\n🌿 <i>مخصوص این فصل</i>`;
+  if (p.sizeOptions) text += `\n📐 اندازه‌ها: ${JSON.parse(p.sizeOptions).join(', ')}`;
+  if (p.syrupOptions) text += `\n🍯 سیروپ‌ها: ${JSON.parse(p.syrupOptions).join(', ')}`;
   // Only show stock for physical goods (beans, equipment)
   if (p.unit !== 'cup') {
-    text += `\n📦 Stock: ${p.stock > 0 ? `${p.stock} ${p.unit}` : 'Out of stock'}`;
+    const unitLabel = unitMap[p.unit] || p.unit;
+    text += `\n📦 موجودی: ${p.stock > 0 ? `${p.stock} ${unitLabel}` : 'ناموجود'}`;
   }
-  text += `\n\n<i>All prices include 10% VAT.</i>`;
+  text += `\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>`;
   return text;
 }
 
 export function formatBranch(b: any): string {
   let text = `📍 <b>${b.name}</b>\n`;
-  text += `\n🏢 Address: ${b.address}`;
-  if (b.phone) text += `\n📞 Phone: ${b.phone}`;
-  if (b.openingHours) text += `\n⏰ Hours: ${b.openingHours}`;
+  text += `\n🏢 آدرس: ${b.address}`;
+  if (b.phone) text += `\n📞 تلفن: ${b.phone}`;
+  if (b.openingHours) text += `\n⏰ ساعت کاری: ${b.openingHours}`;
   return text;
 }
 
