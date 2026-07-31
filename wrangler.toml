@@ -1,0 +1,16 @@
+name = "azadi-coffee-bot"
+main = "src/index.ts"
+compatibility_date = "2024-03-20"
+
+[observability]
+enabled = true
+
+[vars]
+# TELEGRAM_BOT_TOKEN and SECRET_TOKEN will be set as secrets
+
+[[d1_databases]]
+binding = "DB"
+database_name = "azadi-db"
+database_id = "2c020279-a453-4105-984d-c09bdda89819"
+[ai]
+binding = "AI"
