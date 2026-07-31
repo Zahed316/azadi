@@ -11,7 +11,7 @@ export class D1SessionStorage<T> implements StorageAdapter<T> {
     const result = await this.db
       .prepare('SELECT value FROM sessions WHERE key = ?')
       .bind(key)
-      .first<{ value: string }>();
+      .first() as { value: string } | null;
     if (!result) return undefined;
     try {
       return JSON.parse(result.value) as T;

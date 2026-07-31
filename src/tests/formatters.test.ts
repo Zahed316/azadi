@@ -12,8 +12,8 @@ test('formatProduct formats correctly', () => {
   const result = formatProduct(product);
   expect(result).toContain('<b>Espresso</b>');
   expect(result).toContain('Strong coffee');
-  expect(result).toContain('35000 Tomans');
-  expect(result).toContain('10 cup');
+  expect(result).toContain('35000 تومان');
+  expect(result).toContain('10 فنجان');
 });
 
 test('formatBranch formats correctly', () => {

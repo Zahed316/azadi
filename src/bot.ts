@@ -29,10 +29,19 @@ export function createBot(env: Env) {
   });
 
   bot.use(session({
-    initial: () => ({}),
+    initial: () => undefined as SessionData | undefined,
     storage: new D1SessionStorage(env.DB),
   }));
   bot.use(conversations());
+
+  // Snapshot conversation state before any createConversation() runs.
+  // createConversation() calls next() upon completion, which would otherwise
+  // let the final message of a wizard leak into the global message handler.
+  bot.use(async (ctx, next) => {
+    const active = (ctx.conversation?.active() || {}) as Record<string, number>;
+    ctx.hasActiveConversation = Object.values(active).some(count => count > 0);
+    await next();
+  });
 
   // Register Menus
   mainMenu.register(drinksNavMenu);
@@ -51,7 +60,7 @@ export function createBot(env: Env) {
   });
 
   bot.command("cancel", async (ctx) => {
-    const active = ctx.conversation.active();
+    const active = (ctx.conversation.active() || {}) as Record<string, number>;
     const hasActive = Object.values(active).some(count => count > 0);
     if (hasActive) {
       await ctx.conversation.exitAll();
