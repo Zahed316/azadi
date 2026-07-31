@@ -32,7 +32,13 @@ export function createBot(env: Env) {
     initial: () => undefined as SessionData | undefined,
     storage: new D1SessionStorage(env.DB),
   }));
-  bot.use(conversations());
+  bot.use(conversations({
+    storage: {
+      type: "key",
+      prefix: "convo_",
+      adapter: new D1SessionStorage(env.DB),
+    },
+  }));
 
   // Snapshot conversation state before any createConversation() runs.
   // createConversation() calls next() upon completion, which would otherwise
