@@ -2,8 +2,9 @@ import { Menu } from '@grammyjs/menu';
 import { branchesMenu } from './branchesMenu';
 import { FaqRepository, SettingsRepository } from '../repositories';
 import { formatFaq } from '../utils/formatters';
+import { MyContext } from '../types/context';
 
-export const mainMenu = new Menu('main-menu')
+export const mainMenu = new Menu<MyContext>('main-menu')
   .text('🏠 درباره ما', async (ctx: any) => {
     try {
       const repo = new SettingsRepository(ctx.env.DB);

@@ -8,7 +8,7 @@ import { branchesMenu } from "./menus/branchesMenu";
 import { setupAdminCommands } from "./commands/admin";
 import { setupMessageHandlers } from "./handlers/message";
 import { setupCallbackHandlers } from "./handlers/callbackQuery";
-import { MyContext } from "./types/context";
+import { MyContext, SessionData } from "./types/context";
 import { getEnv, getExecCtx } from "./requestContext";
 import { D1SessionStorage } from "./database/sessionStorage";
 

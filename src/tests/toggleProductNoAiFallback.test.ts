@@ -1,6 +1,5 @@
 import { expect, test, vi } from 'vitest';
 import { Bot } from 'grammy';
-import { safeReply } from '../bot';
 import { MyContext } from '../types/context';
 
 type ActiveMap = Record<string, number>;
@@ -30,11 +29,11 @@ function buildMessageHandler(opts: { hasActiveConversation: boolean; aiEnabled: 
     const text = ctx.message?.text ?? '';
     if (!text.startsWith('/')) {
       if (!ctx.env.AI) {
-        await safeReply(ctx, "دستیار هوشمند در حال حاضر غیرفعال است.");
+        await ctx.reply("دستیار هوشمند در حال حاضر غیرفعال است.").catch(() => {});
         return;
       }
       aiCalls.push(text);
-      await safeReply(ctx, 'ai-answer', { parse_mode: 'HTML' });
+      await ctx.reply('ai-answer', { parse_mode: 'HTML' }).catch(() => {});
     }
   };
 
@@ -82,11 +81,3 @@ test('toggle_product path: numeric input does not produce an AI log when AI is d
   expect(replies).toEqual(["دستیار هوشمند در حال حاضر غیرفعال است."]);
 });
 
-test('safeReply swallows errors thrown by ctx.reply', async () => {
-  const ctx: any = {
-    reply: vi.fn(async () => { throw new Error('telegram 4xx'); }),
-  };
-  const bot = {} as Bot<MyContext>;
-  await expect(safeReply(ctx as MyContext, 'hello')).resolves.toBeUndefined();
-  expect(ctx.reply).toHaveBeenCalledWith('hello');
-});

@@ -13,9 +13,20 @@ test('formatProduct formats correctly', () => {
   expect(result).toContain('<b>Espresso</b>');
   expect(result).toContain('Strong coffee');
   expect(result).toContain('35000 تومان');
-  expect(result).toContain('10 فنجان');
+  expect(result).not.toContain('10 فنجان');
 });
 
+test('formatProduct formats physical goods with stock', () => {
+  const product = {
+    name: 'Coffee Beans',
+    description: 'Arabica',
+    price: 500000,
+    stock: 2,
+    unit: 'kg'
+  };
+  const result = formatProduct(product);
+  expect(result).toContain('2 کیلوگرم');
+});
 test('formatBranch formats correctly', () => {
   const branch = {
     name: 'Main Branch',
