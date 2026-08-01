@@ -29,9 +29,23 @@ export function createBot(env: Env) {
   });
 
   bot.use(session({
-    initial: () => undefined as SessionData | undefined,
+    initial: () => ({}) as SessionData,
     storage: new D1SessionStorage(env.DB),
   }));
+
+  // Ignore Telegram Webhook Retries (Idempotency)
+  bot.use(async (ctx, next) => {
+    if (ctx.update.update_id) {
+      if (ctx.session?.lastUpdateId === ctx.update.update_id) {
+        console.log(`Ignoring duplicate update: ${ctx.update.update_id}`);
+        return; // Reject retry, do not process
+      }
+      if (ctx.session) {
+        ctx.session.lastUpdateId = ctx.update.update_id;
+      }
+    }
+    await next();
+  });
   bot.use(conversations({
     storage: {
       type: "key",

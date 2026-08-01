@@ -58,6 +58,23 @@ export class CategoryRepository {
   async getAllCategories() {
     return await this.db.select().from(categories).orderBy(categories.sortOrder);
   }
+
+  async getCategoryById(id: number) {
+    const result = await this.db.select().from(categories).where(eq(categories.id, id));
+    return result[0];
+  }
+
+  async addCategory(data: typeof categories.$inferInsert) {
+    return await this.db.insert(categories).values(data).returning();
+  }
+
+  async updateCategory(id: number, data: Partial<typeof categories.$inferInsert>) {
+    return await this.db.update(categories).set(data).where(eq(categories.id, id)).returning();
+  }
+
+  async deleteCategory(id: number) {
+    return await this.db.delete(categories).where(eq(categories.id, id)).returning();
+  }
 }
 
 export class BranchRepository {
@@ -119,6 +136,10 @@ export class SettingsRepository {
 
   constructor(d1Binding: any) {
     this.db = getDb(d1Binding);
+  }
+
+  async getAllSettings() {
+    return await this.db.select().from(settings);
   }
 
   async getValue(key: string): Promise<string | null> {

@@ -1,19 +1,25 @@
 import { webhookCallback } from "grammy";
 import { createBot, Env } from "./bot";
 import { setRequestContext } from "./requestContext";
+import { handleApiRequest } from "./api/router";
 
 let botInstance: ReturnType<typeof createBot> | null = null;
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      if (request.method !== "POST") {
-        return new Response("Method not allowed", { status: 405 });
-      }
-
       const url = new URL(request.url);
+      
+      if (url.pathname.startsWith("/api/")) {
+        return await handleApiRequest(request, env, ctx);
+      }
+      
       if (url.pathname !== "/webhook") {
         return new Response("Not found", { status: 404 });
+      }
+
+      if (request.method !== "POST") {
+        return new Response("Method not allowed", { status: 405 });
       }
 
       const secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token");

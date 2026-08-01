@@ -7,10 +7,10 @@ import { buildMinimalContext } from '../utils/menuContext';
 
 export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
   bot.on('message:text', async (ctx) => {
-    // If any admin conversation is active (e.g. /toggle_product waiting for an ID),
-    // do NOT run the AI handler — let the conversation plugin handle this message.
-    const activeConversations = ctx.conversation.active();
-    if (Object.values(activeConversations).some(count => count > 0)) return;
+    // If an admin conversation was active before this message was processed,
+    // do NOT run the AI handler. This prevents the final message of a completed 
+    // conversation from leaking into the AI handler.
+    if (ctx.hasActiveConversation) return;
 
     if (!ctx.message.text.startsWith('/')) {
       if (!ctx.env.AI) {

@@ -75,3 +75,9 @@ export const sessions = sqliteTable('sessions', {
   key: text('key').primaryKey(),
   value: text('value').notNull()
 });
+
+export const admins = sqliteTable('admins', {
+  telegramId: integer('telegram_id').primaryKey(),
+  role: text('role').notNull().default('super_admin'), // super_admin or category_admin
+  categoryId: integer('category_id').references(() => categories.id) // Restricted category
+});
