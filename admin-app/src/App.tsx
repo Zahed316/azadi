@@ -42,6 +42,10 @@ export default function App() {
   const [adminRole, setAdminRole] = useState('category_admin');
   const [adminCatId, setAdminCatId] = useState('');
 
+  // Custom Settings
+  const [newSettingKey, setNewSettingKey] = useState('');
+  const [newSettingValue, setNewSettingValue] = useState('');
+
   const getInitData = () => {
     try {
       const { initDataRaw } = retrieveLaunchParams();
@@ -278,7 +282,30 @@ export default function App() {
     } catch (err: any) { setError(err.message); }
   };
   const updateSetting = (key: string, value: string) => {
-    setSettings(prev => prev.map(s => s.key === key ? { ...s, value } : s));
+    setSettings(prev => {
+      const exists = prev.find(s => s.key === key);
+      if (exists) {
+        return prev.map(s => s.key === key ? { ...s, value } : s);
+      }
+      return [...prev, { key, value }];
+    });
+  };
+
+  const handleAddSetting = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSettingKey) return;
+    updateSetting(newSettingKey, newSettingValue);
+    setNewSettingKey('');
+    setNewSettingValue('');
+  };
+
+  const handleDeleteSetting = async (key: string) => {
+    if (!confirm(`Delete setting ${key}?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/settings/${encodeURIComponent(key)}`, { method: 'DELETE', headers });
+      if (!res.ok) throw new Error(await res.text());
+      setSettings(prev => prev.filter(s => s.key !== key));
+    } catch (err: any) { setError(err.message); }
   };
 
 
@@ -473,19 +500,73 @@ export default function App() {
 
       {/* SETTINGS TAB */}
       {activeTab === 'settings' && isSuperAdmin && (
-        <div className="card">
+        <div className="card settings-container">
           <h3>Bot Settings</h3>
-          {settings.length === 0 ? <p>No settings found in DB.</p> : (
-            <form onSubmit={handleSaveSettings}>
-              {settings.map(s => (
-                <div key={s.key} style={{ marginBottom: 12 }}>
-                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>{s.key}</label>
-                  <input value={s.value} onChange={e => updateSetting(s.key, e.target.value)} />
+          
+          <form onSubmit={handleSaveSettings}>
+            <div className="section">
+              <h4>General Configurations</h4>
+              
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>About Text</label>
+                <textarea 
+                  value={settings.find(s => s.key === 'about')?.value || ''} 
+                  onChange={e => updateSetting('about', e.target.value)} 
+                  rows={4}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>Instagram URL</label>
+                <input 
+                  type="text"
+                  value={settings.find(s => s.key === 'instagram')?.value || ''} 
+                  onChange={e => updateSetting('instagram', e.target.value)} 
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>Contact Phone</label>
+                <input 
+                  type="text"
+                  value={settings.find(s => s.key === 'phone')?.value || ''} 
+                  onChange={e => updateSetting('phone', e.target.value)} 
+                />
+              </div>
+            </div>
+
+            <div className="section" style={{ marginTop: '24px' }}>
+              <h4>Custom Settings</h4>
+              {settings.filter(s => !['about', 'instagram', 'phone'].includes(s.key)).map(s => (
+                <div key={s.key} style={{ marginBottom: 12, display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>{s.key}</label>
+                    <input value={s.value} onChange={e => updateSetting(s.key, e.target.value)} />
+                  </div>
+                  <button type="button" onClick={() => handleDeleteSetting(s.key)} style={{ background: '#ff4d4d', padding: '8px', marginTop: '20px', width: 'auto' }}>Delete</button>
                 </div>
               ))}
-              <button type="submit">Save All Settings</button>
-            </form>
-          )}
+            </div>
+
+            <button type="submit" style={{ marginTop: '16px' }}>Save All Settings</button>
+          </form>
+
+          <hr style={{ margin: '24px 0', borderColor: '#444' }} />
+          
+          <h4>Add Custom Setting</h4>
+          <form onSubmit={handleAddSetting} style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: 4, fontSize: '0.9em' }}>Key</label>
+              <input value={newSettingKey} onChange={e => setNewSettingKey(e.target.value)} placeholder="e.g. welcome_msg" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: 4, fontSize: '0.9em' }}>Value</label>
+              <input value={newSettingValue} onChange={e => setNewSettingValue(e.target.value)} placeholder="Value" />
+            </div>
+            <button type="submit" style={{ background: '#28a745', width: 'auto' }}>Add</button>
+          </form>
+
         </div>
       )}
 

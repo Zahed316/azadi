@@ -153,6 +153,10 @@ export class SettingsRepository {
       .onConflictDoUpdate({ target: settings.key, set: { value } })
       .returning();
   }
+
+  async deleteSetting(key: string) {
+    return await this.db.delete(settings).where(eq(settings.key, key)).returning();
+  }
 }
 
 export class AiLogRepository {

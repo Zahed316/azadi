@@ -95,6 +95,14 @@ export async function handleApiRequest(request: Request, env: Env, ctx: Executio
       }
     }
 
+    if (path.startsWith("settings/") && method === "DELETE") {
+      if (!isSuperAdmin) return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
+      const key = decodeURIComponent(path.split("/")[1]);
+      const repo = new SettingsRepository(db);
+      await repo.deleteSetting(key);
+      return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    }
+
     // Categories
     if (path === "categories") {
       const repo = new CategoryRepository(db);
