@@ -1,7 +1,9 @@
 import { Menu } from '@grammyjs/menu';
+import { InlineKeyboard } from 'grammy';
 import { branchesMenu } from './branchesMenu';
 import { FaqRepository, SettingsRepository } from '../repositories';
 import { formatFaq } from '../utils/formatters';
+import { buildFaqPage } from '../utils/faqPagination';
 import { MyContext } from '../types/context';
 
 export const mainMenu = new Menu<MyContext>('main-menu')
@@ -26,11 +28,14 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       const repo = new FaqRepository(ctx.env.DB);
       const faqs = await repo.getAll();
       if (faqs.length === 0) {
-        await ctx.reply('سوال متداولی وجود ندارد.');
+        await ctx.reply('📭 هنوز سوالی ثبت نشده است.');
         return;
       }
-      const text = faqs.map((f: any) => formatFaq(f)).join('\n\n');
-      await ctx.reply(`<b>سوالات متداول</b>\n\n${text}`, { parse_mode: 'HTML' });
+      const page = buildFaqPage(faqs, 0, 5);
+      const text = page.items.map((f: any) => formatFaq(f)).join('\n\n');
+      const kb = new InlineKeyboard();
+      if (page.hasNext) kb.text('◀️ صفحه بعد', 'faq:page:1');
+      await ctx.reply(`<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود. لطفاً دوباره امتحان کنید.' }).catch(() => {});

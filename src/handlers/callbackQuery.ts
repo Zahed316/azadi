@@ -1,6 +1,7 @@
 import { Bot, InlineKeyboard } from 'grammy';
-import { BranchRepository, ProductRepository, SettingsRepository } from '../repositories';
-import { formatBranch, formatProduct, DEFAULT_PRICE_UNIT } from '../utils/formatters';
+import { BranchRepository, ProductRepository, SettingsRepository, FaqRepository } from '../repositories';
+import { formatBranch, formatProduct, formatFaq, DEFAULT_PRICE_UNIT } from '../utils/formatters';
+import { buildFaqPage } from '../utils/faqPagination';
 import { mainMenu } from '../menus/mainMenu';
 import { MyContext } from '../types/context';
 
@@ -13,6 +14,25 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       await ctx.reply('منوی اصلی:', { reply_markup: mainMenu });
     } catch (e) {
       console.error(e);
+    }
+  });
+
+  bot.callbackQuery(/^faq:page:(\d+)$/, async (ctx) => {
+    try {
+      await ctx.answerCallbackQuery();
+      const idx = parseInt(ctx.match[1]);
+      const faqs = await new FaqRepository(ctx.env.DB).getAll();
+      const page = buildFaqPage(faqs, idx, 5);
+      const text = page.items.map((f: any) => formatFaq(f)).join('\n\n');
+      const kb = new InlineKeyboard();
+      if (page.hasPrev) kb.text('صفحه قبل ▶️', `faq:page:${idx - 1}`);
+      if (page.hasNext) kb.text('◀️ صفحه بعد', `faq:page:${idx + 1}`);
+      const body = `<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`;
+      await ctx.editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+    } catch (e) {
+      console.error(e);
+      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
     }
   });
 
