@@ -26,6 +26,10 @@ export default function App() {
   const [menuActiveSection, setMenuActiveSection] = useState<'drinks'|'beans'|'cakes'|'extras'>('drinks');
   const [menuAddCatId, setMenuAddCatId] = useState('');
 
+  // Branches & FAQs
+  const [branches, setBranches] = useState<any[]>([]);
+  const [faqs, setFaqs] = useState<any[]>([]);
+
   // Edit states
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -96,10 +100,12 @@ export default function App() {
 
       // 3. Fetch SuperAdmin specific data
       if (isSuper) {
-        const [setRes, admRes, menuRes] = await Promise.all([
+        const [setRes, admRes, menuRes, faqRes, branchRes] = await Promise.all([
           fetch(`${API_BASE}/settings`, { headers }),
           fetch(`${API_BASE}/admins`, { headers }),
-          fetch(`${API_BASE}/menu-config`, { headers })
+          fetch(`${API_BASE}/menu-config`, { headers }),
+          fetch(`${API_BASE}/faqs`, { headers }),
+          fetch(`${API_BASE}/branches`, { headers })
         ]);
         if (setRes.ok) {
           const s = await setRes.json();
@@ -112,6 +118,14 @@ export default function App() {
         if (menuRes.ok) {
           const m = await menuRes.json();
           setMenuConfigs(m.menuConfigs || []);
+        }
+        if (faqRes.ok) {
+          const f = await faqRes.json();
+          setFaqs(f.faqs || []);
+        }
+        if (branchRes.ok) {
+          const b = await branchRes.json();
+          setBranches(b.branches || []);
         }
       }
     } catch (err: any) {
@@ -316,6 +330,94 @@ export default function App() {
       if (!res.ok) throw new Error(await res.text());
       setSettings(prev => prev.filter(s => s.key !== key));
     } catch (err: any) { setError(err.message); }
+  };
+
+  // -- BRANCHES --
+  const [editingBranch, setEditingBranch] = useState<any>(null);
+  const [branchName, setBranchName] = useState('');
+  const [branchAddress, setBranchAddress] = useState('');
+  const [branchPhone, setBranchPhone] = useState('');
+  const [branchLocation, setBranchLocation] = useState('');
+  const [branchHours, setBranchHours] = useState('');
+  const [branchActive, setBranchActive] = useState(true);
+
+  const handleSaveBranch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const body = JSON.stringify({
+        name: branchName, address: branchAddress, phone: branchPhone,
+        location: branchLocation, openingHours: branchHours, isActive: branchActive,
+      });
+      const url = editingBranch ? `${API_BASE}/branches/${editingBranch.id}` : `${API_BASE}/branches`;
+      const method = editingBranch ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers, body });
+      if (!res.ok) throw new Error(await res.text());
+      await fetchData();
+      resetBranchForm();
+    } catch (err: any) { setError(err.message); }
+  };
+
+  const deleteBranch = async (id: number) => {
+    if (!confirm('Delete this branch?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/branches/${id}`, { method: 'DELETE', headers });
+      if (!res.ok) throw new Error(await res.text());
+      await fetchData();
+    } catch (err: any) { setError(err.message); }
+  };
+
+  const startEditBranch = (b: any) => {
+    setEditingBranch(b);
+    setBranchName(b.name); setBranchAddress(b.address);
+    setBranchPhone(b.phone || ''); setBranchLocation(b.location || '');
+    setBranchHours(b.openingHours || ''); setBranchActive(b.isActive);
+  };
+
+  const resetBranchForm = () => {
+    setEditingBranch(null);
+    setBranchName(''); setBranchAddress(''); setBranchPhone('');
+    setBranchLocation(''); setBranchHours(''); setBranchActive(true);
+  };
+
+  // -- FAQs --
+  const [editingFaq, setEditingFaq] = useState<any>(null);
+  const [faqQuestion, setFaqQuestion] = useState('');
+  const [faqAnswer, setFaqAnswer] = useState('');
+
+  const handleSaveFaq = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const body = JSON.stringify({ question: faqQuestion, answer: faqAnswer });
+      const url = editingFaq ? `${API_BASE}/faqs/${editingFaq.id}` : `${API_BASE}/faqs`;
+      const method = editingFaq ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers, body });
+      if (!res.ok) throw new Error(await res.text());
+      await fetchData();
+      resetFaqForm();
+    } catch (err: any) { setError(err.message); }
+  };
+
+  const deleteFaq = async (id: number) => {
+    if (!confirm('Delete this FAQ?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/faqs/${id}`, { method: 'DELETE', headers });
+      if (!res.ok) throw new Error(await res.text());
+      await fetchData();
+    } catch (err: any) { setError(err.message); }
+  };
+
+  const startEditFaq = (f: any) => {
+    setEditingFaq(f);
+    setFaqQuestion(f.question);
+    setFaqAnswer(f.answer);
+  };
+
+  const resetFaqForm = () => {
+    setEditingFaq(null);
+    setFaqQuestion('');
+    setFaqAnswer('');
   };
 
   // -- MENU CONFIG --
@@ -646,6 +748,73 @@ export default function App() {
             </div>
             <button type="submit" style={{ background: '#28a745', width: 'auto' }}>Add</button>
           </form>
+
+          <hr style={{ margin: '24px 0', borderColor: '#444' }} />
+          
+          <div className="section">
+            <h4>Branches</h4>
+            <form onSubmit={handleSaveBranch} style={{ marginBottom: 16 }}>
+              <input placeholder="Branch Name" value={branchName} onChange={e => setBranchName(e.target.value)} required />
+              <input placeholder="Address" value={branchAddress} onChange={e => setBranchAddress(e.target.value)} required />
+              <input placeholder="Phone (optional)" value={branchPhone} onChange={e => setBranchPhone(e.target.value)} />
+              <input placeholder="Maps URL / Coordinates" value={branchLocation} onChange={e => setBranchLocation(e.target.value)} />
+              <input placeholder="Opening Hours (e.g. 8:00-22:00)" value={branchHours} onChange={e => setBranchHours(e.target.value)} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
+                <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={branchActive} onChange={e => setBranchActive(e.target.checked)} />
+                Active
+              </label>
+              <div className="btn-group">
+                <button type="submit">{editingBranch ? 'Update Branch' : 'Add Branch'}</button>
+                {editingBranch && <button type="button" className="secondary" onClick={resetBranchForm}>Cancel</button>}
+              </div>
+            </form>
+            
+            {branches.map(b => (
+              <div key={b.id} className="list-item">
+                <div className="item-details">
+                  <h4>{b.name} {!b.isActive && <span style={{ color: '#888' }}>(Inactive)</span>}</h4>
+                  <p>{b.address}</p>
+                  {b.phone && <p style={{ margin: 0, fontSize: 12 }}>📞 {b.phone}</p>}
+                  {b.openingHours && <p style={{ margin: 0, fontSize: 12 }}>🕐 {b.openingHours}</p>}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditBranch(b)}>Edit</button>
+                  <button type="button" className="danger" style={{ padding: '8px 12px' }} onClick={() => deleteBranch(b.id)}>Del</button>
+                </div>
+              </div>
+            ))}
+            {branches.length === 0 && <p style={{ color: '#888' }}>No branches yet.</p>}
+          </div>
+
+          <hr style={{ margin: '24px 0', borderColor: '#444' }} />
+          
+          <div className="section">
+            <h4>Frequently Asked Questions</h4>
+            <form onSubmit={handleSaveFaq} style={{ marginBottom: 16 }}>
+              <textarea placeholder="Question" value={faqQuestion} onChange={e => setFaqQuestion(e.target.value)} rows={2} required
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box', marginBottom: 8 }} />
+              <textarea placeholder="Answer" value={faqAnswer} onChange={e => setFaqAnswer(e.target.value)} rows={3} required
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box', marginBottom: 8 }} />
+              <div className="btn-group">
+                <button type="submit">{editingFaq ? 'Update FAQ' : 'Add FAQ'}</button>
+                {editingFaq && <button type="button" className="secondary" onClick={resetFaqForm}>Cancel</button>}
+              </div>
+            </form>
+            
+            {faqs.map(f => (
+              <div key={f.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+                <div className="item-details" style={{ width: '100%' }}>
+                  <h4>❓ {f.question}</h4>
+                  <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: 13, color: '#ccc' }}>{f.answer}</p>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditFaq(f)}>Edit</button>
+                  <button type="button" className="danger" style={{ padding: '8px 12px' }} onClick={() => deleteFaq(f.id)}>Del</button>
+                </div>
+              </div>
+            ))}
+            {faqs.length === 0 && <p style={{ color: '#888' }}>No FAQs yet.</p>}
+          </div>
 
         </div>
       )}
