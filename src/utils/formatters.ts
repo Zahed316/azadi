@@ -1,3 +1,9 @@
+import { formatPersianPrice, toPersianDigits } from './numbers';
+
+export const VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
+
+export const DEFAULT_PRICE_UNIT = 'تومان';
+
 const unitMap: Record<string, string> = {
   cup:   'فنجان',
   kg:    'کیلوگرم',
@@ -6,13 +12,13 @@ const unitMap: Record<string, string> = {
   item:  'عدد',
 };
 
-export function formatProduct(p: any): string {
+export function formatProduct(p: any, priceUnit: string = DEFAULT_PRICE_UNIT): string {
   let text = `📦 <b>${p.name}</b>\n`;
   if (p.description) text += `\n${p.description}\n`;
   if (p.priceOnRequest) {
     text += `\n💰 قیمت: سوال در کافه`;
   } else {
-    text += `\n💰 قیمت: ${p.price} تومان`;
+    text += `\n💰 قیمت: ${formatPersianPrice(p.price, priceUnit)}`;
   }
   if (p.isSeasonal) text += `\n🌿 <i>مخصوص این فصل</i>`;
   if (p.sizeOptions) text += `\n📐 اندازه‌ها: ${JSON.parse(p.sizeOptions).join(', ')}`;
@@ -20,9 +26,9 @@ export function formatProduct(p: any): string {
   // Only show stock for physical goods (beans, equipment)
   if (p.unit !== 'cup') {
     const unitLabel = unitMap[p.unit] || p.unit;
-    text += `\n📦 موجودی: ${p.stock > 0 ? `${p.stock} ${unitLabel}` : 'ناموجود'}`;
+    text += `\n📦 موجودی: ${p.stock > 0 ? `${toPersianDigits(p.stock)} ${unitLabel}` : 'ناموجود'}`;
   }
-  text += `\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>`;
+  text += VAT_NOTE;
   return text;
 }
 

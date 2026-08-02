@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
 import { formatProduct, formatBranch, formatFaq } from '../utils/formatters';
+import { LRI, PDI } from '../utils/numbers';
 
 test('formatProduct formats correctly', () => {
   const product = {
@@ -12,8 +13,18 @@ test('formatProduct formats correctly', () => {
   const result = formatProduct(product);
   expect(result).toContain('<b>Espresso</b>');
   expect(result).toContain('Strong coffee');
-  expect(result).toContain('35000 تومان');
+  expect(result).toContain(`${LRI}۳۵٬۰۰۰ تومان${PDI}`);
   expect(result).not.toContain('10 فنجان');
+});
+
+test('formatProduct honors a custom price unit', () => {
+  const product = { name: 'Latte', price: 90000, stock: 1, unit: 'cup' };
+  expect(formatProduct(product, 'ریال')).toContain(`${LRI}۹۰٬۰۰۰ ریال${PDI}`);
+});
+
+test('formatProduct shows price-on-request label', () => {
+  const product = { name: 'Special', price: 0, priceOnRequest: true, stock: 1, unit: 'cup' };
+  expect(formatProduct(product)).toContain('سوال در کافه');
 });
 
 test('formatProduct formats physical goods with stock', () => {
@@ -25,7 +36,7 @@ test('formatProduct formats physical goods with stock', () => {
     unit: 'kg'
   };
   const result = formatProduct(product);
-  expect(result).toContain('2 کیلوگرم');
+  expect(result).toContain('۲ کیلوگرم');
 });
 test('formatBranch formats correctly', () => {
   const branch = {
