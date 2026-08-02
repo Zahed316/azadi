@@ -15,6 +15,13 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Toast notifications
+  const [toast, setToast] = useState<{ msg: string; kind: 'success' | 'error' } | null>(null);
+  const showToast = (msg: string, kind: 'success' | 'error' = 'success') => {
+    setToast({ msg, kind });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   // Selection for Batch
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
   const [batchAction, setBatchAction] = useState<'move' | 'toggle' | 'delete' | ''>('');
@@ -226,11 +233,13 @@ export default function App() {
 
       const res = await fetch(url, { method, headers, body });
       if (!res.ok) throw new Error(await res.text());
-      
+
       await fetchData();
       resetProductForm();
+      showToast(editingProduct ? 'Product updated ✓' : 'Product added ✓');
     } catch (err: any) {
       setError(err.message);
+      showToast(err.message, 'error');
     }
   };
 
@@ -290,7 +299,8 @@ export default function App() {
       if (!res.ok) throw new Error(await res.text());
       await fetchData();
       resetCategoryForm();
-    } catch (err: any) { setError(err.message); }
+      showToast(editingCategory ? 'Category updated ✓' : 'Category added ✓');
+    } catch (err: any) { setError(err.message); showToast(err.message, 'error'); }
   };
 
   const deleteCategory = async (id: number) => {
@@ -346,7 +356,7 @@ export default function App() {
       const body = JSON.stringify({ settings });
       const res = await fetch(`${API_BASE}/settings`, { method: 'POST', headers, body });
       if (!res.ok) throw new Error(await res.text());
-      alert('Settings saved!');
+      showToast('Saved ✓');
     } catch (err: any) { setError(err.message); }
   };
   const updateSetting = (key: string, value: string) => {
@@ -399,7 +409,8 @@ export default function App() {
       if (!res.ok) throw new Error(await res.text());
       await fetchData();
       resetBranchForm();
-    } catch (err: any) { setError(err.message); }
+      showToast(editingBranch ? 'Branch updated ✓' : 'Branch added ✓');
+    } catch (err: any) { setError(err.message); showToast(err.message, 'error'); }
   };
 
   const deleteBranch = async (id: number) => {
@@ -440,7 +451,8 @@ export default function App() {
       if (!res.ok) throw new Error(await res.text());
       await fetchData();
       resetFaqForm();
-    } catch (err: any) { setError(err.message); }
+      showToast(editingFaq ? 'FAQ updated ✓' : 'FAQ added ✓');
+    } catch (err: any) { setError(err.message); showToast(err.message, 'error'); }
   };
 
   const deleteFaq = async (id: number) => {
@@ -556,6 +568,7 @@ export default function App() {
          {currentUser && <span style={{fontSize: 12, marginLeft: 10, background: '#333', padding: '2px 6px', borderRadius: 4}}>{currentUser.role}</span>}
       </h2>
       {error && <div className="error">{error}</div>}
+      {toast && <div className={`toast toast-${toast.kind}`}>{toast.msg}</div>}
 
       {/* PRODUCTS TAB */}
       {activeTab === 'products' && (

@@ -211,6 +211,16 @@ button.secondary:hover {
 }
 
 /* Utilities */
+.toast {
+  position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%);
+  padding: 12px 20px; border-radius: 10px; z-index: 1100; font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3); animation: toast-in .2s ease;
+  max-width: 90vw; text-align: center;
+}
+.toast-success { background: var(--success); color: #fff; }
+.toast-error   { background: var(--danger);  color: #fff; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
 .flex-between {
   display: flex;
   justify-content: space-between;
