@@ -298,15 +298,86 @@ export async function handleApiRequest(request: Request, env: Env, ctx: Executio
       }
     }
 
-    // Branches & FAQs omitted to save space or just block if not super admin
-    if (path.startsWith("branches") || path.startsWith("faqs")) {
-       if (!isSuperAdmin && method !== "GET") {
-           return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
-       }
-       // Since the Mini App currently doesn't manage branches/FAQs directly yet, we can skip implementing full CRUD here for now,
-       // or leave the existing code.
-       // For brevity, I'll return Not Found here unless requested, because the original router had them but they weren't in the frontend.
-       // Actually, let's just return 404 for them right now as they are out of scope of the Mini App frontend for now.
+    // --- FAQs CRUD ---
+    if (path === 'faqs') {
+      const repo = new FaqRepository(db);
+      if (method === 'GET') {
+        const faqs = await repo.getAll();
+        return new Response(JSON.stringify({ faqs }), { headers: corsHeaders });
+      } else if (method === 'POST') {
+        if (!isSuperAdmin) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+        const body: any = await request.json();
+        if (!body.question || !body.answer) {
+          return new Response(JSON.stringify({ error: 'question and answer required' }), { status: 400, headers: corsHeaders });
+        }
+        await repo.add(body.question, body.answer);
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      }
+    }
+
+    if (path.startsWith('faqs/') && path.split('/').length === 2) {
+      if (!isSuperAdmin) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+      const id = parseInt(path.split('/')[1]);
+      const repo = new FaqRepository(db);
+      if (method === 'PUT') {
+        const body: any = await request.json();
+        if (!body.question || !body.answer) {
+          return new Response(JSON.stringify({ error: 'question and answer required' }), { status: 400, headers: corsHeaders });
+        }
+        await repo.update(id, body.question, body.answer);
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      } else if (method === 'DELETE') {
+        await repo.delete(id);
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      }
+    }
+
+    // --- Branches CRUD ---
+    if (path === 'branches') {
+      const repo = new BranchRepository(db);
+      if (method === 'GET') {
+        const branchesList = await repo.getAllBranches();
+        return new Response(JSON.stringify({ branches: branchesList }), { headers: corsHeaders });
+      } else if (method === 'POST') {
+        if (!isSuperAdmin) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+        const body: any = await request.json();
+        if (!body.name || !body.address) {
+          return new Response(JSON.stringify({ error: 'name and address required' }), { status: 400, headers: corsHeaders });
+        }
+        await repo.addBranch({
+          name: body.name,
+          address: body.address,
+          phone: body.phone || null,
+          location: body.location || null,
+          openingHours: body.openingHours || null,
+          isActive: body.isActive ?? true,
+        });
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      }
+    }
+
+    if (path.startsWith('branches/') && path.split('/').length === 2) {
+      if (!isSuperAdmin) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+      const id = parseInt(path.split('/')[1]);
+      const repo = new BranchRepository(db);
+      if (method === 'PUT') {
+        const body: any = await request.json();
+        if (!body.name || !body.address) {
+          return new Response(JSON.stringify({ error: 'name and address required' }), { status: 400, headers: corsHeaders });
+        }
+        await repo.updateBranch(id, {
+          name: body.name,
+          address: body.address,
+          phone: body.phone || null,
+          location: body.location || null,
+          openingHours: body.openingHours || null,
+          isActive: body.isActive ?? true,
+        });
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      } else if (method === 'DELETE') {
+        await repo.deleteBranch(id);
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      }
     }
 
     return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: corsHeaders });
