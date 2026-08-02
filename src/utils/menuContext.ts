@@ -1,7 +1,6 @@
-// Score an item against query keywords
-function score(text: string, keywords: string[]): number {
-  const lower = text.toLowerCase();
-  return keywords.filter(k => lower.includes(k)).length;
+// Score pre-normalized searchable text against normalized query keywords.
+function score(normalizedText: string, keywords: string[]): number {
+  return keywords.filter(k => normalizedText.includes(k)).length;
 }
 
 export function buildMinimalContext(
@@ -26,7 +25,10 @@ export function buildMinimalContext(
 
   // Top 5 scored products (from visible categories only)
   const scoredProducts = eligibleProducts
-    .map(row => ({ row, s: score(`${row.products.name} ${row.products.description}`, keywords) }))
+    .map(row => ({
+      row,
+      s: score(`${row.products.name} ${row.products.description || ''}`.toLowerCase(), keywords),
+    }))
     .sort((a, b) => b.s - a.s)
     .slice(0, 5);
 
@@ -45,7 +47,7 @@ export function buildMinimalContext(
 
   // Top 3 scored FAQs
   const scoredFaqs = faqs
-    .map(f => ({ f, s: score(`${f.question} ${f.answer}`, keywords) }))
+    .map(f => ({ f, s: score(`${f.question} ${f.answer}`.toLowerCase(), keywords) }))
     .sort((a, b) => b.s - a.s)
     .slice(0, 3);
 

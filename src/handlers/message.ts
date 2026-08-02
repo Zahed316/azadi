@@ -18,36 +18,51 @@ export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
       }
       
       try {
+        const requestStartedAt = performance.now();
         await ctx.replyWithChatAction("typing").catch(() => {});
         const userId = String(ctx.from?.id);
         const db = ctx.env.DB;
+        const productRepo = new ProductRepository(db);
+        const branchRepo = new BranchRepository(db);
+        const faqRepo = new FaqRepository(db);
+        const aiLogRepo = new AiLogRepository(db);
+        const menuConfigRepo = new MenuConfigRepository(db);
 
+        const catalogStartedAt = performance.now();
         const [productsWithDetails, branches, faqs, recentLogs, visibleCategoryIds] = await Promise.all([
-          new ProductRepository(db).getAllProductsWithDetails(),
-          new BranchRepository(db).getAllBranches(),
-          new FaqRepository(db).getAll(),
-          new AiLogRepository(db).getRecentLogs(userId, 5),
-          new MenuConfigRepository(db).getVisibleCategoryIds()
+          productRepo.getAllProductsWithDetails(),
+          branchRepo.getAllBranches(),
+          faqRepo.getAll(),
+          aiLogRepo.getRecentLogs(userId, 5),
+          menuConfigRepo.getVisibleCategoryIds()
         ]);
+        const catalogDuration = performance.now() - catalogStartedAt;
 
+        const contextStartedAt = performance.now();
         const menuContext = buildMinimalContext(ctx.message.text, productsWithDetails, branches, faqs, visibleCategoryIds);
+        const contextDuration = performance.now() - contextStartedAt;
         
         const aiService = new AiService(ctx.env.AI, menuContext);
         
         const AI_TIMEOUT_MS = 20_000;
+        const aiStartedAt = performance.now();
         const aiPromise = aiService.processQuery(ctx.message.text, userId, recentLogs);
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('AI_TIMEOUT')), AI_TIMEOUT_MS)
         );
         const answer = await Promise.race([aiPromise, timeoutPromise]);
+        const aiDuration = performance.now() - aiStartedAt;
         
         await ctx.reply(answer, { parse_mode: 'HTML' }).catch(() => {});
 
-        const logRepo = new AiLogRepository(db);
         if (ctx.execCtx) {
-          ctx.execCtx.waitUntil(logRepo.logConversation(userId, ctx.message.text, answer));
+          ctx.execCtx.waitUntil(aiLogRepo.logConversation(userId, ctx.message.text, answer));
         } else {
-          await logRepo.logConversation(userId, ctx.message.text, answer);
+          await aiLogRepo.logConversation(userId, ctx.message.text, answer);
+        }
+
+        if ((ctx.env as Env & { PERF_LOG?: string }).PERF_LOG === 'true') {
+          console.log(JSON.stringify({ operation: 'ai-request-timing', catalogMs: Math.round(catalogDuration), contextMs: Math.round(contextDuration), aiMs: Math.round(aiDuration), totalMs: Math.round(performance.now() - requestStartedAt) }));
         }
 
       } catch (e: any) {
