@@ -13,6 +13,13 @@ npm run deploy:dry              # wrangler deploy --dry-run to ~/wrangler-dry
 npm run setup:webhook           # curl to set Telegram webhook
 ```
 CI (GitHub Actions): npm ci → vitest → tsc --noEmit → wrangler deploy (main only).
+Admin Mini App is deployed separately to Cloudflare Pages — see Deployment section below.
+
+## Deployment
+- **Worker**: `wrangler deploy` via `cloudflare/wrangler-action@v3` on push to main.
+- **Admin Mini App**: `wrangler pages deploy admin-app/dist --project-name=azadi-admin` via a separate `deploy-admin-app` job in `.github/workflows/deploy.yml`. It runs on the same push trigger and reuses `secrets.CF_API_TOKEN`.
+- **Bot entry point**: `src/commands/admin.ts` hardcodes the Mini App URL as `https://azadi-admin.pages.dev`. The Worker does NOT serve the admin app; they are separate Cloudflare resources.
+- **Critical**: Editing `admin-app/src/App.tsx` and running `wrangler deploy` (or pushing Worker changes) does NOT update the Mini App. The Pages site must be rebuilt and redeployed. If the Mini App looks stale, check the Pages deployment first.
 
 Admin Mini App (admin-app/):
 ```
@@ -61,3 +68,5 @@ Document frequently used workflows and commands here.
 - `requestContext.ts` module globals are not safe to share across test cases. Tests should mock `env` directly rather than calling `setRequestContext`.
 - The `setup:webhook` script embeds a hardcoded `secret_token` — rotate it if compromised.
 - `admin-app/` is a separate package with its own `node_modules`. Run `npm install` inside it independently.
+- **Cloudflare Pages staleness**: The admin Mini App is hosted on Cloudflare Pages (`azadi-admin.pages.dev`), NOT served by the Worker. `wrangler deploy` only updates the Worker. If the Mini App UI looks outdated, verify the Pages deployment — the live bundle hash can be checked with `curl -s https://azadi-admin.pages.dev | grep -o '/assets/index-[^"]*\.js'` and compared against `admin-app/dist/assets/`.
+- **wrangler-action peer deps**: `cloudflare/wrangler-action@v3` installs Wrangler v3.x which peer-depends on `@cloudflare/workers-types@^4.x`, but this repo uses v5.x. Both deploy steps in `.github/workflows/deploy.yml` set `NPM_CONFIG_LEGACY_PEER_DEPS: 'true'` to avoid ERESOLVE. Do not remove this env var unless the peer dependency conflict is resolved upstream.
