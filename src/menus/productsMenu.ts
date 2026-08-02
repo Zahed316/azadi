@@ -21,7 +21,8 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
       if (products.length === 0) {
         await ctx.reply('در حال حاضر کیک یا کوکی موجود نیست.');
       } else {
-        await ctx.reply('یک کیک یا کوکی انتخاب کنید:', { reply_markup: kb });
+        await ctx.editMessageText('یک کیک یا کوکی انتخاب کنید:', { reply_markup: kb })
+          .catch(() => ctx.reply('یک کیک یا کوکی انتخاب کنید:', { reply_markup: kb }));
       }
     } catch (e) {
       console.error(e);
@@ -49,7 +50,8 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
       if (products.length === 0) {
         await ctx.reply('در حال حاضر دانه قهوه موجود نیست.');
       } else {
-        await ctx.reply('دانه قهوه مورد نظر را انتخاب کنید:', { reply_markup: kb });
+        await ctx.editMessageText('دانه قهوه مورد نظر را انتخاب کنید:', { reply_markup: kb })
+          .catch(() => ctx.reply('دانه قهوه مورد نظر را انتخاب کنید:', { reply_markup: kb }));
       }
     } catch (e) {
       console.error(e);

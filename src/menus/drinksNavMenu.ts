@@ -36,7 +36,9 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
               kb.text(`${p.name}${seasonal} — ${priceLabel}`, `product:${p.id}`).row();
             }
 
-            await ctx.reply(`<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}</b>${VAT_NOTE}`, { parse_mode: 'HTML', reply_markup: kb });
+            const text = `<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}</b>${VAT_NOTE}`;
+            await ctx.editMessageText(text, { parse_mode: 'HTML', reply_markup: kb })
+              .catch(() => ctx.reply(text, { parse_mode: 'HTML', reply_markup: kb }));
           } catch (e) {
             console.error(e);
             await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات ناموفق بود.' }).catch(() => {});

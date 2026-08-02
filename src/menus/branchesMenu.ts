@@ -17,7 +17,8 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
       if (branches.length === 0) {
         await ctx.reply('در حال حاضر شعبه‌ای موجود نیست.');
       } else {
-        await ctx.reply('یک شعبه انتخاب کنید:', { reply_markup: kb });
+        await ctx.editMessageText('یک شعبه انتخاب کنید:', { reply_markup: kb })
+          .catch(() => ctx.reply('یک شعبه انتخاب کنید:', { reply_markup: kb }));
       }
     } catch (e) {
       console.error(e);
