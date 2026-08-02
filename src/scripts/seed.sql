@@ -1,5 +1,5 @@
--- Truncate old data
-DELETE FROM coffee_details; DELETE FROM products; DELETE FROM categories; DELETE FROM branches; DELETE FROM faq;
+-- Truncate old data (order matters: delete children before parents)
+DELETE FROM coffee_details; DELETE FROM products; DELETE FROM menu_config; DELETE FROM categories; DELETE FROM branches; DELETE FROM faq;
 
 -- Categories (IDs explicit to match product inserts)
 INSERT INTO categories (id, name, description, emoji, sort_order) VALUES
@@ -70,3 +70,23 @@ INSERT INTO settings (key, value) VALUES
   ('about', 'به کافه آزادی خوش آمدید! ما یک رستری محلی با دو شعبه هستیم.'),
   ('instagram', 'https://instagram.com/azadcoffee'),
   ('phone', '054-XXXXXXXX');
+
+-- Menu Config (maps categories to bot menu sections)
+INSERT INTO menu_config (category_id, menu_section, display_order, is_visible, created_at, updated_at) VALUES
+  (1,  'drinks', 1, 1, unixepoch(), unixepoch()),
+  (4,  'drinks', 2, 1, unixepoch(), unixepoch()),
+  (5,  'drinks', 3, 1, unixepoch(), unixepoch()),
+  (6,  'drinks', 4, 1, unixepoch(), unixepoch()),
+  (7,  'drinks', 5, 1, unixepoch(), unixepoch()),
+  (8,  'cakes',  1, 1, unixepoch(), unixepoch()),
+  (9,  'beans',  1, 1, unixepoch(), unixepoch()),
+  (10, 'extras', 1, 0, unixepoch(), unixepoch());
+
+-- Preserve pour-over special message for category 7
+UPDATE menu_config
+SET special_message = '☕ <b>قهوه‌های دمی تخصصی</b>
+
+برای اطلاع از قهوه‌های دمی تخصصی امروز از باریستا سوال کنید.
+
+<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>'
+WHERE category_id = 7;
