@@ -14,17 +14,15 @@ CREATE TABLE IF NOT EXISTS `menu_config` (
   `updated_at`      INTEGER NOT NULL
 );
 
--- Seed: current hardcoded state (IDs validated against live D1)
+-- Seed: matches actual live D1 categories (IDs 1, 4-10; IDs 2 and 3 do not exist)
 INSERT INTO `menu_config`
   (`category_id`, `menu_section`, `display_order`, `is_visible`, `created_at`, `updated_at`)
 VALUES
   (1,  'drinks', 1, 1, unixepoch(), unixepoch()),
-  (2,  'drinks', 2, 1, unixepoch(), unixepoch()),
-  (3,  'drinks', 3, 1, unixepoch(), unixepoch()),
-  (4,  'drinks', 4, 1, unixepoch(), unixepoch()),
-  (5,  'drinks', 5, 1, unixepoch(), unixepoch()),
-  (6,  'drinks', 6, 1, unixepoch(), unixepoch()),
-  (7,  'drinks', 7, 1, unixepoch(), unixepoch()),
+  (4,  'drinks', 2, 1, unixepoch(), unixepoch()),
+  (5,  'drinks', 3, 1, unixepoch(), unixepoch()),
+  (6,  'drinks', 4, 1, unixepoch(), unixepoch()),
+  (7,  'drinks', 5, 1, unixepoch(), unixepoch()),
   (8,  'cakes',  1, 1, unixepoch(), unixepoch()),
   (9,  'beans',  1, 1, unixepoch(), unixepoch()),
   (10, 'extras', 1, 0, unixepoch(), unixepoch());  -- hidden: no bot slot for 'extras' yet
