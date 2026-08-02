@@ -2,7 +2,7 @@ import { Bot } from 'grammy';
 import { AiService } from '../services/aiService';
 import { MyContext } from '../types/context';
 import { Env } from '../bot';
-import { ProductRepository, BranchRepository, FaqRepository, AiLogRepository } from '../repositories';
+import { ProductRepository, BranchRepository, FaqRepository, AiLogRepository, MenuConfigRepository } from '../repositories';
 import { buildMinimalContext } from '../utils/menuContext';
 
 export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
@@ -22,14 +22,15 @@ export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
         const userId = String(ctx.from?.id);
         const db = ctx.env.DB;
 
-        const [productsWithDetails, branches, faqs, recentLogs] = await Promise.all([
+        const [productsWithDetails, branches, faqs, recentLogs, visibleCategoryIds] = await Promise.all([
           new ProductRepository(db).getAllProductsWithDetails(),
           new BranchRepository(db).getAllBranches(),
           new FaqRepository(db).getAll(),
-          new AiLogRepository(db).getRecentLogs(userId, 5)
+          new AiLogRepository(db).getRecentLogs(userId, 5),
+          new MenuConfigRepository(db).getVisibleCategoryIds()
         ]);
 
-        const menuContext = buildMinimalContext(ctx.message.text, productsWithDetails, branches, faqs);
+        const menuContext = buildMinimalContext(ctx.message.text, productsWithDetails, branches, faqs, visibleCategoryIds);
         
         const aiService = new AiService(ctx.env.AI, menuContext);
         
