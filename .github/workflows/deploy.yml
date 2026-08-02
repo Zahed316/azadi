@@ -29,6 +29,8 @@ jobs:
       - name: Deploy to Cloudflare Workers
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: cloudflare/wrangler-action@v3
+        env:
+          NPM_CONFIG_LEGACY_PEER_DEPS: 'true'
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           command: deploy
@@ -56,6 +58,8 @@ jobs:
       - name: Deploy admin-app to Cloudflare Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: cloudflare/wrangler-action@v3
+        env:
+          NPM_CONFIG_LEGACY_PEER_DEPS: 'true'
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           command: pages deploy admin-app/dist --project-name=azadi-admin
