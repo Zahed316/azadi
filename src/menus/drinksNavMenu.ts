@@ -23,7 +23,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
               if (config.specialMessage) {
                 await ctx.reply(config.specialMessage, { parse_mode: 'HTML' });
               } else {
-                await ctx.reply(`در حال حاضر ${config.categoryName} موجود نیست.`);
+                await ctx.reply(`📭 در حال حاضر ${config.categoryName} موجود نیست.`);
               }
               return;
             }

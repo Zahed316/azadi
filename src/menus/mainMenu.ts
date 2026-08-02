@@ -10,7 +10,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .text('🏠 درباره ما', async (ctx: any) => {
     try {
       const repo = new SettingsRepository(ctx.env.DB);
-      const aboutText = await repo.getValue('about') || 'Welcome to Azadi Coffee! We are a local roastery with two branches.';
+      const aboutText = await repo.getValue('about') || 'به روستری قهوه آزادی خوش آمدید — قهوه تازه‌بوشده از ایرانشهر. ☕';
       await ctx.reply(aboutText, { parse_mode: 'HTML' });
     } catch (e) {
       console.error(e);
