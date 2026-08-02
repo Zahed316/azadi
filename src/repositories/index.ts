@@ -15,7 +15,8 @@ export class ProductRepository {
 
   async getAllProductsWithDetails() {
     return await this.db.select().from(products)
-      .leftJoin(coffeeDetails, eq(products.id, coffeeDetails.productId));
+      .leftJoin(coffeeDetails, eq(products.id, coffeeDetails.productId))
+      .leftJoin(categories, eq(products.categoryId, categories.id));
   }
 
   async getProductById(id: number) {
