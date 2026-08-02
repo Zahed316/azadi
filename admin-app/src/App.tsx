@@ -477,6 +477,24 @@ export default function App() {
     } catch (err: any) { setError(err.message); }
   };
 
+  // -- SPECIAL MESSAGE EDITING --
+  const [editingSpecialMsg, setEditingSpecialMsg] = useState<number | null>(null);
+  const [specialMsgValue, setSpecialMsgValue] = useState('');
+
+  const handleSaveSpecialMessage = async (configId: number) => {
+    setError('');
+    try {
+      const config = menuConfigs.find((c: any) => c.id === configId);
+      const res = await fetch(`${API_BASE}/menu-config/${configId}`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ ...config, specialMessage: specialMsgValue || null }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setEditingSpecialMsg(null);
+      await fetchData();
+    } catch (err: any) { setError(err.message); }
+  };
+
 
   if (loading && products.length === 0) {
     return <div className="container" style={{ textAlign: 'center', marginTop: 50 }}>Loading...</div>;
@@ -847,7 +865,6 @@ export default function App() {
                       {config.categoryEmoji} {config.categoryName}
                       {!config.isVisible && <span style={{ color: '#888', fontSize: 12 }}> (hidden)</span>}
                     </h4>
-                    {config.specialMessage && <p style={{ margin: 0, fontSize: 12, color: '#888' }}>Has special empty-state message</p>}
                   </div>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button type="button" className="secondary" style={{ padding: '6px 10px' }}
@@ -862,6 +879,31 @@ export default function App() {
                       onClick={() => handleDeleteMenuConfig(config.id)}>🗑</button>
                   </div>
                 </div>
+                
+                {editingSpecialMsg === config.id ? (
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <textarea value={specialMsgValue} onChange={e => setSpecialMsgValue(e.target.value)} rows={3}
+                      placeholder="Custom message when no products available..."
+                      style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button type="button" style={{ background: '#28a745', width: 'auto', padding: '6px 12px' }}
+                        onClick={() => handleSaveSpecialMessage(config.id)}>Save</button>
+                      <button type="button" className="secondary" style={{ width: 'auto', padding: '6px 12px' }}
+                        onClick={() => setEditingSpecialMsg(null)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ width: '100%' }}>
+                    {config.specialMessage
+                      ? <p style={{ margin: '4px 0', fontSize: 12, color: '#aaa', fontStyle: 'italic' }}>"{config.specialMessage}"</p>
+                      : <p style={{ margin: '4px 0', fontSize: 12, color: '#666' }}>Uses default empty-state message</p>}
+                    <button type="button" className="secondary" style={{ padding: '4px 8px', fontSize: 12 }}
+                      onClick={() => { setEditingSpecialMsg(config.id); setSpecialMsgValue(config.specialMessage || ''); }}>
+                      ✏️ Edit Message
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
 
