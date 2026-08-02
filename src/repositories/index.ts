@@ -254,4 +254,13 @@ export class MenuConfigRepository {
         .where(eq(menuConfig.id, item.id));
     }
   }
+
+  /** Returns the Set of category IDs that are visible in any menu section. */
+  async getVisibleCategoryIds(): Promise<Set<number>> {
+    const rows = await this.db
+      .select({ categoryId: menuConfig.categoryId })
+      .from(menuConfig)
+      .where(eq(menuConfig.isVisible, true));
+    return new Set(rows.map(r => r.categoryId));
+  }
 }
