@@ -64,3 +64,9 @@ INSERT INTO branches (name, address, phone, opening_hours, is_active) VALUES
 INSERT INTO faq (question, answer) VALUES
   ('آیا قهوه تازه برشته دارید؟', 'بله، قهوه‌های ما هفته‌ای یک‌بار تازه برشته می‌شوند.'),
   ('آیا امکان ارسال دارید؟', 'بله، برای سفارش‌های بالای ۵۰۰ هزار تومان ارسال رایگان داریم.');
+
+-- Settings (initial values for the Mini App Settings tab)
+INSERT INTO settings (key, value) VALUES
+  ('about', 'به کافه آزادی خوش آمدید! ما یک رستری محلی با دو شعبه هستیم.'),
+  ('instagram', 'https://instagram.com/azadcoffee'),
+  ('phone', '054-XXXXXXXX');
