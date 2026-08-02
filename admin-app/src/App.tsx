@@ -3,6 +3,15 @@ import { retrieveLaunchParams } from '@telegram-apps/sdk';
 
 const API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="field">
+      <span className="field-label">{label}</span>
+      {children}
+    </label>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'content' | 'admins' | 'menu' | 'branches'>('products');
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -577,17 +586,27 @@ export default function App() {
             <div className="card">
               <h3>{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
               <form onSubmit={handleSaveProduct}>
-                <input placeholder="Name" value={prodName} onChange={e => setProdName(e.target.value)} required />
-                <input type="number" placeholder="Price" value={prodPrice} onChange={e => setProdPrice(e.target.value)} required />
-                <input type="number" placeholder="Stock" value={prodStock} onChange={e => setProdStock(e.target.value)} required />
-                <select value={prodCatId} onChange={e => setProdCatId(e.target.value)} required>
-                  {categories
-                    .filter(c => isSuperAdmin || c.id === allowedCatId)
-                    .map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-                <textarea placeholder="Description (Optional)" value={prodDesc} onChange={e => setProdDesc(e.target.value)} rows={2} />
+                <Field label="Name">
+                  <input placeholder="e.g. Espresso" value={prodName} onChange={e => setProdName(e.target.value)} required />
+                </Field>
+                <Field label="Price">
+                  <input type="number" placeholder="e.g. 150000" value={prodPrice} onChange={e => setProdPrice(e.target.value)} required />
+                </Field>
+                <Field label="Stock">
+                  <input type="number" placeholder="e.g. 20" value={prodStock} onChange={e => setProdStock(e.target.value)} required />
+                </Field>
+                <Field label="Category">
+                  <select value={prodCatId} onChange={e => setProdCatId(e.target.value)} required>
+                    {categories
+                      .filter(c => isSuperAdmin || c.id === allowedCatId)
+                      .map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Description (optional)">
+                  <textarea placeholder="Short description" value={prodDesc} onChange={e => setProdDesc(e.target.value)} rows={2} />
+                </Field>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
                   <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={prodAvailable} onChange={e => setProdAvailable(e.target.checked)} />
                   Available for sale
@@ -696,10 +715,18 @@ export default function App() {
             <div className="card">
               <h3>{editingCategory ? 'Edit Category' : 'Add New Category'}</h3>
               <form onSubmit={handleSaveCategory}>
-                <input placeholder="Name" value={catName} onChange={e => setCatName(e.target.value)} required />
-                <input placeholder="Emoji (e.g. ☕)" value={catEmoji} onChange={e => setCatEmoji(e.target.value)} />
-                <textarea placeholder="Description" value={catDesc} onChange={e => setCatDesc(e.target.value)} rows={2} />
-                <input type="number" placeholder="Sort Order" value={catSort} onChange={e => setCatSort(e.target.value)} />
+                <Field label="Name">
+                  <input placeholder="e.g. Hot Drinks" value={catName} onChange={e => setCatName(e.target.value)} required />
+                </Field>
+                <Field label="Emoji">
+                  <input placeholder="e.g. ☕" value={catEmoji} onChange={e => setCatEmoji(e.target.value)} />
+                </Field>
+                <Field label="Description">
+                  <textarea placeholder="Short description" value={catDesc} onChange={e => setCatDesc(e.target.value)} rows={2} />
+                </Field>
+                <Field label="Sort Order">
+                  <input type="number" placeholder="0" value={catSort} onChange={e => setCatSort(e.target.value)} />
+                </Field>
                 <div className="btn-group">
                   <button type="submit">{editingCategory ? 'Update' : 'Add'}</button>
                   {editingCategory && <button type="button" className="secondary" onClick={resetCategoryForm}>Cancel</button>}
@@ -736,16 +763,22 @@ export default function App() {
           <div className="card">
             <h3>Add Admin</h3>
             <form onSubmit={handleSaveAdmin}>
-              <input type="number" placeholder="Telegram User ID" value={adminId} onChange={e => setAdminId(e.target.value)} required />
-              <select value={adminRole} onChange={e => setAdminRole(e.target.value)} required>
-                <option value="super_admin">Super Admin</option>
-                <option value="category_admin">Category Admin</option>
-              </select>
-              {adminRole === 'category_admin' && (
-                <select value={adminCatId} onChange={e => setAdminCatId(e.target.value)} required>
-                  <option value="">Select Category</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <Field label="Telegram User ID">
+                <input type="number" placeholder="e.g. 123456789" value={adminId} onChange={e => setAdminId(e.target.value)} required />
+              </Field>
+              <Field label="Role">
+                <select value={adminRole} onChange={e => setAdminRole(e.target.value)} required>
+                  <option value="super_admin">Super Admin</option>
+                  <option value="category_admin">Category Admin</option>
                 </select>
+              </Field>
+              {adminRole === 'category_admin' && (
+                <Field label="Category">
+                  <select value={adminCatId} onChange={e => setAdminCatId(e.target.value)} required>
+                    <option value="">Select Category</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </Field>
               )}
               <button type="submit">Add Admin</button>
             </form>
@@ -773,11 +806,21 @@ export default function App() {
         <div className="card settings-container">
           <h3>Branches</h3>
           <form onSubmit={handleSaveBranch} style={{ marginBottom: 16 }}>
-            <input placeholder="Branch Name" value={branchName} onChange={e => setBranchName(e.target.value)} required />
-            <input placeholder="Address" value={branchAddress} onChange={e => setBranchAddress(e.target.value)} required />
-            <input placeholder="Phone (optional)" value={branchPhone} onChange={e => setBranchPhone(e.target.value)} />
-            <input placeholder="Maps URL / Coordinates" value={branchLocation} onChange={e => setBranchLocation(e.target.value)} />
-            <input placeholder="Opening Hours (e.g. 8:00-22:00)" value={branchHours} onChange={e => setBranchHours(e.target.value)} />
+            <Field label="Branch Name">
+              <input placeholder="e.g. Main Branch" value={branchName} onChange={e => setBranchName(e.target.value)} required />
+            </Field>
+            <Field label="Address">
+              <input placeholder="Street address" value={branchAddress} onChange={e => setBranchAddress(e.target.value)} required />
+            </Field>
+            <Field label="Phone (optional)">
+              <input placeholder="e.g. 09123456789" value={branchPhone} onChange={e => setBranchPhone(e.target.value)} />
+            </Field>
+            <Field label="Maps URL / Coordinates">
+              <input placeholder="https://maps.google.com/..." value={branchLocation} onChange={e => setBranchLocation(e.target.value)} />
+            </Field>
+            <Field label="Opening Hours">
+              <input placeholder="e.g. 8:00-22:00" value={branchHours} onChange={e => setBranchHours(e.target.value)} />
+            </Field>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
               <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={branchActive} onChange={e => setBranchActive(e.target.checked)} />
               Active
@@ -830,10 +873,14 @@ export default function App() {
           <div className="section">
             <h4>Frequently Asked Questions</h4>
             <form onSubmit={handleSaveFaq} style={{ marginBottom: 16 }}>
-              <textarea placeholder="Question" value={faqQuestion} onChange={e => setFaqQuestion(e.target.value)} rows={2} required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box', marginBottom: 8 }} />
-              <textarea placeholder="Answer" value={faqAnswer} onChange={e => setFaqAnswer(e.target.value)} rows={3} required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box', marginBottom: 8 }} />
+              <Field label="Question">
+                <textarea placeholder="e.g. ساعت کاری شما چقدر است؟" value={faqQuestion} onChange={e => setFaqQuestion(e.target.value)} rows={2} required dir="auto"
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }} />
+              </Field>
+              <Field label="Answer">
+                <textarea placeholder="Answer..." value={faqAnswer} onChange={e => setFaqAnswer(e.target.value)} rows={3} required dir="auto"
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }} />
+              </Field>
               <div className="btn-group">
                 <button type="submit">{editingFaq ? 'Update FAQ' : 'Add FAQ'}</button>
                 {editingFaq && <button type="button" className="secondary" onClick={resetFaqForm}>Cancel</button>}

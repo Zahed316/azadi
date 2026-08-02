@@ -211,6 +211,10 @@ button.secondary:hover {
 }
 
 /* Utilities */
+.field { display: block; margin-bottom: 12px; }
+.field-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
+.field input, .field select, .field textarea { margin-bottom: 0; }
+
 .toast {
   position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%);
   padding: 12px 20px; border-radius: 10px; z-index: 1100; font-weight: 500;
