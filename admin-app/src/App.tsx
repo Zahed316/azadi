@@ -602,6 +602,18 @@ export default function App() {
                   onChange={e => updateSetting('phone', e.target.value)} 
                 />
               </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>AI Assistant Greeting</label>
+                <textarea 
+                  value={settings.find(s => s.key === 'ai_greeting')?.value || ''} 
+                  onChange={e => updateSetting('ai_greeting', e.target.value)} 
+                  rows={4}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
+                  placeholder="پیام خوش‌آمدگویی دستیار هوشمند..."
+                />
+                <small style={{ color: '#888', fontSize: 11 }}>This text is shown when users click the AI Assistant button.</small>
+              </div>
             </div>
 
             <div className="section" style={{ marginTop: '24px' }}>
