@@ -3,6 +3,11 @@ import { retrieveLaunchParams } from '@telegram-apps/sdk';
 
 const API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
 
+const TAB_ICONS: Record<string, string> = {
+  products: '📦', categories: '🏷️', settings: '⚙️',
+  content: '📝', admins: '👥', menu: '📋', branches: '📍',
+};
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="field">
@@ -667,7 +672,7 @@ export default function App() {
                     </div>
                   )}
                   <div className="item-details">
-                    <h4>{p.name} {p.coffee_details ? '☕' : ''} {p.available ? '' : '(Hidden)'}</h4>
+                    <h4 dir="auto">{p.name} {p.coffee_details ? '☕' : ''} {p.available ? '' : '(Hidden)'}</h4>
                     <p>{p.price}T | Stock: {p.stock} | Cat: {cat ? cat.name : '?'}</p>
                   </div>
                   {canEdit ? (
@@ -747,8 +752,8 @@ export default function App() {
             {categories.map(c => (
               <div key={c.id} className="list-item">
                 <div className="item-details">
-                  <h4>{c.emoji} {c.name}</h4>
-                  {c.description && <p>{c.description}</p>}
+                  <h4 dir="auto">{c.emoji} {c.name}</h4>
+                  {c.description && <p dir="auto">{c.description}</p>}
                 </div>
                 {isSuperAdmin ? (
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -841,8 +846,8 @@ export default function App() {
           {branches.map(b => (
             <div key={b.id} className="list-item">
               <div className="item-details">
-                <h4>{b.name} {!b.isActive && <span style={{ color: '#888' }}>(Inactive)</span>}</h4>
-                <p>{b.address}</p>
+                <h4 dir="auto">{b.name} {!b.isActive && <span style={{ color: '#888' }}>(Inactive)</span>}</h4>
+                <p dir="auto">{b.address}</p>
                 {b.phone && <p style={{ margin: 0, fontSize: 12 }}>📞 {b.phone}</p>}
                 {b.openingHours && <p style={{ margin: 0, fontSize: 12 }}>🕐 {b.openingHours}</p>}
               </div>
@@ -897,8 +902,8 @@ export default function App() {
             {faqs.map(f => (
               <div key={f.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
                 <div className="item-details" style={{ width: '100%' }}>
-                  <h4>❓ {f.question}</h4>
-                  <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: 13, color: '#ccc' }}>{f.answer}</p>
+                  <h4 dir="auto">❓ {f.question}</h4>
+                  <p dir="auto" style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: 13, color: '#ccc' }}>{f.answer}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditFaq(f)}>Edit</button>
@@ -1074,27 +1079,27 @@ export default function App() {
       {/* Bottom Navigation */}
       <div className="bottom-nav">
         <button className={`nav-item ${activeTab === 'products' ? 'active' : ''}`} onClick={() => { setActiveTab('products'); window.scrollTo(0,0); }}>
-          Products
+          <span className="nav-icon">{TAB_ICONS.products}</span>Products
         </button>
         <button className={`nav-item ${activeTab === 'categories' ? 'active' : ''}`} onClick={() => { setActiveTab('categories'); window.scrollTo(0,0); }}>
-          Categories
+          <span className="nav-icon">{TAB_ICONS.categories}</span>Categories
         </button>
         {isSuperAdmin && (
           <>
             <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => { setActiveTab('settings'); window.scrollTo(0,0); }}>
-              Settings
+              <span className="nav-icon">{TAB_ICONS.settings}</span>Settings
             </button>
             <button className={`nav-item ${activeTab === 'branches' ? 'active' : ''}`} onClick={() => { setActiveTab('branches'); window.scrollTo(0,0); }}>
-              Branches
+              <span className="nav-icon">{TAB_ICONS.branches}</span>Branches
             </button>
             <button className={`nav-item ${activeTab === 'content' ? 'active' : ''}`} onClick={() => { setActiveTab('content'); window.scrollTo(0,0); }}>
-              Content
+              <span className="nav-icon">{TAB_ICONS.content}</span>Content
             </button>
             <button className={`nav-item ${activeTab === 'admins' ? 'active' : ''}`} onClick={() => { setActiveTab('admins'); window.scrollTo(0,0); }}>
-              Admins
+              <span className="nav-icon">{TAB_ICONS.admins}</span>Admins
             </button>
             <button className={`nav-item ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => { setActiveTab('menu'); window.scrollTo(0,0); }}>
-              Menu
+              <span className="nav-icon">{TAB_ICONS.menu}</span>Menu
             </button>
           </>
         )}
