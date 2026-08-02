@@ -211,6 +211,16 @@ button.secondary:hover {
 }
 
 /* Utilities */
+/* Loading + empty states */
+.loading-screen { display: flex; flex-direction: column; align-items: center; margin-top: 80px; gap: 12px; color: var(--text-muted); }
+.spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--primary);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { text-align: center; color: var(--text-muted); padding: 32px 16px; }
+
 .field { display: block; margin-bottom: 12px; }
 .field-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
 .field input, .field select, .field textarea { margin-bottom: 0; }

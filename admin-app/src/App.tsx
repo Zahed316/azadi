@@ -562,7 +562,12 @@ export default function App() {
 
 
   if (loading && products.length === 0) {
-    return <div className="container" style={{ textAlign: 'center', marginTop: 50 }}>Loading...</div>;
+    return (
+      <div className="container loading-screen">
+        <div className="spinner" />
+        <p>Loading…</p>
+      </div>
+    );
   }
 
   return (
@@ -644,6 +649,7 @@ export default function App() {
 
           <div className="card">
             <h3>All Products</h3>
+            {products.length === 0 && !loading && <div className="empty-state">No products yet.</div>}
             {products.map(p => {
               const cat = categories.find(c => c.id === p.categoryId);
               const canEdit = isSuperAdmin || p.categoryId === allowedCatId;
@@ -737,6 +743,7 @@ export default function App() {
 
           <div className="card">
             <h3>All Categories</h3>
+            {categories.length === 0 && !loading && <div className="empty-state">No categories yet.</div>}
             {categories.map(c => (
               <div key={c.id} className="list-item">
                 <div className="item-details">
@@ -785,6 +792,7 @@ export default function App() {
           </div>
           <div className="card">
             <h3>Current Admins</h3>
+            {admins.length === 0 && !loading && <div className="empty-state">No admins yet.</div>}
             {admins.map(a => {
               const cat = categories.find(c => c.id === a.categoryId);
               return (
@@ -844,7 +852,7 @@ export default function App() {
               </div>
             </div>
           ))}
-          {branches.length === 0 && <p style={{ color: '#888' }}>No branches yet.</p>}
+          {branches.length === 0 && !loading && <div className="empty-state">No branches yet.</div>}
         </div>
       )}
 
@@ -898,7 +906,7 @@ export default function App() {
                 </div>
               </div>
             ))}
-            {faqs.length === 0 && <p style={{ color: '#888' }}>No FAQs yet.</p>}
+            {faqs.length === 0 && !loading && <div className="empty-state">No FAQs yet.</div>}
           </div>
         </div>
       )}
