@@ -72,26 +72,14 @@ export function createBot(env: Env) {
   bot.use(mainMenu);
 
   // Define commands
-  bot.command(["start", "restart"], async (ctx) => {
+  bot.command("start", async (ctx) => {
     await ctx.conversation.exitAll();
-    return ctx.reply("به روستری قهوه آزادی خوش آمدید! ☕\n\nچطور می‌توانم کمکتان کنم؟", {
-      reply_markup: mainMenu,
-    });
-  });
-
-  bot.command("cancel", async (ctx) => {
-    const active = (ctx.conversation.active() || {}) as Record<string, number>;
-    const hasActive = Object.values(active).some(count => count > 0);
-    if (hasActive) {
-      await ctx.conversation.exitAll();
-      await ctx.reply("❌ لغو شد. برای بازگشت به منوی اصلی از /start استفاده کنید.");
-    } else {
-      await ctx.reply("هیچ عملیات فعالی برای لغو وجود ندارد.");
-    }
-  });
-
-  bot.command("help", (ctx) => {
-    return ctx.reply("<b>دستورات موجود:</b>\n\n/start - منوی اصلی\n/help - نمایش این پیام راهنما\n\n<b>دستورات مدیریت:</b>\n/add_product - افزودن محصول\n/update_stock - به‌روزرسانی موجودی\n/toggle_product - تغییر وضعیت محصول\n/delete_product - حذف محصول\n/list_products - لیست همه محصولات\n/add_faq - افزودن سوال متداول\n/delete_faq - حذف سوال متداول\n/add_branch - افزودن شعبه\n/delete_branch - حذف شعبه\n/list_branches - لیست شعب", { parse_mode: "HTML" });
+    return ctx.reply(
+      "به روستری قهوه آزادی خوش آمدید! ☕\n\n" +
+      "از منوی زیر می‌توانید نوشیدنی‌ها، دانه‌های قهوه، کیک و کوکی، شعب و سوالات متداول را ببینید.\n" +
+      "یا همین‌جا سوالتان را بنویسید تا دستیار هوشمند پاسخ دهد. 🤖",
+      { reply_markup: mainMenu }
+    );
   });
 
   setupAdminCommands(bot, env);

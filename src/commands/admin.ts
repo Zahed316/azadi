@@ -21,7 +21,6 @@ export function setupAdminCommands(bot: Bot<MyContext>, env: Env) {
     try {
       await ctx.api.setMyCommands([
         { command: 'start', description: 'باز کردن منوی اصلی' },
-        { command: 'help', description: 'نمایش راهنما' },
         { command: 'admin', description: 'پنل مدیریت (فقط ادمین)' }
       ]);
       await ctx.reply("✅ دستورات با موفقیت ثبت شدند.");
