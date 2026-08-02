@@ -54,10 +54,15 @@ npm run build    # tsc + vite build
 
 ## Conventions
 - All user-facing bot text is in **Persian (Farsi)**, using HTML parse mode.
+- **Numbers in bot messages are Persian digits.** Use `toPersianDigits()` and `formatPersianPrice()` from `src/utils/numbers.ts` — never interpolate raw numbers into Persian text. `formatPersianPrice(amount, unit)` wraps the price in LRI/PDI (U+2066/U+2069) bidi isolates so the price run stays LTR inside RTL sentences; keep the isolates.
+- **Price unit is editable** via the `price_unit` key in the `settings` table (admin app Settings tab). Bot code reads it through `SettingsRepository.getValue('price_unit')` with `DEFAULT_PRICE_UNIT` (`تومان`) as coded fallback. Phone numbers and opening hours stay Latin digits (dial-ability); prices, stock counts, and page numbers go Persian.
 - Repositories: one class per table group, constructor takes `d1Binding: any`.
 - Tests: `src/tests/*.test.ts`, use vitest (`import { expect, test } from 'vitest'`). No vitest config file — uses defaults.
 - Drizzle schema uses `sqliteTable` with explicit column name strings matching snake_case DB columns.
 - Error handling: catch blocks log to `console.error`, reply with Persian error messages to users.
+- Bot commands: only `/start` and `/admin` are registered. Do not re-add `/help` or `/cancel` without updating `setMyCommands` in `src/commands/admin.ts`.
+- Menu navigation: category/product lists use `editMessageText(...).catch(() => ctx.reply(...))` to edit in place with a fresh-reply fallback. Detail replies carry a `back:main` inline button handled in `src/handlers/callbackQuery.ts`.
+- Admin app UX patterns: toast notifications via `showToast()` (never `alert()`), form fields wrapped in the `<Field label>` component (placeholder is a hint, not a label), every list renders an `.empty-state` block when empty, Persian data elements get `dir="auto"` while chrome stays English.
 
 ## Common Workflows
 Document frequently used workflows and commands here.
