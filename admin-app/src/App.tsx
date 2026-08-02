@@ -936,11 +936,23 @@ export default function App() {
 
               <div style={{ marginBottom: 12 }}>
                 <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>Contact Phone</label>
-                <input 
+                <input
                   type="text"
-                  value={settings.find(s => s.key === 'phone')?.value || ''} 
-                  onChange={e => updateSetting('phone', e.target.value)} 
+                  value={settings.find(s => s.key === 'phone')?.value || ''}
+                  onChange={e => updateSetting('phone', e.target.value)}
                 />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>Price Unit</label>
+                <input
+                  type="text"
+                  value={settings.find(s => s.key === 'price_unit')?.value || ''}
+                  onChange={e => updateSetting('price_unit', e.target.value)}
+                  placeholder="تومان"
+                  dir="auto"
+                />
+                <small style={{ color: '#888', fontSize: 11 }}>Shown after prices in the bot, e.g. تومان or ریال. Defaults to تومان if empty.</small>
               </div>
 
               <div style={{ marginBottom: 12 }}>
@@ -958,7 +970,7 @@ export default function App() {
 
             <div className="section" style={{ marginTop: '24px' }}>
               <h4>Custom Settings</h4>
-              {settings.filter(s => !['about', 'instagram', 'phone'].includes(s.key)).map(s => (
+              {settings.filter(s => !['about', 'instagram', 'phone', 'ai_greeting', 'price_unit'].includes(s.key)).map(s => (
                 <div key={s.key} style={{ marginBottom: 12, display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>{s.key}</label>

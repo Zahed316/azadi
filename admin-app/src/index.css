@@ -181,6 +181,12 @@ button.secondary:hover {
   flex-wrap: wrap;
 }
 
+/* When the on-screen keyboard opens (short viewport), let the bar flow
+   in-document instead of covering the bottom nav. */
+@media (max-height: 500px) {
+  .batch-bar { position: static; }
+}
+
 .batch-bar select, .batch-bar button {
   background: rgba(0, 0, 0, 0.5);
   color: white;
