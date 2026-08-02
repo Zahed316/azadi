@@ -32,3 +32,30 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           command: deploy
+
+  deploy-admin-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: admin-app/package-lock.json
+
+      - name: Install admin-app dependencies
+        working-directory: admin-app
+        run: npm ci
+
+      - name: Build admin-app
+        working-directory: admin-app
+        run: npm run build
+
+      - name: Deploy admin-app to Cloudflare Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          command: pages deploy admin-app/dist --project-name=azadi-admin
