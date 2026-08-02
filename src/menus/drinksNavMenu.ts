@@ -1,6 +1,6 @@
-import { Menu, MenuRange } from '@grammyjs/menu';
+import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { ProductRepository, CategoryRepository } from '../repositories';
+import { ProductRepository, MenuConfigRepository } from '../repositories';
 import { MyContext } from '../types/context';
 
 const VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
@@ -8,23 +8,22 @@ const VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات
 export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   .dynamic(async (ctx, range) => {
     try {
-      const catRepo = new CategoryRepository(ctx.env.DB);
-      const categories = await catRepo.getAllCategories();
-      
-      // Exclude Cakes & Cookies (8), Beans (9), and Equipment (10)
-      const drinkCategories = categories.filter((c: any) => ![8, 9, 10].includes(c.id));
+      const menuRepo = new MenuConfigRepository(ctx.env.DB);
+      const configs = await menuRepo.getBySection('drinks');
 
-      for (const cat of drinkCategories) {
-        range.text(`${cat.emoji ? cat.emoji + ' ' : ''}${cat.name}`, async (ctx) => {
+      for (const config of configs) {
+        const label = config.buttonLabel
+          ?? `${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}`;
+        range.text(label, async (ctx) => {
           try {
             const pRepo = new ProductRepository(ctx.env.DB);
-            const items = await pRepo.getProductsByCategory(cat.id);
+            const items = await pRepo.getProductsByCategory(config.categoryId);
 
             if (items.length === 0) {
-              if (cat.id === 7) {
-                await ctx.reply('☕ <b>قهوه‌های دمی تخصصی</b>\n\nبرای اطلاع از قهوه‌های دمی تخصصی امروز از باریستا سوال کنید.' + VAT_NOTE, { parse_mode: 'HTML' });
+              if (config.specialMessage) {
+                await ctx.reply(config.specialMessage, { parse_mode: 'HTML' });
               } else {
-                await ctx.reply(`در حال حاضر ${cat.name} موجود نیست.`);
+                await ctx.reply(`در حال حاضر ${config.categoryName} موجود نیست.`);
               }
               return;
             }
@@ -36,7 +35,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
               kb.text(`${p.name}${seasonal} — ${priceLabel}`, `product:${p.id}`).row();
             }
 
-            await ctx.reply(`<b>${cat.emoji ? cat.emoji + ' ' : ''}${cat.name}</b>${VAT_NOTE}`, { parse_mode: 'HTML', reply_markup: kb });
+            await ctx.reply(`<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}</b>${VAT_NOTE}`, { parse_mode: 'HTML', reply_markup: kb });
           } catch (e) {
             console.error(e);
             await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات ناموفق بود.' }).catch(() => {});

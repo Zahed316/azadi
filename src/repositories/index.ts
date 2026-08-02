@@ -1,5 +1,5 @@
 import { getDb } from '../database/client';
-import { products, categories, branches, faq, settings, aiConversationLogs, coffeeDetails } from '../database/schema';
+import { products, categories, branches, faq, settings, aiConversationLogs, coffeeDetails, menuConfig } from '../database/schema';
 import { eq, and, desc } from 'drizzle-orm';
 
 export class ProductRepository {
@@ -181,5 +181,77 @@ export class AiLogRepository {
       .where(eq(aiConversationLogs.userId, userId))
       .orderBy(desc(aiConversationLogs.timestamp))
       .limit(limit);
+  }
+}
+
+export class MenuConfigRepository {
+  private db: ReturnType<typeof getDb>;
+
+  constructor(d1Binding: any) {
+    this.db = getDb(d1Binding);
+  }
+
+  /** Get all visible entries for a section with joined category data */
+  async getBySection(section: string) {
+    return await this.db
+      .select({
+        id:              menuConfig.id,
+        categoryId:      menuConfig.categoryId,
+        menuSection:     menuConfig.menuSection,
+        displayOrder:    menuConfig.displayOrder,
+        isVisible:       menuConfig.isVisible,
+        buttonLabel:     menuConfig.buttonLabel,
+        specialMessage:  menuConfig.specialMessage,
+        categoryName:    categories.name,
+        categoryEmoji:   categories.emoji,
+      })
+      .from(menuConfig)
+      .leftJoin(categories, eq(menuConfig.categoryId, categories.id))
+      .where(and(eq(menuConfig.menuSection, section), eq(menuConfig.isVisible, true)))
+      .orderBy(menuConfig.displayOrder);
+  }
+
+  /** Get all entries (admin UI — includes hidden) */
+  async getAll() {
+    return await this.db
+      .select({
+        id:              menuConfig.id,
+        categoryId:      menuConfig.categoryId,
+        menuSection:     menuConfig.menuSection,
+        displayOrder:    menuConfig.displayOrder,
+        isVisible:       menuConfig.isVisible,
+        buttonLabel:     menuConfig.buttonLabel,
+        specialMessage:  menuConfig.specialMessage,
+        categoryName:    categories.name,
+        categoryEmoji:   categories.emoji,
+      })
+      .from(menuConfig)
+      .leftJoin(categories, eq(menuConfig.categoryId, categories.id))
+      .orderBy(menuConfig.menuSection, menuConfig.displayOrder);
+  }
+
+  async add(data: typeof menuConfig.$inferInsert) {
+    return await this.db.insert(menuConfig).values(data).returning();
+  }
+
+  async update(id: number, data: Partial<typeof menuConfig.$inferInsert>) {
+    return await this.db
+      .update(menuConfig)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(menuConfig.id, id))
+      .returning();
+  }
+
+  async delete(id: number) {
+    return await this.db.delete(menuConfig).where(eq(menuConfig.id, id)).returning();
+  }
+
+  async reorder(items: { id: number; displayOrder: number }[]) {
+    for (const item of items) {
+      await this.db
+        .update(menuConfig)
+        .set({ displayOrder: item.displayOrder, updatedAt: new Date() })
+        .where(eq(menuConfig.id, item.id));
+    }
   }
 }

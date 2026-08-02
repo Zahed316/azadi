@@ -4,7 +4,7 @@ import { retrieveLaunchParams } from '@telegram-apps/sdk';
 const API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'admins'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'admins' | 'menu'>('products');
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   const [products, setProducts] = useState<any[]>([]);
@@ -20,6 +20,11 @@ export default function App() {
   const [batchAction, setBatchAction] = useState<'move' | 'toggle' | 'delete' | ''>('');
   const [batchTargetCatId, setBatchTargetCatId] = useState('');
   const [batchToggleValue, setBatchToggleValue] = useState('true');
+
+  // Menu Config
+  const [menuConfigs, setMenuConfigs] = useState<any[]>([]);
+  const [menuActiveSection, setMenuActiveSection] = useState<'drinks'|'beans'|'cakes'|'extras'>('drinks');
+  const [menuAddCatId, setMenuAddCatId] = useState('');
 
   // Edit states
   const [editingCategory, setEditingCategory] = useState<any>(null);
@@ -91,9 +96,10 @@ export default function App() {
 
       // 3. Fetch SuperAdmin specific data
       if (isSuper) {
-        const [setRes, admRes] = await Promise.all([
+        const [setRes, admRes, menuRes] = await Promise.all([
           fetch(`${API_BASE}/settings`, { headers }),
-          fetch(`${API_BASE}/admins`, { headers })
+          fetch(`${API_BASE}/admins`, { headers }),
+          fetch(`${API_BASE}/menu-config`, { headers })
         ]);
         if (setRes.ok) {
           const s = await setRes.json();
@@ -102,6 +108,10 @@ export default function App() {
         if (admRes.ok) {
           const a = await admRes.json();
           setAdmins(a.admins || []);
+        }
+        if (menuRes.ok) {
+          const m = await menuRes.json();
+          setMenuConfigs(m.menuConfigs || []);
         }
       }
     } catch (err: any) {
@@ -308,6 +318,63 @@ export default function App() {
     } catch (err: any) { setError(err.message); }
   };
 
+  // -- MENU CONFIG --
+  const handleToggleMenuVisibility = async (config: any) => {
+    try {
+      await fetch(`${API_BASE}/menu-config/${config.id}`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ ...config, isVisible: !config.isVisible }),
+      });
+      await fetchData();
+    } catch (err: any) { setError(err.message); }
+  };
+
+  const handleMenuReorder = async (id: number, direction: 'up' | 'down') => {
+    const sectionItems = menuConfigs
+      .filter((c: any) => c.menuSection === menuActiveSection)
+      .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
+    const idx = sectionItems.findIndex((c: any) => c.id === id);
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= sectionItems.length) return;
+    const items = [
+      { id: sectionItems[idx].id,     displayOrder: sectionItems[swapIdx].displayOrder },
+      { id: sectionItems[swapIdx].id, displayOrder: sectionItems[idx].displayOrder },
+    ];
+    try {
+      await fetch(`${API_BASE}/menu-config/reorder`, {
+        method: 'POST', headers, body: JSON.stringify({ items }),
+      });
+      await fetchData();
+    } catch (err: any) { setError(err.message); }
+  };
+
+  const handleDeleteMenuConfig = async (id: number) => {
+    if (!confirm('Remove from menu?')) return;
+    try {
+      await fetch(`${API_BASE}/menu-config/${id}`, { method: 'DELETE', headers });
+      await fetchData();
+    } catch (err: any) { setError(err.message); }
+  };
+
+  const handleAddToSection = async () => {
+    if (!menuAddCatId) return;
+    const sectionItems = menuConfigs.filter((c: any) => c.menuSection === menuActiveSection);
+    const maxOrder = sectionItems.reduce((m: number, c: any) => Math.max(m, c.displayOrder), 0);
+    try {
+      await fetch(`${API_BASE}/menu-config`, {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          categoryId: parseInt(menuAddCatId),
+          menuSection: menuActiveSection,
+          displayOrder: maxOrder + 1,
+          isVisible: true,
+        }),
+      });
+      setMenuAddCatId('');
+      await fetchData();
+    } catch (err: any) { setError(err.message); }
+  };
+
 
   if (loading && products.length === 0) {
     return <div className="container" style={{ textAlign: 'center', marginTop: 50 }}>Loading...</div>;
@@ -316,9 +383,10 @@ export default function App() {
   return (
     <div className="container" style={{ paddingBottom: selectedProductIds.length > 0 ? '120px' : '80px' }}>
       <h2>
-        {activeTab === 'products' ? 'Products' : 
-         activeTab === 'categories' ? 'Categories' : 
-         activeTab === 'settings' ? 'Settings' : 'Admins'}
+        {activeTab === 'products' ? 'Products' :
+         activeTab === 'categories' ? 'Categories' :
+         activeTab === 'settings' ? 'Settings' :
+         activeTab === 'menu' ? 'Bot Menu' : 'Admins'}
          {currentUser && <span style={{fontSize: 12, marginLeft: 10, background: '#333', padding: '2px 6px', borderRadius: 4}}>{currentUser.role}</span>}
       </h2>
       {error && <div className="error">{error}</div>}
@@ -570,6 +638,68 @@ export default function App() {
         </div>
       )}
 
+      {/* MENU TAB */}
+      {activeTab === 'menu' && isSuperAdmin && (
+        <div className="card">
+          <h3>Bot Menu Configuration</h3>
+
+          {/* Section selector */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+            {(['drinks', 'beans', 'cakes', 'extras'] as const).map(s => (
+              <button key={s} type="button"
+                style={{ background: menuActiveSection === s ? '#4a9eff' : '#333', padding: '8px 16px', width: 'auto' }}
+                onClick={() => setMenuActiveSection(s)}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Items in this section */}
+          {menuConfigs
+            .filter((c: any) => c.menuSection === menuActiveSection)
+            .sort((a: any, b: any) => a.displayOrder - b.displayOrder)
+            .map((config: any) => (
+              <div key={config.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                  <div>
+                    <h4 style={{ margin: 0 }}>
+                      {config.categoryEmoji} {config.categoryName}
+                      {!config.isVisible && <span style={{ color: '#888', fontSize: 12 }}> (hidden)</span>}
+                    </h4>
+                    {config.specialMessage && <p style={{ margin: 0, fontSize: 12, color: '#888' }}>Has special empty-state message</p>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button type="button" className="secondary" style={{ padding: '6px 10px' }}
+                      onClick={() => handleToggleMenuVisibility(config)}>
+                      {config.isVisible ? '👁 Hide' : '👁 Show'}
+                    </button>
+                    <button type="button" className="secondary" style={{ padding: '6px 10px' }}
+                      onClick={() => handleMenuReorder(config.id, 'up')}>↑</button>
+                    <button type="button" className="secondary" style={{ padding: '6px 10px' }}
+                      onClick={() => handleMenuReorder(config.id, 'down')}>↓</button>
+                    <button type="button" className="danger" style={{ padding: '6px 10px' }}
+                      onClick={() => handleDeleteMenuConfig(config.id)}>🗑</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+          {/* Add to section */}
+          <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>Add category to {menuActiveSection}</label>
+              <select value={menuAddCatId} onChange={e => setMenuAddCatId(e.target.value)}>
+                <option value="">Select category...</option>
+                {categories.map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
+                ))}
+              </select>
+            </div>
+            <button type="button" style={{ background: '#28a745', width: 'auto' }} onClick={handleAddToSection}>Add</button>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Navigation */}
       <div className="bottom-nav">
         <button className={`nav-item ${activeTab === 'products' ? 'active' : ''}`} onClick={() => { setActiveTab('products'); window.scrollTo(0,0); }}>
@@ -585,6 +715,9 @@ export default function App() {
             </button>
             <button className={`nav-item ${activeTab === 'admins' ? 'active' : ''}`} onClick={() => { setActiveTab('admins'); window.scrollTo(0,0); }}>
               Admins
+            </button>
+            <button className={`nav-item ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => { setActiveTab('menu'); window.scrollTo(0,0); }}>
+              Menu
             </button>
           </>
         )}

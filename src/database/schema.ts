@@ -81,3 +81,15 @@ export const admins = sqliteTable('admins', {
   role: text('role').notNull().default('super_admin'), // super_admin or category_admin
   categoryId: integer('category_id').references(() => categories.id) // Restricted category
 });
+
+export const menuConfig = sqliteTable('menu_config', {
+  id:             integer('id').primaryKey({ autoIncrement: true }),
+  categoryId:     integer('category_id').references(() => categories.id).notNull(),
+  menuSection:    text('menu_section').notNull(),  // 'drinks'|'beans'|'cakes'|'extras'
+  displayOrder:   integer('display_order').default(0).notNull(),
+  isVisible:      integer('is_visible', { mode: 'boolean' }).default(true).notNull(),
+  buttonLabel:    text('button_label'),
+  specialMessage: text('special_message'),
+  createdAt:      integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt:      integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
