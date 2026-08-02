@@ -15,7 +15,7 @@ const unitMap: Record<string, string> = {
 export function formatProduct(p: any, priceUnit: string = DEFAULT_PRICE_UNIT): string {
   let text = `📦 <b>${p.name}</b>\n`;
   if (p.description) text += `\n${p.description}\n`;
-  if (p.priceOnRequest) {
+  if (p.priceOnRequest || p.price == null) {
     text += `\n💰 قیمت: سوال در کافه`;
   } else {
     text += `\n💰 قیمت: ${formatPersianPrice(p.price, priceUnit)}`;

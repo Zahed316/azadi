@@ -1,6 +1,6 @@
 import { Bot } from 'grammy';
-import { BranchRepository, ProductRepository } from '../repositories';
-import { formatBranch, formatProduct } from '../utils/formatters';
+import { BranchRepository, ProductRepository, SettingsRepository } from '../repositories';
+import { formatBranch, formatProduct, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { MyContext } from '../types/context';
 
 export function setupCallbackHandlers(bot: Bot<MyContext>) {
@@ -29,7 +29,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       const repo = new ProductRepository(ctx.env.DB);
       const product = await repo.getProductById(id);
       if (product) {
-        await ctx.reply(formatProduct(product), { parse_mode: 'HTML' });
+        const priceUnit = (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+        await ctx.reply(formatProduct(product, priceUnit), { parse_mode: 'HTML' });
       } else {
         await ctx.reply("محصول مورد نظر یافت نشد.");
       }

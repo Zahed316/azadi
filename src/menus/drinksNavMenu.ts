@@ -1,9 +1,9 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { ProductRepository, MenuConfigRepository } from '../repositories';
+import { ProductRepository, MenuConfigRepository, SettingsRepository } from '../repositories';
+import { VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
+import { formatPersianPrice } from '../utils/numbers';
 import { MyContext } from '../types/context';
-
-const VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
 
 export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   .dynamic(async (ctx, range) => {
@@ -28,9 +28,10 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
               return;
             }
 
+            const priceUnit = (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
             const kb = new InlineKeyboard();
             for (const p of items) {
-              const priceLabel = p.priceOnRequest ? '(سوال در کافه)' : `${p.price} T`;
+              const priceLabel = (p.priceOnRequest || p.price == null) ? '(سوال در کافه)' : formatPersianPrice(p.price, priceUnit);
               const seasonal = p.isSeasonal ? ' 🌿' : '';
               kb.text(`${p.name}${seasonal} — ${priceLabel}`, `product:${p.id}`).row();
             }
