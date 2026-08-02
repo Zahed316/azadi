@@ -47,6 +47,26 @@ export class ProductRepository {
   async toggleAvailability(id: number, available: boolean) {
     return await this.db.update(products).set({ available, updatedAt: new Date() }).where(eq(products.id, id)).returning();
   }
+
+  async setCoffeeDetails(productId: number, details: {
+    origin?: string | null;
+    farm?: string | null;
+    altitude?: string | null;
+    processing?: string | null;
+    variety?: string | null;
+    roastLevel?: string | null;
+    flavorNotes?: string | null;
+    recommendedBrew?: string | null;
+    acidity?: string | null;
+    body?: string | null;
+  } | null) {
+    // Delete existing details first
+    await this.db.delete(coffeeDetails).where(eq(coffeeDetails.productId, productId));
+    // Insert new details if provided
+    if (details) {
+      await this.db.insert(coffeeDetails).values({ productId, ...details });
+    }
+  }
 }
 
 export class CategoryRepository {

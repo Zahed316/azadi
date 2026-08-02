@@ -4,7 +4,7 @@ import { retrieveLaunchParams } from '@telegram-apps/sdk';
 const API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'admins' | 'menu'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'content' | 'admins' | 'menu'>('products');
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   const [products, setProducts] = useState<any[]>([]);
@@ -46,6 +46,19 @@ export default function App() {
   const [prodCatId, setProdCatId] = useState('');
   const [prodDesc, setProdDesc] = useState('');
   const [prodAvailable, setProdAvailable] = useState(true);
+
+  // Coffee Details
+  const [isCoffeeBean, setIsCoffeeBean] = useState(false);
+  const [coffeeOrigin, setCoffeeOrigin] = useState('');
+  const [coffeeFarm, setCoffeeFarm] = useState('');
+  const [coffeeAltitude, setCoffeeAltitude] = useState('');
+  const [coffeeProcessing, setCoffeeProcessing] = useState('');
+  const [coffeeVariety, setCoffeeVariety] = useState('');
+  const [coffeeRoastLevel, setCoffeeRoastLevel] = useState('');
+  const [coffeeFlavorNotes, setCoffeeFlavorNotes] = useState('');
+  const [coffeeRecommendedBrew, setCoffeeRecommendedBrew] = useState('');
+  const [coffeeAcidity, setCoffeeAcidity] = useState('');
+  const [coffeeBody, setCoffeeBody] = useState('');
 
   const [adminId, setAdminId] = useState('');
   const [adminRole, setAdminRole] = useState('category_admin');
@@ -177,6 +190,23 @@ export default function App() {
   };
 
   // -- PRODUCTS LOGIC --
+
+  const buildCoffeeDetails = () => {
+    if (!isCoffeeBean) return null;
+    const details: Record<string, string | null> = {};
+    const fields = [
+      ['origin', coffeeOrigin], ['farm', coffeeFarm], ['altitude', coffeeAltitude],
+      ['processing', coffeeProcessing], ['variety', coffeeVariety],
+      ['roastLevel', coffeeRoastLevel], ['flavorNotes', coffeeFlavorNotes],
+      ['recommendedBrew', coffeeRecommendedBrew], ['acidity', coffeeAcidity],
+      ['body', coffeeBody]
+    ] as const;
+    for (const [key, val] of fields) {
+      details[key] = val || null;
+    }
+    return details;
+  };
+
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -187,7 +217,8 @@ export default function App() {
         stock: parseInt(prodStock),
         categoryId: parseInt(prodCatId),
         description: prodDesc,
-        available: prodAvailable
+        available: prodAvailable,
+        coffeeDetails: buildCoffeeDetails()
       });
 
       const url = editingProduct ? `${API_BASE}/products/${editingProduct.id}` : `${API_BASE}/products`;
@@ -222,16 +253,29 @@ export default function App() {
     setProdCatId(p.categoryId?.toString() || '');
     setProdDesc(p.description || '');
     setProdAvailable(p.available);
+    // Coffee details
+    const cd = p.coffee_details;
+    setIsCoffeeBean(!!cd);
+    setCoffeeOrigin(cd?.origin || '');
+    setCoffeeFarm(cd?.farm || '');
+    setCoffeeAltitude(cd?.altitude || '');
+    setCoffeeProcessing(cd?.processing || '');
+    setCoffeeVariety(cd?.variety || '');
+    setCoffeeRoastLevel(cd?.roastLevel || '');
+    setCoffeeFlavorNotes(cd?.flavorNotes || '');
+    setCoffeeRecommendedBrew(cd?.recommendedBrew || '');
+    setCoffeeAcidity(cd?.acidity || '');
+    setCoffeeBody(cd?.body || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetProductForm = () => {
     setEditingProduct(null);
-    setProdName('');
-    setProdPrice('');
-    setProdStock('');
-    setProdDesc('');
-    setProdAvailable(true);
+    setProdName(''); setProdPrice(''); setProdStock(''); setProdDesc(''); setProdAvailable(true);
+    setIsCoffeeBean(false);
+    setCoffeeOrigin(''); setCoffeeFarm(''); setCoffeeAltitude(''); setCoffeeProcessing('');
+    setCoffeeVariety(''); setCoffeeRoastLevel(''); setCoffeeFlavorNotes('');
+    setCoffeeRecommendedBrew(''); setCoffeeAcidity(''); setCoffeeBody('');
   };
 
   // -- CATEGORIES LOGIC --
@@ -506,6 +550,7 @@ export default function App() {
         {activeTab === 'products' ? 'Products' :
          activeTab === 'categories' ? 'Categories' :
          activeTab === 'settings' ? 'Settings' :
+         activeTab === 'content' ? 'Content' :
          activeTab === 'menu' ? 'Bot Menu' : 'Admins'}
          {currentUser && <span style={{fontSize: 12, marginLeft: 10, background: '#333', padding: '2px 6px', borderRadius: 4}}>{currentUser.role}</span>}
       </h2>
@@ -533,6 +578,29 @@ export default function App() {
                   <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={prodAvailable} onChange={e => setProdAvailable(e.target.checked)} />
                   Available for sale
                 </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
+                  <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={isCoffeeBean}
+                    onChange={e => setIsCoffeeBean(e.target.checked)} />
+                  ☕ This is a Coffee Bean
+                </label>
+
+                {isCoffeeBean && (
+                  <div style={{ border: '1px solid #444', borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                    <h4 style={{ margin: '0 0 8px' }}>Coffee Details</h4>
+                    <input placeholder="Origin (e.g. Ethiopia)" value={coffeeOrigin} onChange={e => setCoffeeOrigin(e.target.value)} />
+                    <input placeholder="Farm" value={coffeeFarm} onChange={e => setCoffeeFarm(e.target.value)} />
+                    <input placeholder="Altitude (e.g. 1800m)" value={coffeeAltitude} onChange={e => setCoffeeAltitude(e.target.value)} />
+                    <input placeholder="Processing (e.g. Washed)" value={coffeeProcessing} onChange={e => setCoffeeProcessing(e.target.value)} />
+                    <input placeholder="Variety" value={coffeeVariety} onChange={e => setCoffeeVariety(e.target.value)} />
+                    <input placeholder="Roast Level (e.g. Light, Medium, Dark)" value={coffeeRoastLevel} onChange={e => setCoffeeRoastLevel(e.target.value)} />
+                    <input placeholder="Flavor Notes" value={coffeeFlavorNotes} onChange={e => setCoffeeFlavorNotes(e.target.value)} />
+                    <input placeholder="Recommended Brew Method" value={coffeeRecommendedBrew} onChange={e => setCoffeeRecommendedBrew(e.target.value)} />
+                    <input placeholder="Acidity (e.g. Bright, Mild)" value={coffeeAcidity} onChange={e => setCoffeeAcidity(e.target.value)} />
+                    <input placeholder="Body (e.g. Light, Full)" value={coffeeBody} onChange={e => setCoffeeBody(e.target.value)} />
+                  </div>
+                )}
+
                 <div className="btn-group">
                   <button type="submit">{editingProduct ? 'Update' : 'Add'}</button>
                   {editingProduct && <button type="button" className="secondary" onClick={resetProductForm}>Cancel</button>}
@@ -560,7 +628,7 @@ export default function App() {
                     </div>
                   )}
                   <div className="item-details">
-                    <h4>{p.name} {p.available ? '' : '(Hidden)'}</h4>
+                    <h4>{p.name} {p.coffee_details ? '☕' : ''} {p.available ? '' : '(Hidden)'}</h4>
                     <p>{p.price}T | Stock: {p.stock} | Cat: {cat ? cat.name : '?'}</p>
                   </div>
                   {canEdit ? (
@@ -686,6 +754,94 @@ export default function App() {
         </>
       )}
 
+      {/* CONTENT TAB */}
+      {activeTab === 'content' && isSuperAdmin && (
+        <div className="card settings-container">
+          <h3>Content Management</h3>
+
+          {/* About Us */}
+          <form onSubmit={handleSaveSettings}>
+            <div className="section">
+              <h4>About Us</h4>
+              <textarea
+                value={settings.find(s => s.key === 'about')?.value || ''}
+                onChange={e => updateSetting('about', e.target.value)}
+                rows={4}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
+              />
+            </div>
+            <button type="submit" style={{ marginTop: 16 }}>Save About Us</button>
+          </form>
+
+          <hr style={{ margin: '24px 0', borderColor: '#444' }} />
+
+          {/* Branches */}
+          <div className="section">
+            <h4>Branches</h4>
+            <form onSubmit={handleSaveBranch} style={{ marginBottom: 16 }}>
+              <input placeholder="Branch Name" value={branchName} onChange={e => setBranchName(e.target.value)} required />
+              <input placeholder="Address" value={branchAddress} onChange={e => setBranchAddress(e.target.value)} required />
+              <input placeholder="Phone (optional)" value={branchPhone} onChange={e => setBranchPhone(e.target.value)} />
+              <input placeholder="Maps URL / Coordinates" value={branchLocation} onChange={e => setBranchLocation(e.target.value)} />
+              <input placeholder="Opening Hours (e.g. 8:00-22:00)" value={branchHours} onChange={e => setBranchHours(e.target.value)} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
+                <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={branchActive} onChange={e => setBranchActive(e.target.checked)} />
+                Active
+              </label>
+              <div className="btn-group">
+                <button type="submit">{editingBranch ? 'Update Branch' : 'Add Branch'}</button>
+                {editingBranch && <button type="button" className="secondary" onClick={resetBranchForm}>Cancel</button>}
+              </div>
+            </form>
+            {branches.map(b => (
+              <div key={b.id} className="list-item">
+                <div className="item-details">
+                  <h4>{b.name} {!b.isActive && <span style={{ color: '#888' }}>(Inactive)</span>}</h4>
+                  <p>{b.address}</p>
+                  {b.phone && <p style={{ margin: 0, fontSize: 12 }}>📞 {b.phone}</p>}
+                  {b.openingHours && <p style={{ margin: 0, fontSize: 12 }}>🕐 {b.openingHours}</p>}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditBranch(b)}>Edit</button>
+                  <button type="button" className="danger" style={{ padding: '8px 12px' }} onClick={() => deleteBranch(b.id)}>Del</button>
+                </div>
+              </div>
+            ))}
+            {branches.length === 0 && <p style={{ color: '#888' }}>No branches yet.</p>}
+          </div>
+
+          <hr style={{ margin: '24px 0', borderColor: '#444' }} />
+
+          {/* FAQs */}
+          <div className="section">
+            <h4>Frequently Asked Questions</h4>
+            <form onSubmit={handleSaveFaq} style={{ marginBottom: 16 }}>
+              <textarea placeholder="Question" value={faqQuestion} onChange={e => setFaqQuestion(e.target.value)} rows={2} required
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box', marginBottom: 8 }} />
+              <textarea placeholder="Answer" value={faqAnswer} onChange={e => setFaqAnswer(e.target.value)} rows={3} required
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box', marginBottom: 8 }} />
+              <div className="btn-group">
+                <button type="submit">{editingFaq ? 'Update FAQ' : 'Add FAQ'}</button>
+                {editingFaq && <button type="button" className="secondary" onClick={resetFaqForm}>Cancel</button>}
+              </div>
+            </form>
+            {faqs.map(f => (
+              <div key={f.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+                <div className="item-details" style={{ width: '100%' }}>
+                  <h4>❓ {f.question}</h4>
+                  <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: 13, color: '#ccc' }}>{f.answer}</p>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditFaq(f)}>Edit</button>
+                  <button type="button" className="danger" style={{ padding: '8px 12px' }} onClick={() => deleteFaq(f.id)}>Del</button>
+                </div>
+              </div>
+            ))}
+            {faqs.length === 0 && <p style={{ color: '#888' }}>No FAQs yet.</p>}
+          </div>
+        </div>
+      )}
+
       {/* SETTINGS TAB */}
       {activeTab === 'settings' && isSuperAdmin && (
         <div className="card settings-container">
@@ -695,16 +851,6 @@ export default function App() {
             <div className="section">
               <h4>General Configurations</h4>
               
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>About Text</label>
-                <textarea 
-                  value={settings.find(s => s.key === 'about')?.value || ''} 
-                  onChange={e => updateSetting('about', e.target.value)} 
-                  rows={4}
-                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
-                />
-              </div>
-
               <div style={{ marginBottom: 12 }}>
                 <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>Instagram URL</label>
                 <input 
@@ -766,73 +912,6 @@ export default function App() {
             </div>
             <button type="submit" style={{ background: '#28a745', width: 'auto' }}>Add</button>
           </form>
-
-          <hr style={{ margin: '24px 0', borderColor: '#444' }} />
-          
-          <div className="section">
-            <h4>Branches</h4>
-            <form onSubmit={handleSaveBranch} style={{ marginBottom: 16 }}>
-              <input placeholder="Branch Name" value={branchName} onChange={e => setBranchName(e.target.value)} required />
-              <input placeholder="Address" value={branchAddress} onChange={e => setBranchAddress(e.target.value)} required />
-              <input placeholder="Phone (optional)" value={branchPhone} onChange={e => setBranchPhone(e.target.value)} />
-              <input placeholder="Maps URL / Coordinates" value={branchLocation} onChange={e => setBranchLocation(e.target.value)} />
-              <input placeholder="Opening Hours (e.g. 8:00-22:00)" value={branchHours} onChange={e => setBranchHours(e.target.value)} />
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
-                <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={branchActive} onChange={e => setBranchActive(e.target.checked)} />
-                Active
-              </label>
-              <div className="btn-group">
-                <button type="submit">{editingBranch ? 'Update Branch' : 'Add Branch'}</button>
-                {editingBranch && <button type="button" className="secondary" onClick={resetBranchForm}>Cancel</button>}
-              </div>
-            </form>
-            
-            {branches.map(b => (
-              <div key={b.id} className="list-item">
-                <div className="item-details">
-                  <h4>{b.name} {!b.isActive && <span style={{ color: '#888' }}>(Inactive)</span>}</h4>
-                  <p>{b.address}</p>
-                  {b.phone && <p style={{ margin: 0, fontSize: 12 }}>📞 {b.phone}</p>}
-                  {b.openingHours && <p style={{ margin: 0, fontSize: 12 }}>🕐 {b.openingHours}</p>}
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditBranch(b)}>Edit</button>
-                  <button type="button" className="danger" style={{ padding: '8px 12px' }} onClick={() => deleteBranch(b.id)}>Del</button>
-                </div>
-              </div>
-            ))}
-            {branches.length === 0 && <p style={{ color: '#888' }}>No branches yet.</p>}
-          </div>
-
-          <hr style={{ margin: '24px 0', borderColor: '#444' }} />
-          
-          <div className="section">
-            <h4>Frequently Asked Questions</h4>
-            <form onSubmit={handleSaveFaq} style={{ marginBottom: 16 }}>
-              <textarea placeholder="Question" value={faqQuestion} onChange={e => setFaqQuestion(e.target.value)} rows={2} required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box', marginBottom: 8 }} />
-              <textarea placeholder="Answer" value={faqAnswer} onChange={e => setFaqAnswer(e.target.value)} rows={3} required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box', marginBottom: 8 }} />
-              <div className="btn-group">
-                <button type="submit">{editingFaq ? 'Update FAQ' : 'Add FAQ'}</button>
-                {editingFaq && <button type="button" className="secondary" onClick={resetFaqForm}>Cancel</button>}
-              </div>
-            </form>
-            
-            {faqs.map(f => (
-              <div key={f.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
-                <div className="item-details" style={{ width: '100%' }}>
-                  <h4>❓ {f.question}</h4>
-                  <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: 13, color: '#ccc' }}>{f.answer}</p>
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditFaq(f)}>Edit</button>
-                  <button type="button" className="danger" style={{ padding: '8px 12px' }} onClick={() => deleteFaq(f.id)}>Del</button>
-                </div>
-              </div>
-            ))}
-            {faqs.length === 0 && <p style={{ color: '#888' }}>No FAQs yet.</p>}
-          </div>
 
         </div>
       )}
@@ -935,6 +1014,9 @@ export default function App() {
           <>
             <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => { setActiveTab('settings'); window.scrollTo(0,0); }}>
               Settings
+            </button>
+            <button className={`nav-item ${activeTab === 'content' ? 'active' : ''}`} onClick={() => { setActiveTab('content'); window.scrollTo(0,0); }}>
+              Content
             </button>
             <button className={`nav-item ${activeTab === 'admins' ? 'active' : ''}`} onClick={() => { setActiveTab('admins'); window.scrollTo(0,0); }}>
               Admins

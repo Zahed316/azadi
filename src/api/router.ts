@@ -198,7 +198,14 @@ export async function handleApiRequest(request: Request, env: Env, ctx: Executio
     if (path === "products") {
       const repo = new ProductRepository(db);
       if (method === "GET") {
-        const products = await repo.getAllProducts();
+        const rows = await repo.getAllProductsWithDetails();
+        // Flatten Drizzle join result into a single product object
+        const products = rows.map(row => ({
+          ...row.products,
+          coffee_details: row.coffee_details || null,
+          category_name: row.categories?.name || null,
+          category_emoji: row.categories?.emoji || null,
+        }));
         return new Response(JSON.stringify({ products }), { headers: corsHeaders });
       } else if (method === "POST") {
         const body: any = await request.json();
@@ -206,7 +213,7 @@ export async function handleApiRequest(request: Request, env: Env, ctx: Executio
         if (!isSuperAdmin && allowedCategoryId !== catId) {
           return new Response(JSON.stringify({ error: "Forbidden: Cannot add to this category" }), { status: 403, headers: corsHeaders });
         }
-        await repo.addProduct({
+        const result = await repo.addProduct({
           ...body,
           unit: body.unit || 'item',
           available: body.available ?? true,
@@ -216,6 +223,10 @@ export async function handleApiRequest(request: Request, env: Env, ctx: Executio
           createdAt: new Date(),
           updatedAt: new Date()
         });
+        // Save coffee details if provided
+        if (body.coffeeDetails && result[0]?.id) {
+          await repo.setCoffeeDetails(result[0].id, body.coffeeDetails);
+        }
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       }
     }
@@ -269,6 +280,10 @@ export async function handleApiRequest(request: Request, env: Env, ctx: Executio
           unit: body.unit || 'item',
           available: body.available !== undefined ? body.available : true
         });
+        // Update coffee details: if coffeeDetails is present in body, set it (null deletes)
+        if (body.coffeeDetails !== undefined) {
+          await repo.setCoffeeDetails(id, body.coffeeDetails);
+        }
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } else if (method === "DELETE") {
         await repo.deleteProduct(id);
