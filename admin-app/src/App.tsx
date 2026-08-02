@@ -4,7 +4,7 @@ import { retrieveLaunchParams } from '@telegram-apps/sdk';
 const API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'content' | 'admins' | 'menu'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'content' | 'admins' | 'menu' | 'branches'>('products');
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   const [products, setProducts] = useState<any[]>([]);
@@ -551,6 +551,7 @@ export default function App() {
          activeTab === 'categories' ? 'Categories' :
          activeTab === 'settings' ? 'Settings' :
          activeTab === 'content' ? 'Content' :
+         activeTab === 'branches' ? 'Branches' :
          activeTab === 'menu' ? 'Bot Menu' : 'Admins'}
          {currentUser && <span style={{fontSize: 12, marginLeft: 10, background: '#333', padding: '2px 6px', borderRadius: 4}}>{currentUser.role}</span>}
       </h2>
@@ -754,6 +755,43 @@ export default function App() {
         </>
       )}
 
+      {/* BRANCHES TAB */}
+      {activeTab === 'branches' && isSuperAdmin && (
+        <div className="card settings-container">
+          <h3>Branches</h3>
+          <form onSubmit={handleSaveBranch} style={{ marginBottom: 16 }}>
+            <input placeholder="Branch Name" value={branchName} onChange={e => setBranchName(e.target.value)} required />
+            <input placeholder="Address" value={branchAddress} onChange={e => setBranchAddress(e.target.value)} required />
+            <input placeholder="Phone (optional)" value={branchPhone} onChange={e => setBranchPhone(e.target.value)} />
+            <input placeholder="Maps URL / Coordinates" value={branchLocation} onChange={e => setBranchLocation(e.target.value)} />
+            <input placeholder="Opening Hours (e.g. 8:00-22:00)" value={branchHours} onChange={e => setBranchHours(e.target.value)} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
+              <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={branchActive} onChange={e => setBranchActive(e.target.checked)} />
+              Active
+            </label>
+            <div className="btn-group">
+              <button type="submit">{editingBranch ? 'Update Branch' : 'Add Branch'}</button>
+              {editingBranch && <button type="button" className="secondary" onClick={resetBranchForm}>Cancel</button>}
+            </div>
+          </form>
+          {branches.map(b => (
+            <div key={b.id} className="list-item">
+              <div className="item-details">
+                <h4>{b.name} {!b.isActive && <span style={{ color: '#888' }}>(Inactive)</span>}</h4>
+                <p>{b.address}</p>
+                {b.phone && <p style={{ margin: 0, fontSize: 12 }}>📞 {b.phone}</p>}
+                {b.openingHours && <p style={{ margin: 0, fontSize: 12 }}>🕐 {b.openingHours}</p>}
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditBranch(b)}>Edit</button>
+                <button type="button" className="danger" style={{ padding: '8px 12px' }} onClick={() => deleteBranch(b.id)}>Del</button>
+              </div>
+            </div>
+          ))}
+          {branches.length === 0 && <p style={{ color: '#888' }}>No branches yet.</p>}
+        </div>
+      )}
+
       {/* CONTENT TAB */}
       {activeTab === 'content' && isSuperAdmin && (
         <div className="card settings-container">
@@ -772,43 +810,6 @@ export default function App() {
             </div>
             <button type="submit" style={{ marginTop: 16 }}>Save About Us</button>
           </form>
-
-          <hr style={{ margin: '24px 0', borderColor: '#444' }} />
-
-          {/* Branches */}
-          <div className="section">
-            <h4>Branches</h4>
-            <form onSubmit={handleSaveBranch} style={{ marginBottom: 16 }}>
-              <input placeholder="Branch Name" value={branchName} onChange={e => setBranchName(e.target.value)} required />
-              <input placeholder="Address" value={branchAddress} onChange={e => setBranchAddress(e.target.value)} required />
-              <input placeholder="Phone (optional)" value={branchPhone} onChange={e => setBranchPhone(e.target.value)} />
-              <input placeholder="Maps URL / Coordinates" value={branchLocation} onChange={e => setBranchLocation(e.target.value)} />
-              <input placeholder="Opening Hours (e.g. 8:00-22:00)" value={branchHours} onChange={e => setBranchHours(e.target.value)} />
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
-                <input type="checkbox" style={{ width: 'auto', margin: 0 }} checked={branchActive} onChange={e => setBranchActive(e.target.checked)} />
-                Active
-              </label>
-              <div className="btn-group">
-                <button type="submit">{editingBranch ? 'Update Branch' : 'Add Branch'}</button>
-                {editingBranch && <button type="button" className="secondary" onClick={resetBranchForm}>Cancel</button>}
-              </div>
-            </form>
-            {branches.map(b => (
-              <div key={b.id} className="list-item">
-                <div className="item-details">
-                  <h4>{b.name} {!b.isActive && <span style={{ color: '#888' }}>(Inactive)</span>}</h4>
-                  <p>{b.address}</p>
-                  {b.phone && <p style={{ margin: 0, fontSize: 12 }}>📞 {b.phone}</p>}
-                  {b.openingHours && <p style={{ margin: 0, fontSize: 12 }}>🕐 {b.openingHours}</p>}
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" className="secondary" style={{ padding: '8px 12px' }} onClick={() => startEditBranch(b)}>Edit</button>
-                  <button type="button" className="danger" style={{ padding: '8px 12px' }} onClick={() => deleteBranch(b.id)}>Del</button>
-                </div>
-              </div>
-            ))}
-            {branches.length === 0 && <p style={{ color: '#888' }}>No branches yet.</p>}
-          </div>
 
           <hr style={{ margin: '24px 0', borderColor: '#444' }} />
 
@@ -1014,6 +1015,9 @@ export default function App() {
           <>
             <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => { setActiveTab('settings'); window.scrollTo(0,0); }}>
               Settings
+            </button>
+            <button className={`nav-item ${activeTab === 'branches' ? 'active' : ''}`} onClick={() => { setActiveTab('branches'); window.scrollTo(0,0); }}>
+              Branches
             </button>
             <button className={`nav-item ${activeTab === 'content' ? 'active' : ''}`} onClick={() => { setActiveTab('content'); window.scrollTo(0,0); }}>
               Content
