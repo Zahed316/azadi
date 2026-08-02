@@ -130,6 +130,10 @@ export class FaqRepository {
   async delete(id: number) {
     return await this.db.delete(faq).where(eq(faq.id, id)).returning();
   }
+
+  async update(id: number, question: string, answer: string) {
+    return await this.db.update(faq).set({ question, answer }).where(eq(faq.id, id)).returning();
+  }
 }
 
 export class SettingsRepository {
