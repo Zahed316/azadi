@@ -1,5 +1,5 @@
 import { Bot, session, type SessionFlavor } from "grammy";
-import { conversations, createConversation } from "@grammyjs/conversations";
+import { conversations } from "@grammyjs/conversations";
 import { mainMenu } from "./menus/mainMenu";
 import { beansMenu, cakesMenu } from "./menus/productsMenu";
 import { drinksNavMenu } from "./menus/drinksNavMenu";
@@ -53,15 +53,6 @@ export function createBot(env: Env) {
       adapter: new D1SessionStorage(env.DB),
     },
   }));
-
-  // Snapshot conversation state before any createConversation() runs.
-  // createConversation() calls next() upon completion, which would otherwise
-  // let the final message of a wizard leak into the global message handler.
-  bot.use(async (ctx, next) => {
-    const active = (ctx.conversation?.active() || {}) as Record<string, number>;
-    ctx.hasActiveConversation = Object.values(active).some(count => count > 0);
-    await next();
-  });
 
   // Register Menus
   mainMenu.register(drinksNavMenu);

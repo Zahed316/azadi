@@ -7,11 +7,6 @@ import { buildMinimalContext } from '../utils/menuContext';
 
 export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
   bot.on('message:text', async (ctx) => {
-    // If an admin conversation was active before this message was processed,
-    // do NOT run the AI handler. This prevents the final message of a completed 
-    // conversation from leaking into the AI handler.
-    if (ctx.hasActiveConversation) return;
-
     if (!ctx.message.text.startsWith('/')) {
       if (!ctx.env.AI) {
         return ctx.reply("دستیار هوشمند در حال حاضر غیرفعال است.");

@@ -9,5 +9,4 @@ export interface SessionData {
 export type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor<Context> & {
   env: Env;
   execCtx?: ExecutionContext;
-  hasActiveConversation?: boolean;
 };
