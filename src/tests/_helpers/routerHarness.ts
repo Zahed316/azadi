@@ -60,8 +60,13 @@ function extractEq(condition: unknown): EqCondition | null {
   const left = c.queryChunks[1];
   const right = c.queryChunks[3];
   if (!left || !right) return null;
+  // Drizzle columns carry the SQL column name in `.name` (e.g. `telegram_id`)
+  // but rows in the harness store are seeded with the JS property name
+  // (camelCase, e.g. `telegramId`). Convert snake→camel so the WHERE clause
+  // finds the matching key.
+  const camel = String(left.name).replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
   return {
-    column: left.name ?? left.key,
+    column: camel,
     tableName: tableNameOf(left.table),
     value: right.value ?? right,
   };
@@ -132,6 +137,15 @@ class QueryChain {
     return this;
   }
 
+  /**
+   * For tests: treat the insert as a no-op. The harness doesn't track
+   * conflict targets, so callers using this should set up rows that
+   * can't collide (or seed/clear the store around the test).
+   */
+  onConflictDoNothing() {
+    return this;
+  }
+
   returning() {
     this._hasReturning = true;
     return this;
@@ -182,7 +196,7 @@ class QueryChain {
       }
 
       case 'update': {
-        let updated: TableRow[] = [];
+        const updated: TableRow[] = [];
         for (const row of rows) {
           if (this._eqs.length === 0 || matchesCondition(row, this._eqs)) {
             Object.assign(row, this._setData);
