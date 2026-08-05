@@ -44,6 +44,36 @@ export class ProductRepository {
     return await this.db.select().from(products).where(and(eq(products.categoryId, categoryId), eq(products.available, true)));
   }
 
+  /**
+   * Get all *available* products with a given boolean flag set to true.
+   * Used by the bot's "⭐ پیشنهاد ویژه" and "🌿 مخصوص فصل" surfaces to
+   * surface dormant product fields. Only `featured` and `isSeasonal` are
+   * allowed — both are non-null boolean columns on `products` and are
+   * the only flags exposed in the public menu (others like `priceOnRequest`
+   * are per-product pricing concerns, not catalogue surface flags).
+   */
+  async getByFlag(flag: 'featured' | 'isSeasonal') {
+    const column = flag === 'featured' ? products.featured : products.isSeasonal;
+    return await this.db.select().from(products)
+      .where(and(eq(column, true), eq(products.available, true)));
+  }
+
+  /**
+   * Get all available beans (products in the 'beans' menu section) that
+   * have a `coffeeDetails` row attached — the input set for the "📖 پاسپورت قهوه"
+   * surface. Joins coffee_details so the caller can read origin/farm/etc. in
+   * one query instead of N+1.
+   */
+  async getBeansWithCoffeeDetails() {
+    return await this.db.select({
+      product: products,
+      details: coffeeDetails,
+    })
+      .from(products)
+      .innerJoin(coffeeDetails, eq(coffeeDetails.productId, products.id))
+      .where(eq(products.available, true));
+  }
+
   async toggleAvailability(id: number, available: boolean) {
     return await this.db.update(products).set({ available, updatedAt: new Date() }).where(eq(products.id, id)).returning();
   }

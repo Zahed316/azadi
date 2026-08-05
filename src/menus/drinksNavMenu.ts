@@ -3,7 +3,47 @@ import { InlineKeyboard } from 'grammy';
 import { ProductRepository, MenuConfigRepository, SettingsRepository } from '../repositories';
 import { VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { formatPersianPrice } from '../utils/numbers';
+import { buildListPage } from '../utils/faqPagination';
 import { MyContext } from '../types/context';
+
+/**
+ * Pagination callback prefix for drinks categories:
+ *   `drinks:cat:{categoryId}:page:{pageIndex}`
+ * The categoryId is needed because each category has its own product list.
+ */
+const DRINKS_PAGE_PREFIX = 'drinks:cat:';
+const DRINKS_PAGE_SIZE = 5;
+
+/**
+ * Build the paginated view for a single drinks category. Shared by the inline
+ * `range.text` handler (first page) and the `drinks:cat:*:page:*` callback
+ * handler in src/handlers/callbackQuery.ts (pages 1+). Caller is responsible
+ * for the empty-state `specialMessage` / "موجود نیست" reply when `items` is
+ * empty before calling this for the first page.
+ */
+export async function buildCategoryPage(
+  ctx: MyContext,
+  config: { categoryId: number; categoryName: string | null; categoryEmoji: string | null; specialMessage: string | null },
+  items: any[],
+  idx: number,
+  priceUnit: string,
+): Promise<void> {
+  const page = buildListPage(items, idx, DRINKS_PAGE_SIZE);
+  const kb = new InlineKeyboard();
+  for (const p of page.items) {
+    const priceLabel = (p.priceOnRequest || p.price == null) ? '(سوال در کافه)' : formatPersianPrice(p.price, priceUnit);
+    const seasonal = p.isSeasonal ? ' 🌿' : '';
+    kb.text(`${p.name}${seasonal} — ${priceLabel}`, `product:${p.id}`).row();
+  }
+  if (page.hasPrev) kb.text('صفحه قبل ▶️', `${DRINKS_PAGE_PREFIX}${config.categoryId}:page:${idx - 1}`);
+  if (page.hasNext) kb.text('◀️ صفحه بعد', `${DRINKS_PAGE_PREFIX}${config.categoryId}:page:${idx + 1}`);
+
+  const name = config.categoryName ?? 'بدون نام';
+  const header = `<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${name}</b> (${page.pageLabel})`;
+  const text = `${header}${VAT_NOTE}`;
+  await ctx.editMessageText(text, { parse_mode: 'HTML', reply_markup: kb })
+    .catch(() => ctx.reply(text, { parse_mode: 'HTML', reply_markup: kb }));
+}
 
 export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   .dynamic(async (ctx, range) => {
@@ -29,16 +69,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
             }
 
             const priceUnit = (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
-            const kb = new InlineKeyboard();
-            for (const p of items) {
-              const priceLabel = (p.priceOnRequest || p.price == null) ? '(سوال در کافه)' : formatPersianPrice(p.price, priceUnit);
-              const seasonal = p.isSeasonal ? ' 🌿' : '';
-              kb.text(`${p.name}${seasonal} — ${priceLabel}`, `product:${p.id}`).row();
-            }
-
-            const text = `<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}</b>${VAT_NOTE}`;
-            await ctx.editMessageText(text, { parse_mode: 'HTML', reply_markup: kb })
-              .catch(() => ctx.reply(text, { parse_mode: 'HTML', reply_markup: kb }));
+            await buildCategoryPage(ctx, config, items, 0, priceUnit);
           } catch (e) {
             console.error(e);
             await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات ناموفق بود.' }).catch(() => {});
