@@ -6,7 +6,9 @@ export interface SessionData {
   lastUpdateId?: number;
 }
 
-export type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor<Context> & {
-  env: Env;
-  execCtx?: ExecutionContext;
-};
+export type MyContext = Context &
+  SessionFlavor<SessionData> &
+  ConversationFlavor<Context> & {
+    env: Env;
+    execCtx?: ExecutionContext;
+  };

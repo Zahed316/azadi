@@ -1,7 +1,7 @@
 :root {
   /* Light theme (default) */
-  --primary: #4F46E5;
-  --primary-hover: #4338CA;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
   --bg-dark: #f8fafc;
   --bg-card: rgba(255, 255, 255, 0.7);
   --text-main: #0f172a;
@@ -27,7 +27,15 @@ body {
   padding: 0;
   background-color: var(--bg-dark);
   color: var(--text-main);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
@@ -44,7 +52,8 @@ body {
   padding-bottom: 80px; /* space for bottom nav */
 }
 
-h2, h3 {
+h2,
+h3 {
   margin-top: 0;
   font-weight: 600;
   letter-spacing: -0.025em;
@@ -58,12 +67,16 @@ h2, h3 {
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease;
 }
 
 /* Form Elements */
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: 12px 16px;
   margin-bottom: 12px;
@@ -72,10 +85,14 @@ input, select, textarea {
   border-radius: 8px;
   color: var(--text-main);
   font-size: 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
@@ -203,13 +220,16 @@ button.secondary:hover {
 /* When the on-screen keyboard opens (short viewport), let the bar flow
    in-document instead of covering the bottom nav. */
 @media (max-height: 500px) {
-  .batch-bar { position: static; }
+  .batch-bar {
+    position: static;
+  }
 }
 
-.batch-bar select, .batch-bar button {
+.batch-bar select,
+.batch-bar button {
   background: rgba(0, 0, 0, 0.5);
   color: white;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   margin-bottom: 0;
 }
 
@@ -235,67 +255,152 @@ button.secondary:hover {
   background: rgba(79, 70, 229, 0.1);
 }
 
-.nav-icon { margin-right: 6px; }
+.nav-icon {
+  margin-right: 6px;
+}
 
 /* Utilities */
 /* Loading + empty states */
-.loading-screen { display: flex; flex-direction: column; align-items: center; margin-top: 80px; gap: 12px; color: var(--text-muted); }
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 80px;
+  gap: 12px;
+  color: var(--text-muted);
+}
 .spinner {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 3px solid var(--border); border-top-color: var(--primary);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .spinner { animation: spin .8s linear infinite; }
+  .spinner {
+    animation: spin 0.8s linear infinite;
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 }
-.empty-state { text-align: center; color: var(--text-muted); padding: 32px 16px; }
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px 16px;
+}
 
-.field { display: block; margin-bottom: 12px; }
-.field-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
-.field input, .field select, .field textarea { margin-bottom: 0; }
+.field {
+  display: block;
+  margin-bottom: 12px;
+}
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.field input,
+.field select,
+.field textarea {
+  margin-bottom: 0;
+}
 
 .toast {
-  position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%);
-  padding: 12px 20px; border-radius: 10px; z-index: 1100; font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0,0,0,.3);
-  max-width: 90vw; text-align: center;
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 10px;
+  z-index: 1100;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-width: 90vw;
+  text-align: center;
 }
-.toast-success { background: var(--success); color: #fff; }
-.toast-error   { background: var(--danger);  color: #fff; }
+.toast-success {
+  background: var(--success);
+  color: #fff;
+}
+.toast-error {
+  background: var(--danger);
+  color: #fff;
+}
 @media (prefers-reduced-motion: no-preference) {
-  .toast { animation: toast-in .2s ease; }
-  @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  .toast {
+    animation: toast-in 0.2s ease;
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
 }
 
 /* Confirm dialog */
 .confirm-backdrop {
-  position: fixed; inset: 0; z-index: 2000;
-  background: rgba(0, 0, 0, 0.5); display: flex;
-  align-items: center; justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .confirm-dialog {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 24px; min-width: 280px; max-width: 90vw;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 280px;
+  max-width: 90vw;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 .confirm-message {
-  margin: 0 0 20px; color: var(--text-main); font-size: 15px; line-height: 1.4;
+  margin: 0 0 20px;
+  color: var(--text-main);
+  font-size: 15px;
+  line-height: 1.4;
 }
-.confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
 .confirm-btn {
-  padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer;
-  font-size: 14px; font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
 }
 .confirm-btn-cancel {
-  background: var(--border); color: var(--text-muted);
+  background: var(--border);
+  color: var(--text-muted);
 }
 .confirm-btn-ok {
-  background: var(--primary); color: #fff;
+  background: var(--primary);
+  color: #fff;
 }
-.confirm-btn-cancel:hover { background: var(--text-muted); color: var(--text-main); }
-.confirm-btn-ok:hover { background: var(--primary-hover); }
+.confirm-btn-cancel:hover {
+  background: var(--text-muted);
+  color: var(--text-main);
+}
+.confirm-btn-ok:hover {
+  background: var(--primary-hover);
+}
 
 .flex-between {
   display: flex;

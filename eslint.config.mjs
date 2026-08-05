@@ -11,14 +11,14 @@ export default [
   {
     ignores: [
       'node_modules/**',
-      'admin-app/**',         // separate package, has its own eslint.config.mjs
+      'admin-app/**', // separate package, has its own eslint.config.mjs
       'dist/**',
       'wrangler-dry/**',
       '.wrangler/**',
-      'drizzle/**',          // generated migrations
+      'drizzle/**', // generated migrations
       '*.config.{js,cjs,mjs,ts}',
       'eslint.config.mjs',
-      'test-drizzle.ts',     // 7-line smoke script, not part of runtime
+      'test-drizzle.ts', // 7-line smoke script, not part of runtime
     ],
   },
 

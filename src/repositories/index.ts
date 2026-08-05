@@ -1,5 +1,14 @@
 import { getDb } from '../database/client';
-import { products, categories, branches, faq, settings, aiConversationLogs, coffeeDetails, menuConfig } from '../database/schema';
+import {
+  products,
+  categories,
+  branches,
+  faq,
+  settings,
+  aiConversationLogs,
+  coffeeDetails,
+  menuConfig,
+} from '../database/schema';
 import { eq, and, desc } from 'drizzle-orm';
 
 export class ProductRepository {
@@ -14,7 +23,9 @@ export class ProductRepository {
   }
 
   async getAllProductsWithDetails() {
-    return await this.db.select().from(products)
+    return await this.db
+      .select()
+      .from(products)
       .leftJoin(coffeeDetails, eq(products.id, coffeeDetails.productId))
       .leftJoin(categories, eq(products.categoryId, categories.id));
   }
@@ -29,7 +40,11 @@ export class ProductRepository {
   }
 
   async updateProduct(id: number, data: Partial<typeof products.$inferInsert>) {
-    return await this.db.update(products).set({ ...data, updatedAt: new Date() }).where(eq(products.id, id)).returning();
+    return await this.db
+      .update(products)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
   }
 
   async deleteProduct(id: number) {
@@ -37,11 +52,18 @@ export class ProductRepository {
   }
 
   async updateStock(id: number, newStock: number) {
-    return await this.db.update(products).set({ stock: newStock, updatedAt: new Date() }).where(eq(products.id, id)).returning();
+    return await this.db
+      .update(products)
+      .set({ stock: newStock, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
   }
 
   async getProductsByCategory(categoryId: number) {
-    return await this.db.select().from(products).where(and(eq(products.categoryId, categoryId), eq(products.available, true)));
+    return await this.db
+      .select()
+      .from(products)
+      .where(and(eq(products.categoryId, categoryId), eq(products.available, true)));
   }
 
   /**
@@ -54,7 +76,9 @@ export class ProductRepository {
    */
   async getByFlag(flag: 'featured' | 'isSeasonal') {
     const column = flag === 'featured' ? products.featured : products.isSeasonal;
-    return await this.db.select().from(products)
+    return await this.db
+      .select()
+      .from(products)
       .where(and(eq(column, true), eq(products.available, true)));
   }
 
@@ -65,31 +89,39 @@ export class ProductRepository {
    * one query instead of N+1.
    */
   async getBeansWithCoffeeDetails() {
-    return await this.db.select({
-      product: products,
-      details: coffeeDetails,
-    })
+    return await this.db
+      .select({
+        product: products,
+        details: coffeeDetails,
+      })
       .from(products)
       .innerJoin(coffeeDetails, eq(coffeeDetails.productId, products.id))
       .where(eq(products.available, true));
   }
 
   async toggleAvailability(id: number, available: boolean) {
-    return await this.db.update(products).set({ available, updatedAt: new Date() }).where(eq(products.id, id)).returning();
+    return await this.db
+      .update(products)
+      .set({ available, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
   }
 
-  async setCoffeeDetails(productId: number, details: {
-    origin?: string | null;
-    farm?: string | null;
-    altitude?: string | null;
-    processing?: string | null;
-    variety?: string | null;
-    roastLevel?: string | null;
-    flavorNotes?: string | null;
-    recommendedBrew?: string | null;
-    acidity?: string | null;
-    body?: string | null;
-  } | null) {
+  async setCoffeeDetails(
+    productId: number,
+    details: {
+      origin?: string | null;
+      farm?: string | null;
+      altitude?: string | null;
+      processing?: string | null;
+      variety?: string | null;
+      roastLevel?: string | null;
+      flavorNotes?: string | null;
+      recommendedBrew?: string | null;
+      acidity?: string | null;
+      body?: string | null;
+    } | null,
+  ) {
     // Delete existing details first
     await this.db.delete(coffeeDetails).where(eq(coffeeDetails.productId, productId));
     // Insert new details if provided
@@ -203,7 +235,8 @@ export class SettingsRepository {
   }
 
   async setValue(key: string, value: string) {
-    return await this.db.insert(settings)
+    return await this.db
+      .insert(settings)
       .values({ key, value })
       .onConflictDoUpdate({ target: settings.key, set: { value } })
       .returning();
@@ -222,16 +255,20 @@ export class AiLogRepository {
   }
 
   async logConversation(userId: string, question: string, response: string) {
-    return await this.db.insert(aiConversationLogs).values({
-      userId,
-      question,
-      response,
-      timestamp: new Date()
-    }).returning();
+    return await this.db
+      .insert(aiConversationLogs)
+      .values({
+        userId,
+        question,
+        response,
+        timestamp: new Date(),
+      })
+      .returning();
   }
 
   async getRecentLogs(userId: string, limit: number = 5) {
-    return await this.db.select()
+    return await this.db
+      .select()
       .from(aiConversationLogs)
       .where(eq(aiConversationLogs.userId, userId))
       .orderBy(desc(aiConversationLogs.timestamp))
@@ -250,15 +287,15 @@ export class MenuConfigRepository {
   async getBySection(section: string) {
     return await this.db
       .select({
-        id:              menuConfig.id,
-        categoryId:      menuConfig.categoryId,
-        menuSection:     menuConfig.menuSection,
-        displayOrder:    menuConfig.displayOrder,
-        isVisible:       menuConfig.isVisible,
-        buttonLabel:     menuConfig.buttonLabel,
-        specialMessage:  menuConfig.specialMessage,
-        categoryName:    categories.name,
-        categoryEmoji:   categories.emoji,
+        id: menuConfig.id,
+        categoryId: menuConfig.categoryId,
+        menuSection: menuConfig.menuSection,
+        displayOrder: menuConfig.displayOrder,
+        isVisible: menuConfig.isVisible,
+        buttonLabel: menuConfig.buttonLabel,
+        specialMessage: menuConfig.specialMessage,
+        categoryName: categories.name,
+        categoryEmoji: categories.emoji,
       })
       .from(menuConfig)
       .leftJoin(categories, eq(menuConfig.categoryId, categories.id))
@@ -270,15 +307,15 @@ export class MenuConfigRepository {
   async getAll() {
     return await this.db
       .select({
-        id:              menuConfig.id,
-        categoryId:      menuConfig.categoryId,
-        menuSection:     menuConfig.menuSection,
-        displayOrder:    menuConfig.displayOrder,
-        isVisible:       menuConfig.isVisible,
-        buttonLabel:     menuConfig.buttonLabel,
-        specialMessage:  menuConfig.specialMessage,
-        categoryName:    categories.name,
-        categoryEmoji:   categories.emoji,
+        id: menuConfig.id,
+        categoryId: menuConfig.categoryId,
+        menuSection: menuConfig.menuSection,
+        displayOrder: menuConfig.displayOrder,
+        isVisible: menuConfig.isVisible,
+        buttonLabel: menuConfig.buttonLabel,
+        specialMessage: menuConfig.specialMessage,
+        categoryName: categories.name,
+        categoryEmoji: categories.emoji,
       })
       .from(menuConfig)
       .leftJoin(categories, eq(menuConfig.categoryId, categories.id))
@@ -316,6 +353,6 @@ export class MenuConfigRepository {
       .select({ categoryId: menuConfig.categoryId })
       .from(menuConfig)
       .where(eq(menuConfig.isVisible, true));
-    return new Set(rows.map(r => r.categoryId));
+    return new Set(rows.map((r) => r.categoryId));
   }
 }

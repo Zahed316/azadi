@@ -13,12 +13,12 @@ export default function MenuConfigPage() {
 
   const { data: menuConfigs = [] } = useQuery({
     queryKey: queryKeys.menuConfigs,
-    queryFn: () => apiFetch<{ menuConfigs: any[] }>('/menu-config').then(r => r.menuConfigs),
+    queryFn: () => apiFetch<{ menuConfigs: any[] }>('/menu-config').then((r) => r.menuConfigs),
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: queryKeys.categories,
-    queryFn: () => apiFetch<{ categories: any[] }>('/categories').then(r => r.categories),
+    queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
   });
 
   const [menuActiveSection, setMenuActiveSection] = useState<Section>('drinks');
@@ -36,7 +36,9 @@ export default function MenuConfigPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
     },
-    onError: (err: Error) => { setError(err.message); },
+    onError: (err: Error) => {
+      setError(err.message);
+    },
   });
 
   const reorderMutation = useMutation({
@@ -45,7 +47,9 @@ export default function MenuConfigPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
     },
-    onError: (err: Error) => { setError(err.message); },
+    onError: (err: Error) => {
+      setError(err.message);
+    },
   });
 
   const deleteMenuConfigMutation = useMutation({
@@ -53,7 +57,9 @@ export default function MenuConfigPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
     },
-    onError: (err: Error) => { setError(err.message); },
+    onError: (err: Error) => {
+      setError(err.message);
+    },
   });
 
   const addToSectionMutation = useMutation({
@@ -62,7 +68,9 @@ export default function MenuConfigPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
       setMenuAddCatId('');
     },
-    onError: (err: Error) => { setError(err.message); },
+    onError: (err: Error) => {
+      setError(err.message);
+    },
   });
 
   const saveSpecialMessageMutation = useMutation({
@@ -72,11 +80,16 @@ export default function MenuConfigPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
       setEditingSpecialMsg(null);
     },
-    onError: (err: Error) => { setError(err.message); },
+    onError: (err: Error) => {
+      setError(err.message);
+    },
   });
 
   const handleToggleMenuVisibility = (config: any) => {
-    toggleVisibilityMutation.mutate({ id: config.id, body: { ...config, isVisible: !config.isVisible } });
+    toggleVisibilityMutation.mutate({
+      id: config.id,
+      body: { ...config, isVisible: !config.isVisible },
+    });
   };
 
   const handleMenuReorder = (id: number, direction: 'up' | 'down') => {
@@ -108,16 +121,22 @@ export default function MenuConfigPage() {
 
   const handleSaveSpecialMessage = (configId: number) => {
     const config = menuConfigs.find((c: any) => c.id === configId);
-    saveSpecialMessageMutation.mutate({ id: configId, body: { ...config, specialMessage: specialMsgValue || null } });
+    saveSpecialMessageMutation.mutate({
+      id: configId,
+      body: { ...config, specialMessage: specialMsgValue || null },
+    });
   };
 
   return (
     <>
       <div className="card">
         <div className="section-tabs">
-          {(['drinks', 'beans', 'cakes', 'extras'] as Section[]).map(sec => (
-            <button key={sec} className={`tab ${menuActiveSection === sec ? 'active' : ''}`}
-              onClick={() => setMenuActiveSection(sec)}>
+          {(['drinks', 'beans', 'cakes', 'extras'] as Section[]).map((sec) => (
+            <button
+              key={sec}
+              className={`tab ${menuActiveSection === sec ? 'active' : ''}`}
+              onClick={() => setMenuActiveSection(sec)}
+            >
               {sec.charAt(0).toUpperCase() + sec.slice(1)}
             </button>
           ))}
@@ -130,25 +149,60 @@ export default function MenuConfigPage() {
             {sectionItems.map((config: any, idx: number) => (
               <li key={config.id} className="list-item">
                 <div className="list-item-info">
-                  <span dir="auto">{categories.find((c: any) => c.id === config.categoryId)?.name || 'Unknown'}</span>
+                  <span dir="auto">
+                    {categories.find((c: any) => c.id === config.categoryId)?.name || 'Unknown'}
+                  </span>
                   <span className="list-item-meta">{config.isVisible ? 'Visible' : 'Hidden'}</span>
                 </div>
                 <div className="list-item-actions">
                   <button className="secondary" onClick={() => handleToggleMenuVisibility(config)}>
                     {config.isVisible ? 'Hide' : 'Show'}
                   </button>
-                  {idx > 0 && <button className="secondary" onClick={() => handleMenuReorder(config.id, 'up')}>↑</button>}
-                  {idx < sectionItems.length - 1 && <button className="secondary" onClick={() => handleMenuReorder(config.id, 'down')}>↓</button>}
-                  <button className="secondary" onClick={() => { setEditingSpecialMsg(config.id); setSpecialMsgValue(config.specialMessage || ''); }}>Msg</button>
-                  <button className="danger" onClick={() => handleDeleteMenuConfig(config.id)}>Delete</button>
+                  {idx > 0 && (
+                    <button
+                      className="secondary"
+                      onClick={() => handleMenuReorder(config.id, 'up')}
+                    >
+                      ↑
+                    </button>
+                  )}
+                  {idx < sectionItems.length - 1 && (
+                    <button
+                      className="secondary"
+                      onClick={() => handleMenuReorder(config.id, 'down')}
+                    >
+                      ↓
+                    </button>
+                  )}
+                  <button
+                    className="secondary"
+                    onClick={() => {
+                      setEditingSpecialMsg(config.id);
+                      setSpecialMsgValue(config.specialMessage || '');
+                    }}
+                  >
+                    Msg
+                  </button>
+                  <button className="danger" onClick={() => handleDeleteMenuConfig(config.id)}>
+                    Delete
+                  </button>
                 </div>
                 {editingSpecialMsg === config.id && (
                   <div className="special-msg-form">
                     <Field label="Special Message">
-                      <textarea value={specialMsgValue} onChange={e => setSpecialMsgValue(e.target.value)} dir="auto" rows={3} />
+                      <textarea
+                        value={specialMsgValue}
+                        onChange={(e) => setSpecialMsgValue(e.target.value)}
+                        dir="auto"
+                        rows={3}
+                      />
                     </Field>
-                    <button className="primary" onClick={() => handleSaveSpecialMessage(config.id)}>Save</button>
-                    <button className="secondary" onClick={() => setEditingSpecialMsg(null)}>Cancel</button>
+                    <button className="primary" onClick={() => handleSaveSpecialMessage(config.id)}>
+                      Save
+                    </button>
+                    <button className="secondary" onClick={() => setEditingSpecialMsg(null)}>
+                      Cancel
+                    </button>
                   </div>
                 )}
               </li>
@@ -160,12 +214,18 @@ export default function MenuConfigPage() {
       <div className="card">
         <h2>Add to {menuActiveSection}</h2>
         <Field label="Category">
-          <select value={menuAddCatId} onChange={e => setMenuAddCatId(e.target.value)}>
+          <select value={menuAddCatId} onChange={(e) => setMenuAddCatId(e.target.value)}>
             <option value="">Select category...</option>
-            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
           </select>
         </Field>
-        <button className="primary" onClick={handleAddToSection}>Add</button>
+        <button className="primary" onClick={handleAddToSection}>
+          Add
+        </button>
       </div>
     </>
   );

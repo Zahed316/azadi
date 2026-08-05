@@ -1,7 +1,11 @@
 import { expect, test } from 'vitest';
 import { buildListPage } from '../utils/faqPagination';
 
-const faqs = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, question: `Q${i + 1}`, answer: `A${i + 1}` }));
+const faqs = Array.from({ length: 12 }, (_, i) => ({
+  id: i + 1,
+  question: `Q${i + 1}`,
+  answer: `A${i + 1}`,
+}));
 
 test('first page has 5 items and only a next button', () => {
   const page = buildListPage(faqs, 0, 5);
@@ -27,7 +31,7 @@ test('last page has only prev', () => {
 });
 
 test('empty list yields one empty page', () => {
-  const page = buildListPage<typeof faqs[0]>([], 0, 5);
+  const page = buildListPage<(typeof faqs)[0]>([], 0, 5);
   expect(page.items).toHaveLength(0);
   expect(page.hasNext).toBe(false);
   expect(page.hasPrev).toBe(false);

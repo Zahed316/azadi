@@ -5,9 +5,11 @@
 > **Global rules are binding.** The rules in `~/.claude/CLAUDE.md` take precedence over any project-specific guidance in this file or in `CLAUDE.md`. If they conflict, the global rules win — and this file should be updated to reconcile.
 
 ## Project Overview
+
 Azadi Coffee Roastery — Telegram bot + admin panel for a coffee shop in Iranshahr, Iran. Cloudflare Workers backend, grammY bot framework, D1 database (Drizzle ORM), Cloudflare Workers AI for chat fallback. Admin management via a standalone React Mini App (admin-app/). Persian UI text in all bot replies.
 
 ## Build & Test
+
 ```
 npm ci                          # install
 npm test                        # vitest run (unit tests only)
@@ -19,16 +21,19 @@ npm run deploy                  # npm exec -- wrangler deploy (uses project-loca
 npm run deploy:dry              # npm exec -- wrangler deploy --dry-run --outdir ./wrangler-dry
 npm run setup:webhook           # reads TELEGRAM_BOT_TOKEN + SECRET_TOKEN from ~/.env, then curls setWebhook
 ```
+
 CI (GitHub Actions): npm ci → vitest → lint (non-blocking) → tsc --noEmit → wrangler deploy (main only).
 Admin Mini App is deployed separately to Cloudflare Pages — see Deployment section below.
 
 ## Deployment
+
 - **Worker**: `wrangler deploy` via `cloudflare/wrangler-action@v3` on push to main.
 - **Admin Mini App**: `wrangler pages deploy admin-app/dist --project-name=azadi-admin` via a separate `deploy-admin-app` job in `.github/workflows/deploy.yml`. It runs on the same push trigger and reuses `secrets.CF_API_TOKEN`.
 - **Bot entry point**: `src/commands/admin.ts` hardcodes the Mini App URL as `https://azadi-admin.pages.dev`. The Worker does NOT serve the admin app; they are separate Cloudflare resources.
 - **Critical**: Editing `admin-app/src/App.tsx` and running `wrangler deploy` (or pushing Worker changes) does NOT update the Mini App. The Pages site must be rebuilt and redeployed. If the Mini App looks stale, check the Pages deployment first.
 
 Admin Mini App (admin-app/):
+
 ```
 cd admin-app && npm install
 npm run dev      # vite dev server
@@ -39,6 +44,7 @@ npm run format:check
 ```
 
 ## Dev Environment
+
 - **Runtime**: Cloudflare Workers (TypeScript, `"type": "commonjs"`)
 - **tsconfig**: ES2022 target/module, strict mode, `@cloudflare/workers-types`
 - **Database**: Cloudflare D1 (SQLite), Drizzle ORM. Schema: `src/database/schema.ts`. Migrations: `drizzle/` directory.
@@ -47,6 +53,7 @@ npm run format:check
 - **AI model**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` via Cloudflare Workers AI
 
 ## Code Style Guidelines
+
 - Use descriptive variable names
 - Follow existing patterns in the codebase
 - Extract complex conditions into meaningful boolean variables
@@ -56,13 +63,14 @@ npm run format:check
 - **Module-level request context**: `src/requestContext.ts` stores `env` and `ExecutionContext` as module globals, set per-request in `src/index.ts`. This works because Workers isolate each request, but means you cannot import these in tests without mocking.
 - **Repository pattern**: All DB access goes through repository classes in `src/repositories/index.ts`. Each takes a D1 binding in its constructor and wraps a `getDb()` call. Follow this pattern for new data access.
 - **grammY Conversations Persistence**: When using `@grammyjs/conversations` (v2.x) in a serverless environment (Cloudflare Workers), NEVER initialize it with `bot.use(conversations())` as it defaults to an in-memory map that wipes between requests. You MUST explicitly configure it to use persistent storage (e.g., `D1SessionStorage`) and provide a unique prefix (`prefix: "convo_"`) to prevent overwriting the main session data.
-- **Conversations & AI Race Conditions**: When using `@grammyjs/conversations` alongside a slow fallback handler (like an AI service), Telegram webhook retries can cause race conditions. If the final step of a conversation (e.g., database update) takes too long, Telegram will retry the webhook. Because `session` data is only saved at the *end* of the request, session-based idempotency (`lastUpdateId`) fails for concurrent retries. The retry will find an empty conversation state and fall through to the AI handler.
+- **Conversations & AI Race Conditions**: When using `@grammyjs/conversations` alongside a slow fallback handler (like an AI service), Telegram webhook retries can cause race conditions. If the final step of a conversation (e.g., database update) takes too long, Telegram will retry the webhook. Because `session` data is only saved at the _end_ of the request, session-based idempotency (`lastUpdateId`) fails for concurrent retries. The retry will find an empty conversation state and fall through to the AI handler.
   - **Definitive Solution applied to this codebase**: We completely removed admin conversational wizards from the chat interface. Admin multi-step data entry is now handled via a standalone Telegram Mini App (Web App) connecting to REST endpoints on the Cloudflare Worker, entirely isolating it from the webhook AI loop.
   - **Current state**: `conversations()` middleware is **gated by `env.USE_CONVERSATIONS === 'true'`** in `src/bot.ts` (off by default). Re-introduction requires flipping that env flag AND adding a `ctx.hasActiveConversation` snapshot middleware (BEFORE any `createConversation()` enter) AND a `if (ctx.hasActiveConversation) return;` skip at the top of `src/handlers/message.ts:9` — see the comment block in `src/bot.ts` for the recipe.
 - **Admin auth**: Two roles — `super_admin` (full access) and `category_admin` (restricted to one category). Auth middleware in `src/middlewares/auth.ts`. API routes in `src/api/router.ts` use Telegram Mini App `initData` for auth (header: `Authorization: Telegram <initData>`).
 - **Bot context type**: `MyContext` (defined in `src/types/context.ts`) combines grammY `Context`, `SessionFlavor<SessionData>`, `ConversationFlavor`, and custom fields (`env`, `execCtx`). Always use this type for bot handlers.
 
 ## Conventions
+
 - All user-facing bot text is in **Persian (Farsi)**, using HTML parse mode.
 - **Numbers in bot messages are Persian digits.** Use `toPersianDigits()` and `formatPersianPrice()` from `src/utils/numbers.ts` — never interpolate raw numbers into Persian text. `formatPersianPrice(amount, unit)` wraps the price in LRI/PDI (U+2066/U+2069) bidi isolates so the price run stays LTR inside RTL sentences; keep the isolates.
 - **Price unit is editable** via the `price_unit` key in the `settings` table (admin app Settings tab). Bot code reads it through `SettingsRepository.getValue('price_unit')` with `DEFAULT_PRICE_UNIT` (`تومان`) as coded fallback. Phone numbers and opening hours stay Latin digits (dial-ability); prices, stock counts, and page numbers go Persian.
@@ -75,9 +83,11 @@ npm run format:check
 - Admin app UX patterns: toast notifications via `showToast()` (never `alert()`), form fields wrapped in the `<Field label>` component (placeholder is a hint, not a label), every list renders an `.empty-state` block when empty, Persian data elements get `dir="auto"` while chrome stays English.
 
 ## Common Workflows
+
 Document frequently used workflows and commands here.
 
 ## Pitfalls
+
 - `wrangler.toml` has a hardcoded D1 `database_id`. Do not change it without updating the Cloudflare dashboard binding.
 - `requestContext.ts` module globals are not safe to share across test cases. Tests should mock `env` directly rather than calling `setRequestContext`.
 - The `setup:webhook` script reads `SECRET_TOKEN` from `~/.env` alongside `TELEGRAM_BOT_TOKEN`. To rotate, edit `~/.env` (`SECRET_TOKEN=...`) and re-run `npm run setup:webhook`. Do not commit either token to source control.

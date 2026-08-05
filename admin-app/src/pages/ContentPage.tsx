@@ -12,12 +12,12 @@ export default function ContentPage() {
 
   const { data: settings = [] } = useQuery({
     queryKey: queryKeys.settings,
-    queryFn: () => apiFetch<{ settings: any[] }>('/settings').then(r => r.settings),
+    queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
   });
 
   const { data: faqs = [] } = useQuery({
     queryKey: queryKeys.faqs,
-    queryFn: () => apiFetch<{ faqs: any[] }>('/faqs').then(r => r.faqs),
+    queryFn: () => apiFetch<{ faqs: any[] }>('/faqs').then((r) => r.faqs),
   });
 
   const aboutSetting = settings.find((s: any) => s.key === 'about');
@@ -40,7 +40,10 @@ export default function ContentPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
       showToast('About text saved ✓');
     },
-    onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
   });
 
   const saveFaqMutation = useMutation({
@@ -54,7 +57,10 @@ export default function ContentPage() {
       resetFaqForm();
       showToast(variables.id ? 'FAQ updated ✓' : 'FAQ added ✓');
     },
-    onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
   });
 
   const deleteFaqMutation = useMutation({
@@ -63,12 +69,15 @@ export default function ContentPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.faqs });
       showToast('FAQ deleted ✓');
     },
-    onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
   });
 
   const handleSaveAbout = () => {
     const updatedSettings = settings.map((s: any) =>
-      s.key === 'about' ? { ...s, value: aboutText } : s
+      s.key === 'about' ? { ...s, value: aboutText } : s,
     );
     if (!updatedSettings.find((s: any) => s.key === 'about')) {
       updatedSettings.push({ key: 'about', value: aboutText });
@@ -106,32 +115,65 @@ export default function ContentPage() {
     <>
       <div className="card">
         <h2>About Us</h2>
-        <textarea value={aboutText} onChange={e => setAboutText(e.target.value)} rows={6} dir="auto" />
-        <button className="primary" onClick={handleSaveAbout}>Save About Text</button>
+        <textarea
+          value={aboutText}
+          onChange={(e) => setAboutText(e.target.value)}
+          rows={6}
+          dir="auto"
+        />
+        <button className="primary" onClick={handleSaveAbout}>
+          Save About Text
+        </button>
       </div>
 
       <div className="card">
         <h2>{editingFaq ? 'Edit FAQ' : 'Add FAQ'}</h2>
         <form onSubmit={handleSaveFaq}>
-          <Field label="Question"><input value={faqQuestion} onChange={e => setFaqQuestion(e.target.value)} dir="auto" required /></Field>
-          <Field label="Answer"><textarea value={faqAnswer} onChange={e => setFaqAnswer(e.target.value)} dir="auto" required /></Field>
-          <button type="submit" className="primary">{editingFaq ? 'Update' : 'Add'} FAQ</button>
-          {editingFaq && <button type="button" className="secondary" onClick={resetFaqForm}>Cancel</button>}
+          <Field label="Question">
+            <input
+              value={faqQuestion}
+              onChange={(e) => setFaqQuestion(e.target.value)}
+              dir="auto"
+              required
+            />
+          </Field>
+          <Field label="Answer">
+            <textarea
+              value={faqAnswer}
+              onChange={(e) => setFaqAnswer(e.target.value)}
+              dir="auto"
+              required
+            />
+          </Field>
+          <button type="submit" className="primary">
+            {editingFaq ? 'Update' : 'Add'} FAQ
+          </button>
+          {editingFaq && (
+            <button type="button" className="secondary" onClick={resetFaqForm}>
+              Cancel
+            </button>
+          )}
         </form>
       </div>
 
       <div className="card">
         <h2>FAQs</h2>
-        {faqs.length === 0 ? <EmptyState message="No FAQs yet." /> : (
+        {faqs.length === 0 ? (
+          <EmptyState message="No FAQs yet." />
+        ) : (
           <ul className="list">
-            {faqs.map(f => (
+            {faqs.map((f) => (
               <li key={f.id} className="list-item">
                 <div className="list-item-info">
                   <span dir="auto">{f.question}</span>
                 </div>
                 <div className="list-item-actions">
-                  <button className="secondary" onClick={() => startEditFaq(f)}>Edit</button>
-                  <button className="danger" onClick={() => deleteFaq(f.id)}>Delete</button>
+                  <button className="secondary" onClick={() => startEditFaq(f)}>
+                    Edit
+                  </button>
+                  <button className="danger" onClick={() => deleteFaq(f.id)}>
+                    Delete
+                  </button>
                 </div>
               </li>
             ))}

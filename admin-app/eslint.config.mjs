@@ -11,7 +11,7 @@ export default [
       'node_modules/**',
       'dist/**',
       'eslint.config.mjs',
-      'vite.config.ts',       // not in tsconfig.app.json's include
+      'vite.config.ts', // not in tsconfig.app.json's include
     ],
   },
 
@@ -35,10 +35,7 @@ export default [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',

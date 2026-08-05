@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **Persona-specific companion**: `AGENTS.md` is a parallel docs file that records the same kind of project context. It is the *first* place to look for workflow conventions and pitfalls; this file is the canonical source. If they disagree, this file wins — and `AGENTS.md` should be updated to match.
+> **Persona-specific companion**: `AGENTS.md` is a parallel docs file that records the same kind of project context. It is the _first_ place to look for workflow conventions and pitfalls; this file is the canonical source. If they disagree, this file wins — and `AGENTS.md` should be updated to match.
 
 ## Memory
 
@@ -19,6 +19,7 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 A Telegram bot + admin Web App for **Azadi Coffee Roastery** (Iranshahr, Iran). Cloudflare Workers backend, grammY bot, D1 (SQLite) via Drizzle ORM, Cloudflare Workers AI for chat fallback. All bot UI text is **Persian (Farsi)** with HTML parse mode.
 
 Two deployable units:
+
 - `src/` — the Worker (bot webhook + REST API). Deployed via `wrangler deploy` to `azadi-coffee-bot` worker.
 - `admin-app/` — a Telegram Mini App (React + Vite). Deployed separately to Cloudflare Pages at `azadi-admin.pages.dev`. **The Worker does not serve it.**
 
@@ -53,7 +54,9 @@ CI (`.github/workflows/deploy.yml`): `npm ci` → vitest → `lint` (non-blockin
 ## Architecture
 
 ### Request entry (`src/index.ts`)
+
 Worker `fetch` routes:
+
 - `/api/*` → `handleApiRequest()` in `src/api/router.ts` (admin REST API)
 - `/webhook` → grammY `webhookCallback("cloudflare-mod")` after validating `X-Telegram-Bot-Api-Secret-Token`
 - Anything else → 404
@@ -61,6 +64,7 @@ Worker `fetch` routes:
 `setRequestContext(env, ctx)` is called per-request and stores them in module globals (`src/requestContext.ts`). Works because Workers isolate each request, but **breaks in tests** — mock `env` directly.
 
 ### Bot (`src/bot.ts`, `src/types/context.ts`)
+
 - `createBot(env)` returns a `Bot<MyContext>`. `botInstance` is cached at module scope in `src/index.ts`.
 - Middleware order matters:
   1. Inject `ctx.env` / `ctx.execCtx` from request context
@@ -72,25 +76,30 @@ Worker `fetch` routes:
 - `MyContext` = `Context & SessionFlavor<SessionData> & ConversationFlavor<Context> & { env, execCtx? }`. **Always use this type** for handlers.
 
 ### Database (`src/database/`, `src/repositories/`)
+
 - Drizzle schema in `src/database/schema.ts` (snake_case columns, explicit `text('name')` strings). Migrations in `drizzle/`.
 - `getDb(d1Binding)` (`src/database/client.ts`) is the only Drizzle factory. Repositories call it in their constructor.
 - **Repository pattern**: one class per table group (`ProductRepository`, `CategoryRepository`, `BranchRepository`, `FaqRepository`, `SettingsRepository`, `AiLogRepository`, `MenuConfigRepository`). All take `d1Binding: any` in the constructor. Add new data access as a new repository class.
 - `D1SessionStorage` (`src/database/sessionStorage.ts`) is a grammY `StorageAdapter` that reads/writes the `sessions` table (key/value JSON).
 
 ### Admin REST API (`src/api/router.ts`)
+
 - Auth header: `Authorization: Telegram <initData>`. Validates via `validateInitData` (src/api/auth.ts) and looks up the telegram user in the `admins` table.
 - Two roles: `super_admin` (full access) and `category_admin` (restricted to one `categoryId`). `category_admin` write paths enforce `allowedCategoryId` against `body.categoryId` / `product.categoryId`.
 - Resources: `admins`, `settings`, `categories`, `menu-config` (+ `/reorder`), `products` (+ `/batch`, `/{id}/stock`, `/{id}/toggle`), `faqs`, `branches`, `currentUser`.
 - All responses use `corsHeaders` (`Access-Control-Allow-Origin: *`); `OPTIONS` is preflight-only.
 
 ### AI fallback (`src/services/aiService.ts`, `src/handlers/message.ts`)
+
 - `message:text` handler skips when text starts with `/` (commands are handled upstream). When `USE_CONVERSATIONS` is enabled and a wizard is active, you must add a `ctx.hasActiveConversation` skip here — see Pitfalls.
 - Loads `products`, `branches`, `faqs`, `recentLogs`, `visibleCategoryIds` in parallel, builds a minimal context (`buildMinimalContext` in `src/utils/menuContext.ts`), then calls Workers AI (`@cf/meta/llama-3.3-70b-instruct-fp8-fast`).
 - 20s timeout via `Promise.race`. Logs to `ai_conversation_logs` after replying (in `ctx.execCtx.waitUntil` if available so the response isn't blocked).
 - `PERF_LOG === 'true'` env var emits per-request timing JSON to stdout.
 
 ### Admin Mini App (`admin-app/`)
+
 React + Vite + `@telegram-apps/sdk` (v2). The Mini App is loaded inside Telegram, not a standalone browser app:
+
 - Auth: `retrieveLaunchParams()` from `@telegram-apps/sdk` returns `initData`; the app sends it as `Authorization: Telegram <initData>` to the Worker API. The Worker validates the signature against `TELEGRAM_BOT_TOKEN`.
 - **Two URLs to keep in sync** when changing environments:
   - The Mini App URL (opened by the bot's "Open Admin" button) is hardcoded in `src/commands/admin.ts` as `https://azadi-admin.pages.dev`.

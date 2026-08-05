@@ -1,6 +1,6 @@
 // Score pre-normalized searchable text against normalized query keywords.
 function score(normalizedText: string, keywords: string[]): number {
-  return keywords.filter(k => normalizedText.includes(k)).length;
+  return keywords.filter((k) => normalizedText.includes(k)).length;
 }
 
 export function buildMinimalContext(
@@ -8,31 +8,34 @@ export function buildMinimalContext(
   productsWithDetails: any[],
   branches: any[],
   faqs: any[],
-  visibleCategoryIds?: Set<number>
+  visibleCategoryIds?: Set<number>,
 ): string {
-  const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  const keywords = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
 
   // Filter products to only those whose category is visible in the menu.
   // If visibleCategoryIds is not provided (e.g., in tests), include all.
   const eligibleProducts = visibleCategoryIds
-    ? productsWithDetails.filter(row => visibleCategoryIds.has(row.products.categoryId))
+    ? productsWithDetails.filter((row) => visibleCategoryIds.has(row.products.categoryId))
     : productsWithDetails;
 
-  let ctx = "=== BRANCHES ===\n";
+  let ctx = '=== BRANCHES ===\n';
   for (const b of branches) {
     ctx += `- ${b.name}: ${b.address} | Phone: ${b.phone || 'N/A'} | Hours: ${b.openingHours || 'N/A'}\n`;
   }
 
   // Top 5 scored products (from visible categories only)
   const scoredProducts = eligibleProducts
-    .map(row => ({
+    .map((row) => ({
       row,
       s: score(`${row.products.name} ${row.products.description || ''}`.toLowerCase(), keywords),
     }))
     .sort((a, b) => b.s - a.s)
     .slice(0, 5);
 
-  ctx += "\n=== PRODUCTS (top matches from active menu) ===\n";
+  ctx += '\n=== PRODUCTS (top matches from active menu) ===\n';
   for (const { row } of scoredProducts) {
     const p = row.products;
     const d = row.coffee_details;
@@ -47,11 +50,11 @@ export function buildMinimalContext(
 
   // Top 3 scored FAQs
   const scoredFaqs = faqs
-    .map(f => ({ f, s: score(`${f.question} ${f.answer}`.toLowerCase(), keywords) }))
+    .map((f) => ({ f, s: score(`${f.question} ${f.answer}`.toLowerCase(), keywords) }))
     .sort((a, b) => b.s - a.s)
     .slice(0, 3);
 
-  ctx += "\n=== FAQ ===\n";
+  ctx += '\n=== FAQ ===\n';
   for (const { f } of scoredFaqs) {
     ctx += `- Q: ${f.question}\n  A: ${f.answer}\n`;
   }

@@ -3,12 +3,7 @@
  * Covers admins, settings, categories, menu-config, faqs, and branches routes.
  */
 import { expect, test, beforeEach } from 'vitest';
-import {
-  callRouter,
-  setAdminRole,
-  resetAuthDefaults,
-  clearStore,
-} from './_helpers/routerHarness';
+import { callRouter, setAdminRole, resetAuthDefaults, clearStore } from './_helpers/routerHarness';
 
 beforeEach(() => {
   resetAuthDefaults();

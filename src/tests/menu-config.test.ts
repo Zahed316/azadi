@@ -1,22 +1,24 @@
 import { expect, test } from 'vitest';
 
 test('getBySection result shape has required fields', () => {
-  const mockResult = [{
-    id: 1,
-    categoryId: 1,
-    menuSection: 'drinks',
-    displayOrder: 1,
-    isVisible: true,
-    buttonLabel: null,
-    specialMessage: null,
-    categoryName: 'Espresso',
-    categoryEmoji: '☕',
-  }];
+  const mockResult = [
+    {
+      id: 1,
+      categoryId: 1,
+      menuSection: 'drinks',
+      displayOrder: 1,
+      isVisible: true,
+      buttonLabel: null,
+      specialMessage: null,
+      categoryName: 'Espresso',
+      categoryEmoji: '☕',
+    },
+  ];
   expect(mockResult[0]).toHaveProperty('categoryId');
   expect(mockResult[0]).toHaveProperty('menuSection');
   expect(mockResult[0]).toHaveProperty('isVisible');
   expect(mockResult[0].menuSection).toBe('drinks');
-  expect(mockResult.filter(r => r.isVisible)).toHaveLength(1);
+  expect(mockResult.filter((r) => r.isVisible)).toHaveLength(1);
 });
 
 test('menu-config API response shape is correct', () => {
@@ -45,13 +47,17 @@ test('reorder swap produces correct display orders', () => {
 
 test('button label falls back to emoji+name when null', () => {
   const config = { buttonLabel: null, categoryEmoji: '☕', categoryName: 'Espresso' };
-  const label = config.buttonLabel ?? `${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}`;
+  const label =
+    config.buttonLabel ??
+    `${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}`;
   expect(label).toBe('☕ Espresso');
 });
 
 test('button label uses custom label when set', () => {
   const config = { buttonLabel: 'Special Blend', categoryEmoji: '☕', categoryName: 'Espresso' };
-  const label = config.buttonLabel ?? `${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}`;
+  const label =
+    config.buttonLabel ??
+    `${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${config.categoryName}`;
   expect(label).toBe('Special Blend');
 });
 

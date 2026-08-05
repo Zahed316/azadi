@@ -21,9 +21,8 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
       const repo = new ProductRepository(ctx.env.DB);
       const menuRepo = new MenuConfigRepository(ctx.env.DB);
       const configs = await menuRepo.getBySection('cakes');
-      const products = configs.length > 0
-        ? await repo.getProductsByCategory(configs[0].categoryId)
-        : [];
+      const products =
+        configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
 
       if (products.length === 0) {
         await ctx.reply('📭 در حال حاضر کیک یا کوکی موجود نیست.');
@@ -39,7 +38,8 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
       if (page.hasNext) kb.text('◀️ صفحه بعد', `${CAKES_PAGE_PREFIX}${0 + 1}`);
 
       const body = `<b>کیک و کوکی</b> (${page.pageLabel})\n\nیک کیک یا کوکی انتخاب کنید:`;
-      await ctx.editMessageText(body, { reply_markup: kb })
+      await ctx
+        .editMessageText(body, { reply_markup: kb })
         .catch(() => ctx.reply(body, { reply_markup: kb }));
     } catch (e) {
       console.error(e);
@@ -55,9 +55,8 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
       const repo = new ProductRepository(ctx.env.DB);
       const menuRepo = new MenuConfigRepository(ctx.env.DB);
       const configs = await menuRepo.getBySection('beans');
-      const products = configs.length > 0
-        ? await repo.getProductsByCategory(configs[0].categoryId)
-        : [];
+      const products =
+        configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
 
       if (products.length === 0) {
         await ctx.reply('📭 در حال حاضر دانه قهوه موجود نیست.');
@@ -73,11 +72,14 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
       if (page.hasNext) kb.text('◀️ صفحه بعد', `${BEANS_PAGE_PREFIX}${0 + 1}`);
 
       const body = `<b>دانه‌های قهوه</b> (${page.pageLabel})\n\nدانه قهوه مورد نظر را انتخاب کنید:`;
-      await ctx.editMessageText(body, { reply_markup: kb })
+      await ctx
+        .editMessageText(body, { reply_markup: kb })
         .catch(() => ctx.reply(body, { reply_markup: kb }));
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری دانه‌های قهوه ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری دانه‌های قهوه ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .row()

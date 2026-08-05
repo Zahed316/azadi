@@ -17,7 +17,9 @@ export const mainMenu = new Menu<MyContext>('main-menu')
     try {
       const items = await new ProductRepository(ctx.env.DB).getByFlag('featured');
       if (items.length === 0) {
-        await ctx.reply('📭 در حال حاضر محصول ویژه‌ای نداریم.', { reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main') });
+        await ctx.reply('📭 در حال حاضر محصول ویژه‌ای نداریم.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
         return;
       }
       const priceUnit = await loadPriceUnit(ctx.env);
@@ -34,7 +36,9 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری پیشنهاد ویژه ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری پیشنهاد ویژه ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .row()
@@ -42,7 +46,9 @@ export const mainMenu = new Menu<MyContext>('main-menu')
     try {
       const items = await new ProductRepository(ctx.env.DB).getByFlag('isSeasonal');
       if (items.length === 0) {
-        await ctx.reply('📭 در حال حاضر محصول فصلی موجود نیست.', { reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main') });
+        await ctx.reply('📭 در حال حاضر محصول فصلی موجود نیست.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
         return;
       }
       const priceUnit = await loadPriceUnit(ctx.env);
@@ -59,7 +65,9 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات فصلی ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری محصولات فصلی ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .row()
@@ -67,14 +75,21 @@ export const mainMenu = new Menu<MyContext>('main-menu')
     try {
       const rows = await new ProductRepository(ctx.env.DB).getBeansWithCoffeeDetails();
       if (rows.length === 0) {
-        await ctx.reply('📭 هنوز دانه قهوه‌ای با جزئیات کشت ثبت نشده است.', { reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main') });
+        await ctx.reply('📭 هنوز دانه قهوه‌ای با جزئیات کشت ثبت نشده است.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
         return;
       }
       const priceUnit = await loadPriceUnit(ctx.env);
       const page = buildListPage(rows, 0, 5);
       // Distinct-origin summary above the list (Phase 5 will turn this into a per-user counter).
-      const origins = Array.from(new Set(page.items.map((r: any) => r.details?.origin).filter(Boolean)));
-      const originsLine = origins.length > 0 ? `\n\n🗺 <b>${origins.length} کشور مبدا در این صفحه:</b> ${origins.join(' · ')}` : '';
+      const origins = Array.from(
+        new Set(page.items.map((r: any) => r.details?.origin).filter(Boolean)),
+      );
+      const originsLine =
+        origins.length > 0
+          ? `\n\n🗺 <b>${origins.length} کشور مبدا در این صفحه:</b> ${origins.join(' · ')}`
+          : '';
       const list = page.items.map((r: any) => {
         const p = r.product;
         const origin = r.details?.origin ? ` — ${r.details.origin}` : '';
@@ -88,7 +103,9 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری پاسپورت قهوه ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری پاسپورت قهوه ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .text('🔍 جستجو', async (ctx: any) => {
@@ -96,10 +113,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       // Just nudge the user to type their question. The actual AI handler
       // in src/handlers/message.ts will pick up the next text message.
       await ctx.replyWithChatAction('typing');
-      await ctx.reply(
-        'سؤال خود را بنویسید — دستیار هوشمند پاسخ می‌دهد 🤖',
-        { parse_mode: 'HTML' },
-      );
+      await ctx.reply('سؤال خود را بنویسید — دستیار هوشمند پاسخ می‌دهد 🤖', { parse_mode: 'HTML' });
     } catch (e) {
       console.error(e);
       await ctx.reply('خطا در ارتباط با سرور.');
@@ -110,11 +124,15 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .text('🏠 درباره ما', async (ctx: any) => {
     try {
       const repo = new SettingsRepository(ctx.env.DB);
-      const aboutText = await repo.getValue('about') || 'به روستری قهوه آزادی خوش آمدید — قهوه تازه‌بوشده از ایرانشهر. ☕';
+      const aboutText =
+        (await repo.getValue('about')) ||
+        'به روستری قهوه آزادی خوش آمدید — قهوه تازه‌بوشده از ایرانشهر. ☕';
       await ctx.reply(aboutText, { parse_mode: 'HTML' });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود. لطفاً دوباره امتحان کنید.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود. لطفاً دوباره امتحان کنید.' })
+        .catch(() => {});
     }
   })
   .submenu('☕ نوشیدنی‌ها', 'drinks-nav-menu')
@@ -135,17 +153,24 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       const text = page.items.map((f: any) => formatFaq(f)).join('\n\n');
       const kb = new InlineKeyboard();
       if (page.hasNext) kb.text('◀️ صفحه بعد', 'faq:page:1');
-      await ctx.reply(`<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`, { parse_mode: 'HTML', reply_markup: kb });
+      await ctx.reply(`<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`, {
+        parse_mode: 'HTML',
+        reply_markup: kb,
+      });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود. لطفاً دوباره امتحان کنید.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود. لطفاً دوباره امتحان کنید.' })
+        .catch(() => {});
     }
   })
   .row()
   .text('🤖 دستیار هوشمند قهوه', async (ctx: any) => {
     try {
       const repo = new SettingsRepository(ctx.env.DB);
-      const greeting = await repo.getValue('ai_greeting') || 'من دستیار هوشمند قهوه شما هستم! 🤖☕\n\nهر سوالی درباره قهوه، روش‌های دم‌آوری، شعب یا هر چیز دیگری دارید از من بپرسید.';
+      const greeting =
+        (await repo.getValue('ai_greeting')) ||
+        'من دستیار هوشمند قهوه شما هستم! 🤖☕\n\nهر سوالی درباره قهوه، روش‌های دم‌آوری، شعب یا هر چیز دیگری دارید از من بپرسید.';
       await ctx.reply(greeting, { parse_mode: 'HTML' });
     } catch (e) {
       console.error(e);

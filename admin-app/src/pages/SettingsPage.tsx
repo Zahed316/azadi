@@ -20,7 +20,7 @@ export default function SettingsPage() {
 
   const { data: settings = [] } = useQuery({
     queryKey: queryKeys.settings,
-    queryFn: () => apiFetch<{ settings: any[] }>('/settings').then(r => r.settings),
+    queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
   });
 
   const [localSettings, setLocalSettings] = useState<any[]>(settings);
@@ -34,9 +34,9 @@ export default function SettingsPage() {
   const [newSettingValue, setNewSettingValue] = useState('');
 
   const updateSetting = (key: string, value: string) => {
-    setLocalSettings(prev => {
+    setLocalSettings((prev) => {
       const exists = prev.find((s: any) => s.key === key);
-      if (exists) return prev.map((s: any) => s.key === key ? { ...s, value } : s);
+      if (exists) return prev.map((s: any) => (s.key === key ? { ...s, value } : s));
       return [...prev, { key, value }];
     });
   };
@@ -47,15 +47,20 @@ export default function SettingsPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
       showToast('Saved ✓');
     },
-    onError: (err: Error) => { setError(err.message); },
+    onError: (err: Error) => {
+      setError(err.message);
+    },
   });
 
   const deleteSettingMutation = useMutation({
-    mutationFn: (key: string) => apiFetch(`/settings/${encodeURIComponent(key)}`, { method: 'DELETE' }),
+    mutationFn: (key: string) =>
+      apiFetch(`/settings/${encodeURIComponent(key)}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
     },
-    onError: (err: Error) => { setError(err.message); },
+    onError: (err: Error) => {
+      setError(err.message);
+    },
   });
 
   const handleSaveSettings = (e: React.FormEvent) => {
@@ -73,7 +78,7 @@ export default function SettingsPage() {
 
   const handleDeleteSetting = async (key: string) => {
     if (!(await confirm(`Delete setting ${key}?`))) return;
-    setLocalSettings(prev => prev.filter((s: any) => s.key !== key));
+    setLocalSettings((prev) => prev.filter((s: any) => s.key !== key));
     deleteSettingMutation.mutate(key);
   };
 
@@ -82,46 +87,64 @@ export default function SettingsPage() {
       <div className="card">
         <h2>Bot Settings</h2>
         <form onSubmit={handleSaveSettings}>
-          {BUILTIN_KEYS.map(key => (
+          {BUILTIN_KEYS.map((key) => (
             <Field key={key} label={BUILTIN_LABELS[key] || key}>
               <input
                 value={localSettings.find((s: any) => s.key === key)?.value || ''}
-                onChange={e => updateSetting(key, e.target.value)}
+                onChange={(e) => updateSetting(key, e.target.value)}
                 dir={key === 'ai_greeting' ? 'auto' : undefined}
               />
             </Field>
           ))}
-          <button type="submit" className="primary">Save Settings</button>
+          <button type="submit" className="primary">
+            Save Settings
+          </button>
         </form>
       </div>
 
       <div className="card">
         <h2>Custom Settings</h2>
-        {localSettings.filter((s: any) => !BUILTIN_KEYS.includes(s.key)).length === 0
-          ? <EmptyState message="No custom settings." />
-          : (
-            <ul className="list">
-              {localSettings.filter((s: any) => !BUILTIN_KEYS.includes(s.key)).map(s => (
+        {localSettings.filter((s: any) => !BUILTIN_KEYS.includes(s.key)).length === 0 ? (
+          <EmptyState message="No custom settings." />
+        ) : (
+          <ul className="list">
+            {localSettings
+              .filter((s: any) => !BUILTIN_KEYS.includes(s.key))
+              .map((s) => (
                 <li key={s.key} className="list-item">
                   <div className="list-item-info">
                     <span>{s.key}</span>
-                    <span className="list-item-meta" dir="auto">{s.value}</span>
+                    <span className="list-item-meta" dir="auto">
+                      {s.value}
+                    </span>
                   </div>
                   <div className="list-item-actions">
-                    <button className="danger" onClick={() => handleDeleteSetting(s.key)}>Delete</button>
+                    <button className="danger" onClick={() => handleDeleteSetting(s.key)}>
+                      Delete
+                    </button>
                   </div>
                 </li>
               ))}
-            </ul>
-          )}
+          </ul>
+        )}
       </div>
 
       <div className="card">
         <h2>Add Custom Setting</h2>
         <form onSubmit={handleAddSetting}>
-          <Field label="Key"><input value={newSettingKey} onChange={e => setNewSettingKey(e.target.value)} required /></Field>
-          <Field label="Value"><input value={newSettingValue} onChange={e => setNewSettingValue(e.target.value)} /></Field>
-          <button type="submit" className="primary">Add Setting</button>
+          <Field label="Key">
+            <input
+              value={newSettingKey}
+              onChange={(e) => setNewSettingKey(e.target.value)}
+              required
+            />
+          </Field>
+          <Field label="Value">
+            <input value={newSettingValue} onChange={(e) => setNewSettingValue(e.target.value)} />
+          </Field>
+          <button type="submit" className="primary">
+            Add Setting
+          </button>
         </form>
       </div>
     </>

@@ -63,23 +63,20 @@ test('feature flag is gated by available = true', () => {
   const candidate = { featured: true, isSeasonal: false, available: false };
   // The "would be returned?" predicate (mirrors the Drizzle where clause).
   const wouldBeReturned =
-    (candidate.featured === true || candidate.isSeasonal === true) &&
-    candidate.available === true;
+    (candidate.featured === true || candidate.isSeasonal === true) && candidate.available === true;
   expect(wouldBeReturned).toBe(false);
 });
 
 test('available + featured product is returned', () => {
   const candidate = { featured: true, isSeasonal: false, available: true };
   const wouldBeReturned =
-    (candidate.featured === true || candidate.isSeasonal === true) &&
-    candidate.available === true;
+    (candidate.featured === true || candidate.isSeasonal === true) && candidate.available === true;
   expect(wouldBeReturned).toBe(true);
 });
 
 test('available + seasonal product is returned', () => {
   const candidate = { featured: false, isSeasonal: true, available: true };
   const wouldBeReturned =
-    (candidate.featured === true || candidate.isSeasonal === true) &&
-    candidate.available === true;
+    (candidate.featured === true || candidate.isSeasonal === true) && candidate.available === true;
   expect(wouldBeReturned).toBe(true);
 });

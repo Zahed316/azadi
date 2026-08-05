@@ -19,7 +19,5 @@ export function useToast() {
 
 export function Toast({ toast }: { toast: ToastData | null }) {
   if (!toast) return null;
-  return (
-    <div className={`toast toast-${toast.kind}`}>{toast.msg}</div>
-  );
+  return <div className={`toast toast-${toast.kind}`}>{toast.msg}</div>;
 }

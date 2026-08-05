@@ -8,7 +8,19 @@ test('FAQ GET response shape', () => {
 });
 
 test('Branch GET response shape', () => {
-  const response = { branches: [{ id: 1, name: 'Main', address: '123 St', phone: null, location: null, openingHours: null, isActive: true }] };
+  const response = {
+    branches: [
+      {
+        id: 1,
+        name: 'Main',
+        address: '123 St',
+        phone: null,
+        location: null,
+        openingHours: null,
+        isActive: true,
+      },
+    ],
+  };
   expect(Array.isArray(response.branches)).toBe(true);
   expect(response.branches[0]).toHaveProperty('name');
   expect(response.branches[0]).toHaveProperty('address');

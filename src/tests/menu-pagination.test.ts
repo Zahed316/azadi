@@ -73,8 +73,9 @@ describe('buildCategoryPage (drinks paginated view)', () => {
   test('product buttons embed product: callback and price is Persian-formatted', async () => {
     const { ctx, last } = makeMockCtx();
     await buildCategoryPage(ctx, config, products.slice(0, 2), 0, 'تومان');
-    const productButtons = flatten(last.opts.reply_markup)
-      .filter((b) => b.callback_data?.startsWith('product:'));
+    const productButtons = flatten(last.opts.reply_markup).filter((b) =>
+      b.callback_data?.startsWith('product:'),
+    );
     expect(productButtons).toHaveLength(2);
     expect(productButtons[0].callback_data).toBe('product:1');
     // formatPersianPrice wraps in LRI/PDI and uses Persian digits; the first
@@ -85,7 +86,9 @@ describe('buildCategoryPage (drinks paginated view)', () => {
 
   test('seasonal flag appends the 🌿 marker to the product button label', async () => {
     const { ctx, last } = makeMockCtx();
-    const seasonalProducts = [{ id: 99, name: 'پای کدو', price: 25000, priceOnRequest: false, isSeasonal: true }];
+    const seasonalProducts = [
+      { id: 99, name: 'پای کدو', price: 25000, priceOnRequest: false, isSeasonal: true },
+    ];
     await buildCategoryPage(ctx, config, seasonalProducts, 0, 'تومان');
     const btn = flatten(last.opts.reply_markup)[0];
     expect(btn.text).toContain('پای کدو 🌿');
@@ -93,7 +96,9 @@ describe('buildCategoryPage (drinks paginated view)', () => {
 
   test('priceOnRequest renders the (سوال در کافه) fallback', async () => {
     const { ctx, last } = makeMockCtx();
-    const onRequest = [{ id: 50, name: 'ویژه', price: null, priceOnRequest: true, isSeasonal: false }];
+    const onRequest = [
+      { id: 50, name: 'ویژه', price: null, priceOnRequest: true, isSeasonal: false },
+    ];
     await buildCategoryPage(ctx, config, onRequest, 0, 'تومان');
     const btn = flatten(last.opts.reply_markup)[0];
     expect(btn.text).toContain('(سوال در کافه)');

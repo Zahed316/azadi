@@ -15,7 +15,7 @@ export function toPersianDigits(input: string | number): string {
  */
 export function formatPersianPrice(amount: number, unit: string): string {
   const grouped = amount
-    .toLocaleString('en-US')      // 1,234,567
-    .replace(/,/g, '٬');          // 1٬234٬567 (Persian thousands sep)
+    .toLocaleString('en-US') // 1,234,567
+    .replace(/,/g, '٬'); // 1٬234٬567 (Persian thousands sep)
   return `${LRI}${toPersianDigits(grouped)} ${unit}${PDI}`;
 }

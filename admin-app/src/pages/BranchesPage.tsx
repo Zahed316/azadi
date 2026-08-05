@@ -12,7 +12,7 @@ export default function BranchesPage() {
 
   const { data: branches = [] } = useQuery({
     queryKey: queryKeys.branches,
-    queryFn: () => apiFetch<{ branches: any[] }>('/branches').then(r => r.branches),
+    queryFn: () => apiFetch<{ branches: any[] }>('/branches').then((r) => r.branches),
   });
 
   const [editingBranch, setEditingBranch] = useState<any>(null);
@@ -34,7 +34,10 @@ export default function BranchesPage() {
       resetBranchForm();
       showToast(variables.id ? 'Branch updated ✓' : 'Branch added ✓');
     },
-    onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
   });
 
   const deleteBranchMutation = useMutation({
@@ -43,7 +46,10 @@ export default function BranchesPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.branches });
       showToast('Branch deleted ✓');
     },
-    onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
   });
 
   const handleSaveBranch = (e: React.FormEvent) => {
@@ -52,8 +58,12 @@ export default function BranchesPage() {
       method: editingBranch ? 'PUT' : 'POST',
       id: editingBranch?.id,
       body: {
-        name: branchName, address: branchAddress, phone: branchPhone,
-        location: branchLocation, openingHours: branchHours, isActive: branchActive,
+        name: branchName,
+        address: branchAddress,
+        phone: branchPhone,
+        location: branchLocation,
+        openingHours: branchHours,
+        isActive: branchActive,
       },
     });
   };
@@ -65,15 +75,22 @@ export default function BranchesPage() {
 
   const startEditBranch = (b: any) => {
     setEditingBranch(b);
-    setBranchName(b.name); setBranchAddress(b.address);
-    setBranchPhone(b.phone || ''); setBranchLocation(b.location || '');
-    setBranchHours(b.openingHours || ''); setBranchActive(b.isActive);
+    setBranchName(b.name);
+    setBranchAddress(b.address);
+    setBranchPhone(b.phone || '');
+    setBranchLocation(b.location || '');
+    setBranchHours(b.openingHours || '');
+    setBranchActive(b.isActive);
   };
 
   const resetBranchForm = () => {
     setEditingBranch(null);
-    setBranchName(''); setBranchAddress(''); setBranchPhone('');
-    setBranchLocation(''); setBranchHours(''); setBranchActive(true);
+    setBranchName('');
+    setBranchAddress('');
+    setBranchPhone('');
+    setBranchLocation('');
+    setBranchHours('');
+    setBranchActive(true);
   };
 
   return (
@@ -81,32 +98,69 @@ export default function BranchesPage() {
       <div className="card">
         <h2>{editingBranch ? 'Edit Branch' : 'Add Branch'}</h2>
         <form onSubmit={handleSaveBranch}>
-          <Field label="Name"><input value={branchName} onChange={e => setBranchName(e.target.value)} required /></Field>
-          <Field label="Address"><input value={branchAddress} onChange={e => setBranchAddress(e.target.value)} dir="auto" required /></Field>
-          <Field label="Phone"><input value={branchPhone} onChange={e => setBranchPhone(e.target.value)} /></Field>
-          <Field label="Location (URL)"><input value={branchLocation} onChange={e => setBranchLocation(e.target.value)} /></Field>
-          <Field label="Opening Hours"><input value={branchHours} onChange={e => setBranchHours(e.target.value)} dir="auto" /></Field>
-          <Field label="Active">
-            <input type="checkbox" checked={branchActive} onChange={e => setBranchActive(e.target.checked)} />
+          <Field label="Name">
+            <input value={branchName} onChange={(e) => setBranchName(e.target.value)} required />
           </Field>
-          <button type="submit" className="primary">{editingBranch ? 'Update' : 'Add'} Branch</button>
-          {editingBranch && <button type="button" className="secondary" onClick={resetBranchForm}>Cancel</button>}
+          <Field label="Address">
+            <input
+              value={branchAddress}
+              onChange={(e) => setBranchAddress(e.target.value)}
+              dir="auto"
+              required
+            />
+          </Field>
+          <Field label="Phone">
+            <input value={branchPhone} onChange={(e) => setBranchPhone(e.target.value)} />
+          </Field>
+          <Field label="Location (URL)">
+            <input value={branchLocation} onChange={(e) => setBranchLocation(e.target.value)} />
+          </Field>
+          <Field label="Opening Hours">
+            <input
+              value={branchHours}
+              onChange={(e) => setBranchHours(e.target.value)}
+              dir="auto"
+            />
+          </Field>
+          <Field label="Active">
+            <input
+              type="checkbox"
+              checked={branchActive}
+              onChange={(e) => setBranchActive(e.target.checked)}
+            />
+          </Field>
+          <button type="submit" className="primary">
+            {editingBranch ? 'Update' : 'Add'} Branch
+          </button>
+          {editingBranch && (
+            <button type="button" className="secondary" onClick={resetBranchForm}>
+              Cancel
+            </button>
+          )}
         </form>
       </div>
 
       <div className="card">
         <h2>Branches</h2>
-        {branches.length === 0 ? <EmptyState message="No branches yet." /> : (
+        {branches.length === 0 ? (
+          <EmptyState message="No branches yet." />
+        ) : (
           <ul className="list">
-            {branches.map(b => (
+            {branches.map((b) => (
               <li key={b.id} className="list-item">
                 <div className="list-item-info">
                   <span dir="auto">{b.name}</span>
-                  <span className="list-item-meta" dir="auto">{b.address}</span>
+                  <span className="list-item-meta" dir="auto">
+                    {b.address}
+                  </span>
                 </div>
                 <div className="list-item-actions">
-                  <button className="secondary" onClick={() => startEditBranch(b)}>Edit</button>
-                  <button className="danger" onClick={() => deleteBranch(b.id)}>Delete</button>
+                  <button className="secondary" onClick={() => startEditBranch(b)}>
+                    Edit
+                  </button>
+                  <button className="danger" onClick={() => deleteBranch(b.id)}>
+                    Delete
+                  </button>
                 </div>
               </li>
             ))}

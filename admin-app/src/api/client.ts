@@ -13,7 +13,7 @@ function getAuthHeader(): Record<string, string> {
 
 export async function apiFetch<T = unknown>(
   path: string,
-  options: { method?: string; body?: unknown } = {}
+  options: { method?: string; body?: unknown } = {},
 ): Promise<T> {
   const { method = 'GET', body } = options;
   const res = await fetch(`${API_BASE}${path}`, {

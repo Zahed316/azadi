@@ -5,11 +5,11 @@ export const VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ ما�
 export const DEFAULT_PRICE_UNIT = 'تومان';
 
 const unitMap: Record<string, string> = {
-  cup:   'فنجان',
-  kg:    'کیلوگرم',
+  cup: 'فنجان',
+  kg: 'کیلوگرم',
   piece: 'عدد',
   slice: 'برش',
-  item:  'عدد',
+  item: 'عدد',
 };
 
 export function formatProduct(p: any, priceUnit: string = DEFAULT_PRICE_UNIT): string {

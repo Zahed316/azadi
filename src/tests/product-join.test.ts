@@ -6,7 +6,7 @@ test('product with details includes categories.name', () => {
     coffee_details: null,
     categories: { id: 1, name: 'Hot Coffee', emoji: '☕' },
   };
-  
+
   expect(mockRow.categories).toBeDefined();
   expect(mockRow.categories.name).toBe('Hot Coffee');
 });
@@ -17,6 +17,6 @@ test('product without matching category has null categories', () => {
     coffee_details: null,
     categories: null,
   };
-  
+
   expect(mockRow.categories).toBeNull();
 });

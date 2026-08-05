@@ -42,7 +42,7 @@ export function useConfirm() {
 
   const ConfirmModal = confirmState ? (
     <div className="confirm-backdrop" onClick={handleCancel}>
-      <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
+      <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
         <p className="confirm-message">{confirmState.message}</p>
         <div className="confirm-actions">
           <button type="button" className="confirm-btn confirm-btn-cancel" onClick={handleCancel}>

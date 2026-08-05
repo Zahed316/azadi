@@ -12,12 +12,12 @@ export default function ProductsPage() {
 
   const { data: products = [] } = useQuery({
     queryKey: queryKeys.products,
-    queryFn: () => apiFetch<{ products: any[] }>('/products').then(r => r.products),
+    queryFn: () => apiFetch<{ products: any[] }>('/products').then((r) => r.products),
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: queryKeys.categories,
-    queryFn: () => apiFetch<{ categories: any[] }>('/categories').then(r => r.categories),
+    queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
   });
 
   // Batch
@@ -54,13 +54,20 @@ export default function ProductsPage() {
     if (!isCoffeeBean) return null;
     const details: Record<string, string | null> = {};
     const fields = [
-      ['origin', coffeeOrigin], ['farm', coffeeFarm], ['altitude', coffeeAltitude],
-      ['processing', coffeeProcessing], ['variety', coffeeVariety],
-      ['roastLevel', coffeeRoastLevel], ['flavorNotes', coffeeFlavorNotes],
-      ['recommendedBrew', coffeeRecommendedBrew], ['acidity', coffeeAcidity],
-      ['body', coffeeBody]
+      ['origin', coffeeOrigin],
+      ['farm', coffeeFarm],
+      ['altitude', coffeeAltitude],
+      ['processing', coffeeProcessing],
+      ['variety', coffeeVariety],
+      ['roastLevel', coffeeRoastLevel],
+      ['flavorNotes', coffeeFlavorNotes],
+      ['recommendedBrew', coffeeRecommendedBrew],
+      ['acidity', coffeeAcidity],
+      ['body', coffeeBody],
     ] as const;
-    for (const [key, val] of fields) { details[key] = val || null; }
+    for (const [key, val] of fields) {
+      details[key] = val || null;
+    }
     return details;
   };
 
@@ -73,7 +80,10 @@ export default function ProductsPage() {
       setBatchAction('');
       showToast('Batch action completed ✓');
     },
-    onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
   });
 
   const saveProductMutation = useMutation({
@@ -87,7 +97,10 @@ export default function ProductsPage() {
       resetProductForm();
       showToast(variables.id ? 'Product updated ✓' : 'Product added ✓');
     },
-    onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
   });
 
   const deleteProductMutation = useMutation({
@@ -96,12 +109,15 @@ export default function ProductsPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
       showToast('Product deleted ✓');
     },
-    onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
   });
 
   const toggleProductSelect = (id: number) => {
-    setSelectedProductIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    setSelectedProductIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -111,7 +127,11 @@ export default function ProductsPage() {
     let updateData = undefined;
     if (batchAction === 'move') updateData = { categoryId: parseInt(batchTargetCatId) };
     if (batchAction === 'toggle') updateData = { available: batchToggleValue === 'true' };
-    batchMutation.mutate({ ids: selectedProductIds, action: batchAction === 'delete' ? 'delete' : 'update', updateData });
+    batchMutation.mutate({
+      ids: selectedProductIds,
+      action: batchAction === 'delete' ? 'delete' : 'update',
+      updateData,
+    });
   };
 
   const handleSaveProduct = (e: React.FormEvent) => {
@@ -120,8 +140,12 @@ export default function ProductsPage() {
       method: editingProduct ? 'PUT' : 'POST',
       id: editingProduct?.id,
       body: {
-        name: prodName, price: parseFloat(prodPrice), stock: parseInt(prodStock),
-        categoryId: parseInt(prodCatId), description: prodDesc, available: prodAvailable,
+        name: prodName,
+        price: parseFloat(prodPrice),
+        stock: parseInt(prodStock),
+        categoryId: parseInt(prodCatId),
+        description: prodDesc,
+        available: prodAvailable,
         coffeeDetails: buildCoffeeDetails(),
       },
     });
@@ -157,11 +181,22 @@ export default function ProductsPage() {
 
   const resetProductForm = () => {
     setEditingProduct(null);
-    setProdName(''); setProdPrice(''); setProdStock(''); setProdDesc(''); setProdAvailable(true);
+    setProdName('');
+    setProdPrice('');
+    setProdStock('');
+    setProdDesc('');
+    setProdAvailable(true);
     setIsCoffeeBean(false);
-    setCoffeeOrigin(''); setCoffeeFarm(''); setCoffeeAltitude(''); setCoffeeProcessing('');
-    setCoffeeVariety(''); setCoffeeRoastLevel(''); setCoffeeFlavorNotes('');
-    setCoffeeRecommendedBrew(''); setCoffeeAcidity(''); setCoffeeBody('');
+    setCoffeeOrigin('');
+    setCoffeeFarm('');
+    setCoffeeAltitude('');
+    setCoffeeProcessing('');
+    setCoffeeVariety('');
+    setCoffeeRoastLevel('');
+    setCoffeeFlavorNotes('');
+    setCoffeeRecommendedBrew('');
+    setCoffeeAcidity('');
+    setCoffeeBody('');
   };
 
   return (
@@ -170,60 +205,141 @@ export default function ProductsPage() {
         <div className="card">
           <h2>{editingProduct ? 'Edit Product' : 'Add Product'}</h2>
           <form onSubmit={handleSaveProduct}>
-            <Field label="Name"><input value={prodName} onChange={e => setProdName(e.target.value)} required /></Field>
-            <Field label="Price"><input type="number" value={prodPrice} onChange={e => setProdPrice(e.target.value)} required /></Field>
-            <Field label="Stock"><input type="number" value={prodStock} onChange={e => setProdStock(e.target.value)} required /></Field>
+            <Field label="Name">
+              <input value={prodName} onChange={(e) => setProdName(e.target.value)} required />
+            </Field>
+            <Field label="Price">
+              <input
+                type="number"
+                value={prodPrice}
+                onChange={(e) => setProdPrice(e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Stock">
+              <input
+                type="number"
+                value={prodStock}
+                onChange={(e) => setProdStock(e.target.value)}
+                required
+              />
+            </Field>
             <Field label="Category">
-              <select value={prodCatId} onChange={e => setProdCatId(e.target.value)}>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <select value={prodCatId} onChange={(e) => setProdCatId(e.target.value)}>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
             </Field>
-            <Field label="Description"><textarea value={prodDesc} onChange={e => setProdDesc(e.target.value)} /></Field>
+            <Field label="Description">
+              <textarea value={prodDesc} onChange={(e) => setProdDesc(e.target.value)} />
+            </Field>
             <Field label="Available">
-              <input type="checkbox" checked={prodAvailable} onChange={e => setProdAvailable(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={prodAvailable}
+                onChange={(e) => setProdAvailable(e.target.checked)}
+              />
             </Field>
 
             <div className="section-divider">Coffee Details (optional)</div>
             <Field label="Is Coffee Bean?">
-              <input type="checkbox" checked={isCoffeeBean} onChange={e => setIsCoffeeBean(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={isCoffeeBean}
+                onChange={(e) => setIsCoffeeBean(e.target.checked)}
+              />
             </Field>
             {isCoffeeBean && (
               <>
-                <Field label="Origin"><input value={coffeeOrigin} onChange={e => setCoffeeOrigin(e.target.value)} /></Field>
-                <Field label="Farm"><input value={coffeeFarm} onChange={e => setCoffeeFarm(e.target.value)} /></Field>
-                <Field label="Altitude"><input value={coffeeAltitude} onChange={e => setCoffeeAltitude(e.target.value)} /></Field>
-                <Field label="Processing"><input value={coffeeProcessing} onChange={e => setCoffeeProcessing(e.target.value)} /></Field>
-                <Field label="Variety"><input value={coffeeVariety} onChange={e => setCoffeeVariety(e.target.value)} /></Field>
-                <Field label="Roast Level"><input value={coffeeRoastLevel} onChange={e => setCoffeeRoastLevel(e.target.value)} /></Field>
-                <Field label="Flavor Notes"><input value={coffeeFlavorNotes} onChange={e => setCoffeeFlavorNotes(e.target.value)} /></Field>
-                <Field label="Recommended Brew"><input value={coffeeRecommendedBrew} onChange={e => setCoffeeRecommendedBrew(e.target.value)} /></Field>
-                <Field label="Acidity"><input value={coffeeAcidity} onChange={e => setCoffeeAcidity(e.target.value)} /></Field>
-                <Field label="Body"><input value={coffeeBody} onChange={e => setCoffeeBody(e.target.value)} /></Field>
+                <Field label="Origin">
+                  <input value={coffeeOrigin} onChange={(e) => setCoffeeOrigin(e.target.value)} />
+                </Field>
+                <Field label="Farm">
+                  <input value={coffeeFarm} onChange={(e) => setCoffeeFarm(e.target.value)} />
+                </Field>
+                <Field label="Altitude">
+                  <input
+                    value={coffeeAltitude}
+                    onChange={(e) => setCoffeeAltitude(e.target.value)}
+                  />
+                </Field>
+                <Field label="Processing">
+                  <input
+                    value={coffeeProcessing}
+                    onChange={(e) => setCoffeeProcessing(e.target.value)}
+                  />
+                </Field>
+                <Field label="Variety">
+                  <input value={coffeeVariety} onChange={(e) => setCoffeeVariety(e.target.value)} />
+                </Field>
+                <Field label="Roast Level">
+                  <input
+                    value={coffeeRoastLevel}
+                    onChange={(e) => setCoffeeRoastLevel(e.target.value)}
+                  />
+                </Field>
+                <Field label="Flavor Notes">
+                  <input
+                    value={coffeeFlavorNotes}
+                    onChange={(e) => setCoffeeFlavorNotes(e.target.value)}
+                  />
+                </Field>
+                <Field label="Recommended Brew">
+                  <input
+                    value={coffeeRecommendedBrew}
+                    onChange={(e) => setCoffeeRecommendedBrew(e.target.value)}
+                  />
+                </Field>
+                <Field label="Acidity">
+                  <input value={coffeeAcidity} onChange={(e) => setCoffeeAcidity(e.target.value)} />
+                </Field>
+                <Field label="Body">
+                  <input value={coffeeBody} onChange={(e) => setCoffeeBody(e.target.value)} />
+                </Field>
               </>
             )}
-            <button type="submit" className="primary">{editingProduct ? 'Update' : 'Add'} Product</button>
-            {editingProduct && <button type="button" className="secondary" onClick={resetProductForm}>Cancel</button>}
+            <button type="submit" className="primary">
+              {editingProduct ? 'Update' : 'Add'} Product
+            </button>
+            {editingProduct && (
+              <button type="button" className="secondary" onClick={resetProductForm}>
+                Cancel
+              </button>
+            )}
           </form>
         </div>
       )}
 
       <div className="card">
         <h2>Products</h2>
-        {products.length === 0 ? <EmptyState message="No products yet." /> : (
+        {products.length === 0 ? (
+          <EmptyState message="No products yet." />
+        ) : (
           <ul className="list">
-            {products.map(p => (
+            {products.map((p) => (
               <li key={p.id} className="list-item">
                 <div className="list-item-info">
                   {(isSuperAdmin || allowedCatId) && (
-                    <input type="checkbox" checked={selectedProductIds.includes(p.id)} onChange={() => toggleProductSelect(p.id)} />
+                    <input
+                      type="checkbox"
+                      checked={selectedProductIds.includes(p.id)}
+                      onChange={() => toggleProductSelect(p.id)}
+                    />
                   )}
                   <span dir="auto">{p.name}</span>
                   <span className="list-item-meta">{p.price}</span>
                 </div>
                 {(isSuperAdmin || allowedCatId) && (
                   <div className="list-item-actions">
-                    <button className="secondary" onClick={() => startEditProduct(p)}>Edit</button>
-                    <button className="danger" onClick={() => deleteProduct(p.id)}>Delete</button>
+                    <button className="secondary" onClick={() => startEditProduct(p)}>
+                      Edit
+                    </button>
+                    <button className="danger" onClick={() => deleteProduct(p.id)}>
+                      Delete
+                    </button>
                   </div>
                 )}
               </li>
@@ -234,19 +350,23 @@ export default function ProductsPage() {
 
       {selectedProductIds.length > 0 && (
         <div className="batch-bar">
-          <select value={batchAction} onChange={e => setBatchAction(e.target.value as any)}>
+          <select value={batchAction} onChange={(e) => setBatchAction(e.target.value as any)}>
             <option value="">Select action...</option>
             <option value="move">Move to Category</option>
             <option value="toggle">Toggle Availability</option>
             <option value="delete">Delete</option>
           </select>
           {batchAction === 'move' && (
-            <select value={batchTargetCatId} onChange={e => setBatchTargetCatId(e.target.value)}>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <select value={batchTargetCatId} onChange={(e) => setBatchTargetCatId(e.target.value)}>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           )}
           {batchAction === 'toggle' && (
-            <select value={batchToggleValue} onChange={e => setBatchToggleValue(e.target.value)}>
+            <select value={batchToggleValue} onChange={(e) => setBatchToggleValue(e.target.value)}>
               <option value="true">Available</option>
               <option value="false">Unavailable</option>
             </select>

@@ -25,15 +25,17 @@ function buildProductKeyboard(items: any[], idx: number, prefix: string, prefix0
   for (const p of page.items) {
     kb.inline_keyboard.push([{ text: p.name, callback_data: `product:${p.id}` }]);
   }
-  if (page.hasPrev) kb.inline_keyboard.push([{ text: 'صفحه قبل ▶️', callback_data: `${prefix0}:page:${idx - 1}` }]);
-  if (page.hasNext) kb.inline_keyboard.push([{ text: '◀️ صفحه بعد', callback_data: `${prefix}:page:${idx + 1}` }]);
+  if (page.hasPrev)
+    kb.inline_keyboard.push([{ text: 'صفحه قبل ▶️', callback_data: `${prefix0}:page:${idx - 1}` }]);
+  if (page.hasNext)
+    kb.inline_keyboard.push([{ text: '◀️ صفحه بعد', callback_data: `${prefix}:page:${idx + 1}` }]);
   return { kb, page };
 }
 
 const products = Array.from({ length: 12 }, (_, i) => ({
   id: i + 1,
   name: `محصول ${i + 1}`,
-  featured: i < 7,    // 7 featured → 2 pages (5+2)
+  featured: i < 7, // 7 featured → 2 pages (5+2)
   isSeasonal: i >= 7, // 5 seasonal → 1 page (no next)
 }));
 
@@ -92,7 +94,9 @@ describe('Coffee Passport callback keyboard', () => {
   // pagination + keyboard shape under test matches the real handler.
   const rows = Array.from({ length: 7 }, (_, i) => {
     const product = { id: i + 1, name: `دانه ${i + 1}` };
-    const details = { origin: ['اتیوپی', 'کلمبیا', 'برزیل', 'اتیوپی', 'کنیا', 'برزیل', 'اتیوپی'][i] };
+    const details = {
+      origin: ['اتیوپی', 'کلمبیا', 'برزیل', 'اتیوپی', 'کنیا', 'برزیل', 'اتیوپی'][i],
+    };
     return {
       id: product.id,
       name: `${product.name} — ${details.origin}`,

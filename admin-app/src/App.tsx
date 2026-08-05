@@ -25,7 +25,7 @@ function AppInner() {
 
   const currentUserQuery = useQuery({
     queryKey: queryKeys.currentUser,
-    queryFn: () => apiFetch<{ user: any }>('/currentUser').then(r => r.user),
+    queryFn: () => apiFetch<{ user: any }>('/currentUser').then((r) => r.user),
     staleTime: Infinity,
   });
 
@@ -56,35 +56,78 @@ function AppInner() {
           <Routes>
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/branches" element={isSuperAdmin ? <BranchesPage /> : <Navigate to="/products" replace />} />
-            <Route path="/faqs" element={isSuperAdmin ? <ContentPage /> : <Navigate to="/products" replace />} />
-            <Route path="/settings" element={isSuperAdmin ? <SettingsPage /> : <Navigate to="/products" replace />} />
-            <Route path="/admins" element={isSuperAdmin ? <AdminsPage /> : <Navigate to="/products" replace />} />
-            <Route path="/menu-config" element={isSuperAdmin ? <MenuConfigPage /> : <Navigate to="/products" replace />} />
+            <Route
+              path="/branches"
+              element={isSuperAdmin ? <BranchesPage /> : <Navigate to="/products" replace />}
+            />
+            <Route
+              path="/faqs"
+              element={isSuperAdmin ? <ContentPage /> : <Navigate to="/products" replace />}
+            />
+            <Route
+              path="/settings"
+              element={isSuperAdmin ? <SettingsPage /> : <Navigate to="/products" replace />}
+            />
+            <Route
+              path="/admins"
+              element={isSuperAdmin ? <AdminsPage /> : <Navigate to="/products" replace />}
+            />
+            <Route
+              path="/menu-config"
+              element={isSuperAdmin ? <MenuConfigPage /> : <Navigate to="/products" replace />}
+            />
             <Route path="*" element={<Navigate to="/products" replace />} />
           </Routes>
           <div className="bottom-nav">
-            <NavLink to="/products" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => window.scrollTo(0, 0)}>
+            <NavLink
+              to="/products"
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => window.scrollTo(0, 0)}
+            >
               <span className="nav-icon">📦</span>Products
             </NavLink>
-            <NavLink to="/categories" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => window.scrollTo(0, 0)}>
+            <NavLink
+              to="/categories"
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => window.scrollTo(0, 0)}
+            >
               <span className="nav-icon">🏷️</span>Categories
             </NavLink>
             {isSuperAdmin && (
               <>
-                <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => window.scrollTo(0, 0)}>
+                <NavLink
+                  to="/settings"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
                   <span className="nav-icon">⚙️</span>Settings
                 </NavLink>
-                <NavLink to="/branches" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => window.scrollTo(0, 0)}>
+                <NavLink
+                  to="/branches"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
                   <span className="nav-icon">📍</span>Branches
                 </NavLink>
-                <NavLink to="/faqs" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => window.scrollTo(0, 0)}>
+                <NavLink
+                  to="/faqs"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
                   <span className="nav-icon">📝</span>Content
                 </NavLink>
-                <NavLink to="/admins" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => window.scrollTo(0, 0)}>
+                <NavLink
+                  to="/admins"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
                   <span className="nav-icon">👥</span>Admins
                 </NavLink>
-                <NavLink to="/menu-config" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => window.scrollTo(0, 0)}>
+                <NavLink
+                  to="/menu-config"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
                   <span className="nav-icon">📋</span>Menu
                 </NavLink>
               </>

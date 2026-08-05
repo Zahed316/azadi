@@ -27,7 +27,10 @@ function tableNameOf(table: any): string {
 
 /** Seed a table with rows (overwrites existing). */
 export function seedTable(table: any, rows: TableRow[]): void {
-  store.set(tableNameOf(table), rows.map((r) => ({ ...r })));
+  store.set(
+    tableNameOf(table),
+    rows.map((r) => ({ ...r })),
+  );
 }
 
 /** Read current rows (for assertions). */
@@ -151,9 +154,10 @@ class QueryChain {
 
     switch (this._op) {
       case 'select': {
-        let matched = this._eqs.length > 0
-          ? rows.filter((r) => matchesCondition(r, this._eqs))
-          : rows.map((r) => ({ ...r }));
+        let matched =
+          this._eqs.length > 0
+            ? rows.filter((r) => matchesCondition(r, this._eqs))
+            : rows.map((r) => ({ ...r }));
 
         if (this._limitN !== null) matched = matched.slice(0, this._limitN);
 

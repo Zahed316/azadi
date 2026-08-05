@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 
-const DEFAULT_GREETING = 'من دستیار هوشمند قهوه شما هستم! 🤖☕\n\nهر سوالی درباره قهوه، روش‌های دم‌آوری، شعب یا هر چیز دیگری دارید از من بپرسید.';
+const DEFAULT_GREETING =
+  'من دستیار هوشمند قهوه شما هستم! 🤖☕\n\nهر سوالی درباره قهوه، روش‌های دم‌آوری، شعب یا هر چیز دیگری دارید از من بپرسید.';
 
 test('falls back to default when DB value is null', () => {
   const dbValue = null;

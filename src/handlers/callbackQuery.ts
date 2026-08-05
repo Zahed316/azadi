@@ -1,5 +1,11 @@
 import { Bot, InlineKeyboard } from 'grammy';
-import { BranchRepository, ProductRepository, SettingsRepository, FaqRepository, MenuConfigRepository } from '../repositories';
+import {
+  BranchRepository,
+  ProductRepository,
+  SettingsRepository,
+  FaqRepository,
+  MenuConfigRepository,
+} from '../repositories';
 import { formatBranch, formatProduct, formatFaq, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
 import { buildCategoryPage } from '../menus/drinksNavMenu';
@@ -29,7 +35,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `faq:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `faq:page:${idx + 1}`);
       const body = `<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`;
-      await ctx.editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+      await ctx
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
@@ -51,10 +58,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `branches:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `branches:page:${idx + 1}`);
-      const body = page.items.length === 0
-        ? `<b>شعب</b> (${page.pageLabel})`
-        : `<b>شعب</b> (${page.pageLabel})\n\nیک شعبه انتخاب کنید:`;
-      await ctx.editMessageText(body, { reply_markup: kb })
+      const body =
+        page.items.length === 0
+          ? `<b>شعب</b> (${page.pageLabel})`
+          : `<b>شعب</b> (${page.pageLabel})\n\nیک شعبه انتخاب کنید:`;
+      await ctx
+        .editMessageText(body, { reply_markup: kb })
         .catch(() => ctx.reply(body, { reply_markup: kb }));
     } catch (e) {
       console.error(e);
@@ -69,9 +78,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       const repo = new ProductRepository(ctx.env.DB);
       const menuRepo = new MenuConfigRepository(ctx.env.DB);
       const configs = await menuRepo.getBySection('beans');
-      const products = configs.length > 0
-        ? await repo.getProductsByCategory(configs[0].categoryId)
-        : [];
+      const products =
+        configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
       const page = buildListPage(products, idx, 5);
       const kb = new InlineKeyboard();
       for (const p of page.items) {
@@ -79,10 +87,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `beans:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `beans:page:${idx + 1}`);
-      const body = page.items.length === 0
-        ? `<b>دانه‌های قهوه</b> (${page.pageLabel})`
-        : `<b>دانه‌های قهوه</b> (${page.pageLabel})\n\nدانه قهوه مورد نظر را انتخاب کنید:`;
-      await ctx.editMessageText(body, { reply_markup: kb })
+      const body =
+        page.items.length === 0
+          ? `<b>دانه‌های قهوه</b> (${page.pageLabel})`
+          : `<b>دانه‌های قهوه</b> (${page.pageLabel})\n\nدانه قهوه مورد نظر را انتخاب کنید:`;
+      await ctx
+        .editMessageText(body, { reply_markup: kb })
         .catch(() => ctx.reply(body, { reply_markup: kb }));
     } catch (e) {
       console.error(e);
@@ -97,9 +107,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       const repo = new ProductRepository(ctx.env.DB);
       const menuRepo = new MenuConfigRepository(ctx.env.DB);
       const configs = await menuRepo.getBySection('cakes');
-      const products = configs.length > 0
-        ? await repo.getProductsByCategory(configs[0].categoryId)
-        : [];
+      const products =
+        configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
       const page = buildListPage(products, idx, 5);
       const kb = new InlineKeyboard();
       for (const p of page.items) {
@@ -107,10 +116,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `cakes:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `cakes:page:${idx + 1}`);
-      const body = page.items.length === 0
-        ? `<b>کیک و کوکی</b> (${page.pageLabel})`
-        : `<b>کیک و کوکی</b> (${page.pageLabel})\n\nیک کیک یا کوکی انتخاب کنید:`;
-      await ctx.editMessageText(body, { reply_markup: kb })
+      const body =
+        page.items.length === 0
+          ? `<b>کیک و کوکی</b> (${page.pageLabel})`
+          : `<b>کیک و کوکی</b> (${page.pageLabel})\n\nیک کیک یا کوکی انتخاب کنید:`;
+      await ctx
+        .editMessageText(body, { reply_markup: kb })
         .catch(() => ctx.reply(body, { reply_markup: kb }));
     } catch (e) {
       console.error(e);
@@ -127,7 +138,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       const configs = await menuRepo.getBySection('drinks');
       const config = configs.find((c: any) => c.categoryId === catId);
       if (!config) {
-        await ctx.reply("دسته‌بندی مورد نظر یافت نشد.");
+        await ctx.reply('دسته‌بندی مورد نظر یافت نشد.');
         return;
       }
       const items = await new ProductRepository(ctx.env.DB).getProductsByCategory(catId);
@@ -139,7 +150,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
         }
         return;
       }
-      const priceUnit = (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const priceUnit =
+        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
       await buildCategoryPage(ctx, config, items, idx, priceUnit);
     } catch (e) {
       console.error(e);
@@ -158,12 +170,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       if (branch) {
         await ctx.reply(formatBranch(branch), { parse_mode: 'HTML', reply_markup: backKeyboard() });
       } else {
-        await ctx.reply("شعبه مورد نظر یافت نشد.");
+        await ctx.reply('شعبه مورد نظر یافت نشد.');
       }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
-      await ctx.reply("❌ خطایی در دریافت اطلاعات شعبه رخ داد.");
+      await ctx.reply('❌ خطایی در دریافت اطلاعات شعبه رخ داد.');
     }
   });
 
@@ -174,15 +186,19 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       const repo = new ProductRepository(ctx.env.DB);
       const product = await repo.getProductById(id);
       if (product) {
-        const priceUnit = (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
-        await ctx.reply(formatProduct(product, priceUnit), { parse_mode: 'HTML', reply_markup: backKeyboard() });
+        const priceUnit =
+          (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+        await ctx.reply(formatProduct(product, priceUnit), {
+          parse_mode: 'HTML',
+          reply_markup: backKeyboard(),
+        });
       } else {
-        await ctx.reply("محصول مورد نظر یافت نشد.");
+        await ctx.reply('محصول مورد نظر یافت نشد.');
       }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
-      await ctx.reply("❌ خطایی در دریافت اطلاعات محصول رخ داد.");
+      await ctx.reply('❌ خطایی در دریافت اطلاعات محصول رخ داد.');
     }
   });
 
@@ -193,7 +209,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const items = await new ProductRepository(ctx.env.DB).getByFlag('featured');
-      const priceUnit = (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const priceUnit =
+        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
       for (const p of page.items) {
@@ -201,10 +218,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `featured:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:${idx + 1}`);
-      const body = page.items.length === 0
-        ? `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})`
-        : `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
-      await ctx.editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+      const body =
+        page.items.length === 0
+          ? `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})`
+          : `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
+      await ctx
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
@@ -217,7 +236,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const items = await new ProductRepository(ctx.env.DB).getByFlag('isSeasonal');
-      const priceUnit = (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const priceUnit =
+        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
       for (const p of page.items) {
@@ -225,10 +245,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `seasonal:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `seasonal:page:${idx + 1}`);
-      const body = page.items.length === 0
-        ? `<b>🌿 مخصوص فصل</b> (${page.pageLabel})`
-        : `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
-      await ctx.editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+      const body =
+        page.items.length === 0
+          ? `<b>🌿 مخصوص فصل</b> (${page.pageLabel})`
+          : `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
+      await ctx
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
@@ -241,7 +263,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const rows = await new ProductRepository(ctx.env.DB).getBeansWithCoffeeDetails();
-      const priceUnit = (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const priceUnit =
+        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
       const page = buildListPage(rows, idx, 5);
       const kb = new InlineKeyboard();
       for (const r of page.items) {
@@ -251,12 +274,19 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `passport:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:${idx + 1}`);
-      const origins = Array.from(new Set(page.items.map((r: any) => r.details?.origin).filter(Boolean)));
-      const originsLine = origins.length > 0 ? `\n\n🗺 <b>${origins.length} کشور مبدا در این صفحه:</b> ${origins.join(' · ')}` : '';
-      const body = page.items.length === 0
-        ? `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})`
-        : `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit)).join('\n\n')}`;
-      await ctx.editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+      const origins = Array.from(
+        new Set(page.items.map((r: any) => r.details?.origin).filter(Boolean)),
+      );
+      const originsLine =
+        origins.length > 0
+          ? `\n\n🗺 <b>${origins.length} کشور مبدا در این صفحه:</b> ${origins.join(' · ')}`
+          : '';
+      const body =
+        page.items.length === 0
+          ? `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})`
+          : `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit)).join('\n\n')}`;
+      await ctx
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);

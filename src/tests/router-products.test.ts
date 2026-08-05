@@ -143,9 +143,7 @@ test('POST /products/batch with action delete removes each id', async () => {
 
 test('GET /products returns flattened list with coffee_details and category fields', async () => {
   setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
-  seedTable(products, [
-    { id: 1, categoryId: 5, name: 'Espresso', price: 45000 },
-  ]);
+  seedTable(products, [{ id: 1, categoryId: 5, name: 'Espresso', price: 45000 }]);
   const res = await callRouter({ method: 'GET', path: 'products' });
   expect(res.status).toBe(200);
   expect(Array.isArray(res.body.products)).toBe(true);
@@ -185,12 +183,16 @@ test('malformed JSON body returns 500', async () => {
     },
     body: '{invalid json',
   });
-  const response = await handleApiRequest(request, {
-    TELEGRAM_BOT_TOKEN: 'test-token',
-    SECRET_TOKEN: 'test-secret',
-    DB: null,
-    AI: null,
-  }, {} as ExecutionContext);
+  const response = await handleApiRequest(
+    request,
+    {
+      TELEGRAM_BOT_TOKEN: 'test-token',
+      SECRET_TOKEN: 'test-secret',
+      DB: null,
+      AI: null,
+    },
+    {} as ExecutionContext,
+  );
   expect(response.status).toBe(500);
   const body: any = await response.json().catch(() => null);
   expect(body).toBeDefined();
