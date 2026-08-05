@@ -9,7 +9,7 @@ export class AiService {
       const lastMessageTime = new Date(recentLogs[0].timestamp).getTime();
       const now = new Date().getTime();
       if (now - lastMessageTime < 5000) {
-        return "⏳ Please wait a few seconds before asking another question.";
+        return "⏳ لطفاً چند ثانیه صبر کنید و دوباره سؤال بپرسید.";
       }
     }
 
@@ -31,11 +31,11 @@ ${this.menuContext}`;
         ],
         max_tokens: 512
       });
-      const answer = response.response ?? "I'm sorry, I cannot process your request at this moment.";
+      const answer = response.response ?? "⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.";
       return answer;
     } catch (e: any) {
       console.error(e);
-      return "I'm sorry, I cannot process your request at this moment.";
+      return "⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.";
     }
   }
 }

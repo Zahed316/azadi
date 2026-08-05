@@ -17,6 +17,10 @@ export interface Env {
   SECRET_TOKEN: string;
   DB: any;
   AI: any;
+  // Optional runtime flags — kept loose so workers can be deployed without
+  // them being present in wrangler.toml/[vars]. Set via `wrangler secret put`.
+  USE_CONVERSATIONS?: string;
+  PERF_LOG?: string;
 }
 
 export function createBot(env: Env) {
@@ -46,13 +50,24 @@ export function createBot(env: Env) {
     }
     await next();
   });
-  bot.use(conversations({
-    storage: {
-      type: "key",
-      prefix: "convo_",
-      adapter: new D1SessionStorage(env.DB),
-    },
-  }));
+  // Conversations framework is intentionally gated by USE_CONVERSATIONS — the
+  // last admin wizard was removed in commit ea14c3f because per-request
+  // conversation state leaked into the AI-fallback path on Telegram webhook
+  // retries. Re-introduction must (a) flip USE_CONVERSATIONS to 'true' on the
+  // Worker (`wrangler secret put USE_CONVERSATIONS`), and (b) add a guard
+  // middleware here that snapshots `ctx.hasActiveConversation` BEFORE any
+  // `createConversation()` is entered, AND a corresponding skip in
+  // src/handlers/message.ts:9 — otherwise a wizard's final message will be
+  // answered by the AI rather than the wizard's own handler.
+  if (env.USE_CONVERSATIONS === 'true') {
+    bot.use(conversations({
+      storage: {
+        type: "key",
+        prefix: "convo_",
+        adapter: new D1SessionStorage(env.DB),
+      },
+    }));
+  }
 
   // Register Menus
   mainMenu.register(drinksNavMenu);
@@ -64,7 +79,10 @@ export function createBot(env: Env) {
 
   // Define commands
   bot.command("start", async (ctx) => {
-    await ctx.conversation.exitAll();
+    // `ctx.conversation` is only populated when the conversations() middleware
+    // is registered (see USE_CONVERSATIONS gate above). Guard so /start works
+    // in both states — the framework is currently dormant.
+    await ctx.conversation?.exitAll();
     return ctx.reply(
       "به روستری قهوه آزادی خوش آمدید! ☕\n\n" +
       "از منوی زیر می‌توانید نوشیدنی‌ها، دانه‌های قهوه، کیک و کوکی، شعب و سوالات متداول را ببینید.\n" +
