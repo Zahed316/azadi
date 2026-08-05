@@ -2,6 +2,7 @@ import { webhookCallback } from 'grammy';
 import { createBot, Env } from './bot';
 import { setRequestContext } from './requestContext';
 import { handleApiRequest } from './api/router';
+import { sweepStreaks } from './scripts/streaks';
 
 let botInstance: ReturnType<typeof createBot> | null = null;
 
@@ -42,6 +43,13 @@ export default {
       return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
         status: 500,
       });
+    }
+  },
+  async scheduled(event: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
+    try {
+      await sweepStreaks(env);
+    } catch (e) {
+      console.error('streak cron:', e);
     }
   },
 };

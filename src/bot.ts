@@ -12,6 +12,8 @@ import { setupCallbackHandlers } from './handlers/callbackQuery';
 import { MyContext, SessionData } from './types/context';
 import { getEnv, getExecCtx } from './requestContext';
 import { D1SessionStorage } from './database/sessionStorage';
+import { UserStateRepository } from './repositories';
+import { toPersianDigits } from './utils/numbers';
 
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
@@ -22,6 +24,8 @@ export interface Env {
   // them being present in wrangler.toml/[vars]. Set via `wrangler secret put`.
   USE_CONVERSATIONS?: string;
   PERF_LOG?: string;
+  STREAK_MESSAGES?: string;
+  STREAK_CRON_ENABLED?: string;
 }
 
 export function createBot(env: Env) {
@@ -30,6 +34,29 @@ export function createBot(env: Env) {
   bot.use(async (ctx, next) => {
     ctx.env = getEnv() || env;
     ctx.execCtx = getExecCtx();
+    await next();
+  });
+
+  // Streak counter: track consecutive-day visits and notify the user when the
+  // streak increments. Env-gated so the middleware is inert by default; flip on
+  // via `wrangler secret put STREAK_MESSAGES`. Never re-throw — streak path
+  // must not break the rest of the bot chain.
+  bot.use(async (ctx, next) => {
+    if (ctx.from?.id && ctx.env.STREAK_MESSAGES === 'true') {
+      try {
+        const repo = new UserStateRepository(ctx.env.DB);
+        const { streakDays, isNewStreak } = await repo.upsertVisit(String(ctx.from.id));
+        if (isNewStreak && streakDays > 1) {
+          // Defer: don't block the rest of the handler chain.
+          ctx.execCtx?.waitUntil(
+            ctx.reply(`🔥 ${toPersianDigits(streakDays)} روز متوالی از رستوری بازدید کردید!`).catch(() => {}),
+          );
+        }
+      } catch (e) {
+        console.error('streak middleware:', e);
+        /* never break the chain */
+      }
+    }
     await next();
   });
 
