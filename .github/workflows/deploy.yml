@@ -5,6 +5,10 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
@@ -37,6 +41,9 @@ jobs:
 
   deploy-admin-app:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-admin-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
 

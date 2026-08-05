@@ -7,7 +7,7 @@ Azadi Coffee Roastery — Telegram bot + admin panel for a coffee shop in Iransh
 
 ## Build & Test
 ```
-npm ci                          # install (CI uses npm, not pnpm)
+npm ci                          # install
 npm test                        # vitest run (unit tests only)
 ./node_modules/.bin/tsc --noEmit  # typecheck
 npm run deploy                  # npm exec -- wrangler deploy (uses project-local wrangler)
@@ -70,12 +70,10 @@ npm run build    # tsc + vite build
 Document frequently used workflows and commands here.
 
 ## Pitfalls
-- `pnpm-lock.yaml` exists but CI uses `npm ci`. If you add/remove deps, update both lockfiles or switch CI to pnpm.
 - `wrangler.toml` has a hardcoded D1 `database_id`. Do not change it without updating the Cloudflare dashboard binding.
 - `requestContext.ts` module globals are not safe to share across test cases. Tests should mock `env` directly rather than calling `setRequestContext`.
 - The `setup:webhook` script reads `SECRET_TOKEN` from `~/.env` alongside `TELEGRAM_BOT_TOKEN`. To rotate, edit `~/.env` (`SECRET_TOKEN=...`) and re-run `npm run setup:webhook`. Do not commit either token to source control.
 - `admin-app/` is a separate package with its own `node_modules`. Run `npm install` inside it independently.
 - **Cloudflare Pages staleness**: The admin Mini App is hosted on Cloudflare Pages (`azadi-admin.pages.dev`), NOT served by the Worker. `wrangler deploy` only updates the Worker. If the Mini App UI looks outdated, verify the Pages deployment — the live bundle hash can be checked with `curl -s https://azadi-admin.pages.dev | grep -o '/assets/index-[^"]*\.css'` (or `\.js`) and compared against `admin-app/dist/assets/`. CSS-only edits change only the CSS hash; check whichever asset you touched. CI takes ~1-3 min after push to update the Pages site.
 - **Mini App bottom-nav overflow**: `admin-app/src/index.css` `.bottom-nav` is a fixed flex row. With many tabs (7 for super_admin) it overflows phone-width screens and clips trailing tabs. It is intentionally `overflow-x: auto` with `flex-shrink: 0` + `white-space: nowrap` on `.nav-item` so all tabs scroll into reach — do not "fix" it back to `justify-content: space-around` without keeping the overflow handling.
-- **pnpm test quirk (local/Termux)**: `pnpm run test` fails before tests start when `node_modules` were installed via `npm ci` — pnpm's deps-status check crashes on the mismatched install state. Use `npm test` (what CI runs). This is an environment quirk, not a code failure.
 - **wrangler-action peer deps**: `cloudflare/wrangler-action@v3` installs Wrangler v3.x which peer-depends on `@cloudflare/workers-types@^4.x`, but this repo uses v5.x. Both deploy steps in `.github/workflows/deploy.yml` set `NPM_CONFIG_LEGACY_PEER_DEPS: 'true'` to avoid ERESOLVE. Do not remove this env var unless the peer dependency conflict is resolved upstream.
