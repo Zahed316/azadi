@@ -1,5 +1,7 @@
 # Memory
 
+> **Canonical rules** live in `CLAUDE.md` (project root) and `~/.claude/CLAUDE.md` (user global). This file is the persona-specific companion; read CLAUDE.md first for the rules that govern commands, architecture, and pitfalls. Treat anything here that disagrees with CLAUDE.md as stale and update this file to match.
+
 ## Project Overview
 Azadi Coffee Roastery — Telegram bot + admin panel for a coffee shop in Iranshahr, Iran. Cloudflare Workers backend, grammY bot framework, D1 database (Drizzle ORM), Cloudflare Workers AI for chat fallback. Admin management via a standalone React Mini App (admin-app/). Persian UI text in all bot replies.
 
@@ -8,9 +10,9 @@ Azadi Coffee Roastery — Telegram bot + admin panel for a coffee shop in Iransh
 npm ci                          # install (CI uses npm, not pnpm)
 npm test                        # vitest run (unit tests only)
 ./node_modules/.bin/tsc --noEmit  # typecheck
-npm run deploy                  # wrangler deploy
-npm run deploy:dry              # wrangler deploy --dry-run to ~/wrangler-dry
-npm run setup:webhook           # curl to set Telegram webhook
+npm run deploy                  # npm exec -- wrangler deploy (uses project-local wrangler)
+npm run deploy:dry              # npm exec -- wrangler deploy --dry-run --outdir ./wrangler-dry
+npm run setup:webhook           # reads TELEGRAM_BOT_TOKEN + SECRET_TOKEN from ~/.env, then curls setWebhook
 ```
 CI (GitHub Actions): npm ci → vitest → tsc --noEmit → wrangler deploy (main only).
 Admin Mini App is deployed separately to Cloudflare Pages — see Deployment section below.
@@ -48,9 +50,9 @@ npm run build    # tsc + vite build
 - **grammY Conversations Persistence**: When using `@grammyjs/conversations` (v2.x) in a serverless environment (Cloudflare Workers), NEVER initialize it with `bot.use(conversations())` as it defaults to an in-memory map that wipes between requests. You MUST explicitly configure it to use persistent storage (e.g., `D1SessionStorage`) and provide a unique prefix (`prefix: "convo_"`) to prevent overwriting the main session data.
 - **Conversations & AI Race Conditions**: When using `@grammyjs/conversations` alongside a slow fallback handler (like an AI service), Telegram webhook retries can cause race conditions. If the final step of a conversation (e.g., database update) takes too long, Telegram will retry the webhook. Because `session` data is only saved at the *end* of the request, session-based idempotency (`lastUpdateId`) fails for concurrent retries. The retry will find an empty conversation state and fall through to the AI handler.
   - **Definitive Solution applied to this codebase**: We completely removed admin conversational wizards from the chat interface. Admin multi-step data entry is now handled via a standalone Telegram Mini App (Web App) connecting to REST endpoints on the Cloudflare Worker, entirely isolating it from the webhook AI loop.
+  - **Current state**: `conversations()` middleware is **gated by `env.USE_CONVERSATIONS === 'true'`** in `src/bot.ts` (off by default). Re-introduction requires flipping that env flag AND adding a `ctx.hasActiveConversation` snapshot middleware (BEFORE any `createConversation()` enter) AND a `if (ctx.hasActiveConversation) return;` skip at the top of `src/handlers/message.ts:9` — see the comment block in `src/bot.ts` for the recipe.
 - **Admin auth**: Two roles — `super_admin` (full access) and `category_admin` (restricted to one category). Auth middleware in `src/middlewares/auth.ts`. API routes in `src/api/router.ts` use Telegram Mini App `initData` for auth (header: `Authorization: Telegram <initData>`).
-- **Bot context type**: `MyContext` (defined in `src/types/context.ts`) combines grammY `Context`, `SessionFlavor<SessionData>`, `ConversationFlavor`, and custom fields (`env`, `execCtx`, `hasActiveConversation`). Always use this type for bot handlers.
-- **Conversation leak guard**: A middleware snapshots `conversation.active()` into `ctx.hasActiveConversation` *before* `createConversation()` runs. The message handler checks this flag to prevent a completed wizard's final message from falling through to the AI handler.
+- **Bot context type**: `MyContext` (defined in `src/types/context.ts`) combines grammY `Context`, `SessionFlavor<SessionData>`, `ConversationFlavor`, and custom fields (`env`, `execCtx`). Always use this type for bot handlers.
 
 ## Conventions
 - All user-facing bot text is in **Persian (Farsi)**, using HTML parse mode.
@@ -71,7 +73,7 @@ Document frequently used workflows and commands here.
 - `pnpm-lock.yaml` exists but CI uses `npm ci`. If you add/remove deps, update both lockfiles or switch CI to pnpm.
 - `wrangler.toml` has a hardcoded D1 `database_id`. Do not change it without updating the Cloudflare dashboard binding.
 - `requestContext.ts` module globals are not safe to share across test cases. Tests should mock `env` directly rather than calling `setRequestContext`.
-- The `setup:webhook` script embeds a hardcoded `secret_token` — rotate it if compromised.
+- The `setup:webhook` script reads `SECRET_TOKEN` from `~/.env` alongside `TELEGRAM_BOT_TOKEN`. To rotate, edit `~/.env` (`SECRET_TOKEN=...`) and re-run `npm run setup:webhook`. Do not commit either token to source control.
 - `admin-app/` is a separate package with its own `node_modules`. Run `npm install` inside it independently.
 - **Cloudflare Pages staleness**: The admin Mini App is hosted on Cloudflare Pages (`azadi-admin.pages.dev`), NOT served by the Worker. `wrangler deploy` only updates the Worker. If the Mini App UI looks outdated, verify the Pages deployment — the live bundle hash can be checked with `curl -s https://azadi-admin.pages.dev | grep -o '/assets/index-[^"]*\.css'` (or `\.js`) and compared against `admin-app/dist/assets/`. CSS-only edits change only the CSS hash; check whichever asset you touched. CI takes ~1-3 min after push to update the Pages site.
 - **Mini App bottom-nav overflow**: `admin-app/src/index.css` `.bottom-nav` is a fixed flex row. With many tabs (7 for super_admin) it overflows phone-width screens and clips trailing tabs. It is intentionally `overflow-x: auto` with `flex-shrink: 0` + `white-space: nowrap` on `.nav-item` so all tabs scroll into reach — do not "fix" it back to `justify-content: space-around` without keeping the overflow handling.

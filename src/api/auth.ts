@@ -31,17 +31,27 @@ export async function validateInitData(initData: string, botToken: string): Prom
   
   const signature = await crypto.subtle.sign('HMAC', hmacKey, encoder.encode(dataCheckString));
   const signatureHex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  if (signatureHex === hash) {
-    const userStr = urlParams.get('user');
-    if (userStr) {
-      try {
-        return JSON.parse(userStr);
-      } catch (e) {
-        return null;
+
+  // Constant-time hex comparison. `===` on strings short-circuits on the first
+  // mismatched char, leaking the index of the first byte difference through
+  // timing. Workers jitter dominates the side channel in practice, but the
+  // canonical Telegram-spec validation is constant-time — match it.
+  if (signatureHex.length === hash.length) {
+    let diff = 0;
+    for (let i = 0; i < signatureHex.length; i++) {
+      diff |= signatureHex.charCodeAt(i) ^ hash.charCodeAt(i);
+    }
+    if (diff === 0) {
+      const userStr = urlParams.get('user');
+      if (userStr) {
+        try {
+          return JSON.parse(userStr);
+        } catch (e) {
+          return null;
+        }
       }
     }
   }
-  
+
   return null;
 }
