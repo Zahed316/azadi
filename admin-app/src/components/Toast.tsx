@@ -5,6 +5,7 @@ interface ToastData {
   kind: 'success' | 'error';
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- useToast hook intentionally co-located with the Toast component export
 export function useToast() {
   const [toast, setToast] = useState<ToastData | null>(null);
 

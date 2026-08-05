@@ -10,7 +10,7 @@ import {
   clearStore,
   seedTable,
 } from './_helpers/routerHarness';
-import { products, categories, faq, branches, settings, menuConfig } from '../database/schema';
+import { categories } from '../database/schema';
 
 beforeEach(() => {
   resetAuthDefaults();
@@ -81,12 +81,12 @@ test('OPTIONS /anything returns 200 with CORS headers but no Content-Type', asyn
   // explicitly set status: 204 on the OPTIONS response. This is existing behaviour.
   const { handleApiRequest } = await import('../api/router');
   const request = new Request('https://bot.test/api/anything', { method: 'OPTIONS' });
-  const response = await handleApiRequest(request as any, {
+  const response = await handleApiRequest(request, {
     TELEGRAM_BOT_TOKEN: 'test',
     SECRET_TOKEN: 'test',
     DB: null,
     AI: null,
-  } as any, {} as any);
+  }, {} as ExecutionContext);
   expect(response.status).toBe(200);
   expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
   expect(response.headers.get('Content-Type')).toBeNull();

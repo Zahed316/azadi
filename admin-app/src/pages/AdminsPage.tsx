@@ -22,7 +22,7 @@ export default function AdminsPage() {
   const addAdminMutation = useMutation({
     mutationFn: (body: any) => apiFetch('/admins', { method: 'POST', body }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admins });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admins });
       setAdminId(''); setAdminCatId('');
     },
     onError: (err: Error) => { setError(err.message); },
@@ -31,7 +31,7 @@ export default function AdminsPage() {
   const deleteAdminMutation = useMutation({
     mutationFn: (id: number) => apiFetch(`/admins/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admins });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admins });
     },
     onError: (err: Error) => { setError(err.message); },
   });

@@ -5,7 +5,7 @@ import { Env } from '../bot';
 import { ProductRepository, BranchRepository, FaqRepository, AiLogRepository, MenuConfigRepository } from '../repositories';
 import { buildMinimalContext } from '../utils/menuContext';
 
-export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
+export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
   bot.on('message:text', async (ctx) => {
     if (!ctx.message.text.startsWith('/')) {
       if (!ctx.env.AI) {
@@ -56,7 +56,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, env: Env) {
           await aiLogRepo.logConversation(userId, ctx.message.text, answer);
         }
 
-        if ((ctx.env as Env & { PERF_LOG?: string }).PERF_LOG === 'true') {
+        if (ctx.env.PERF_LOG === 'true') {
           console.log(JSON.stringify({ operation: 'ai-request-timing', catalogMs: Math.round(catalogDuration), contextMs: Math.round(contextDuration), aiMs: Math.round(aiDuration), totalMs: Math.round(performance.now() - requestStartedAt) }));
         }
 

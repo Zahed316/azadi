@@ -68,7 +68,7 @@ export default function ProductsPage() {
     mutationFn: (data: { ids: number[]; action: string; updateData?: any }) =>
       apiFetch('/products/batch', { method: 'POST', body: data }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
       setSelectedProductIds([]);
       setBatchAction('');
       showToast('Batch action completed ✓');
@@ -83,7 +83,7 @@ export default function ProductsPage() {
         body: data.body,
       }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
       resetProductForm();
       showToast(variables.id ? 'Product updated ✓' : 'Product added ✓');
     },
@@ -93,7 +93,7 @@ export default function ProductsPage() {
   const deleteProductMutation = useMutation({
     mutationFn: (id: number) => apiFetch(`/products/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
       showToast('Product deleted ✓');
     },
     onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },

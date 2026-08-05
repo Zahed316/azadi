@@ -185,12 +185,12 @@ test('malformed JSON body returns 500', async () => {
     },
     body: '{invalid json',
   });
-  const response = await handleApiRequest(request as any, {
+  const response = await handleApiRequest(request, {
     TELEGRAM_BOT_TOKEN: 'test-token',
     SECRET_TOKEN: 'test-secret',
     DB: null,
     AI: null,
-  } as any, {} as any);
+  }, {} as ExecutionContext);
   expect(response.status).toBe(500);
   const body: any = await response.json().catch(() => null);
   expect(body).toBeDefined();

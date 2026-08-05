@@ -1,6 +1,5 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { branchesMenu } from './branchesMenu';
 import { FaqRepository, ProductRepository, SettingsRepository } from '../repositories';
 import { formatFaq, formatProduct, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';

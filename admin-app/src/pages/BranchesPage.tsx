@@ -30,7 +30,7 @@ export default function BranchesPage() {
         body: data.body,
       }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.branches });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.branches });
       resetBranchForm();
       showToast(variables.id ? 'Branch updated ✓' : 'Branch added ✓');
     },
@@ -40,7 +40,7 @@ export default function BranchesPage() {
   const deleteBranchMutation = useMutation({
     mutationFn: (id: number) => apiFetch(`/branches/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.branches });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.branches });
       showToast('Branch deleted ✓');
     },
     onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },

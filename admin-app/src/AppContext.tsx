@@ -12,6 +12,7 @@ export interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components -- useAppContext hook intentionally co-located with the AppContext default export
 export function useAppContext() {
   const ctx = useContext(AppContext);
   if (!ctx) throw new Error('useAppContext must be used within AppContext.Provider');

@@ -34,7 +34,7 @@ export default function MenuConfigPage() {
     mutationFn: (data: { id: number; body: any }) =>
       apiFetch(`/menu-config/${data.id}`, { method: 'PUT', body: data.body }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
     },
     onError: (err: Error) => { setError(err.message); },
   });
@@ -43,7 +43,7 @@ export default function MenuConfigPage() {
     mutationFn: (items: any[]) =>
       apiFetch('/menu-config/reorder', { method: 'POST', body: { items } }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
     },
     onError: (err: Error) => { setError(err.message); },
   });
@@ -51,7 +51,7 @@ export default function MenuConfigPage() {
   const deleteMenuConfigMutation = useMutation({
     mutationFn: (id: number) => apiFetch(`/menu-config/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
     },
     onError: (err: Error) => { setError(err.message); },
   });
@@ -59,7 +59,7 @@ export default function MenuConfigPage() {
   const addToSectionMutation = useMutation({
     mutationFn: (body: any) => apiFetch('/menu-config', { method: 'POST', body }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
       setMenuAddCatId('');
     },
     onError: (err: Error) => { setError(err.message); },
@@ -69,7 +69,7 @@ export default function MenuConfigPage() {
     mutationFn: (data: { id: number; body: any }) =>
       apiFetch(`/menu-config/${data.id}`, { method: 'PUT', body: data.body }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
       setEditingSpecialMsg(null);
     },
     onError: (err: Error) => { setError(err.message); },

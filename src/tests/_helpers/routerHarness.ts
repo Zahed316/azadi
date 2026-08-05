@@ -6,6 +6,7 @@
  * without a real Cloudflare D1 binding or HMAC signature verification.
  */
 import { vi } from 'vitest';
+import type { Env } from '../../bot';
 
 // ---------------------------------------------------------------------------
 // 1. In-memory store
@@ -242,14 +243,14 @@ vi.mock('../../database/client', () => ({
 let mockValidateResult: any = { id: 12345, first_name: 'Test' };
 
 vi.mock('../../api/auth', () => ({
-  validateInitData: vi.fn(async () => mockValidateResult),
+  validateInitData: vi.fn(() => Promise.resolve(mockValidateResult)),
 }));
 
 const defaultAdminRole = { telegramId: 12345, role: 'super_admin', categoryId: null };
 let mockAdminRole: any = { ...defaultAdminRole };
 
 vi.mock('../../middlewares/auth', () => ({
-  getAdminRole: vi.fn(async () => mockAdminRole),
+  getAdminRole: vi.fn(() => Promise.resolve(mockAdminRole)),
 }));
 
 // ---------------------------------------------------------------------------
@@ -310,7 +311,7 @@ export async function callRouter({
 
   const request = new Request(url, init);
 
-  const fakeEnv: Record<string, unknown> = {
+  const fakeEnv: Env = {
     TELEGRAM_BOT_TOKEN: 'test-token',
     SECRET_TOKEN: 'test-secret',
     DB: fakeDb,
@@ -319,7 +320,7 @@ export async function callRouter({
   };
 
   const ctx = {} as ExecutionContext; // stub — not used by the router
-  const response = await handleApiRequest(request as any, fakeEnv as any, ctx);
+  const response = await handleApiRequest(request, fakeEnv, ctx);
   const responseBody = await response.json().catch(() => null);
 
   return { status: response.status, body: responseBody, headers: response.headers };

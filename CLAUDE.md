@@ -28,7 +28,10 @@ npm ci                              # install
 npm test                            # vitest run (all)
 npx vitest run src/tests/numbers.test.ts    # single test file
 npx vitest run -t "formatPersianPrice"      # single test by name
-./node_modules/.bin/tsc --noEmit    # typecheck
+npm run typecheck                   # tsc --noEmit
+npm run lint                        # eslint (root config: eslint.config.mjs)
+npm run format:check                # prettier --check (no writes)
+npm run format                      # prettier --write (auto-fixes)
 npm run deploy                      # wraps `npm exec -- wrangler deploy`
 npm run deploy:dry                  # wraps `wrangler deploy --dry-run --outdir ./wrangler-dry`
 npm run setup:webhook               # reads TELEGRAM_BOT_TOKEN and SECRET_TOKEN from ~/.env
@@ -38,9 +41,12 @@ cd admin-app
 npm install
 npm run dev                         # vite dev server (proxies not configured — see below)
 npm run build                       # tsc + vite build (also what CI runs)
+npm run typecheck                   # tsc --noEmit
+npm run lint                        # eslint (admin-app config: admin-app/eslint.config.mjs)
+npm run format:check                # prettier --check
 ```
 
-CI (`.github/workflows/deploy.yml`): `npm ci` → vitest → `tsc --noEmit` → `wrangler deploy` (push to main only), plus a separate `deploy-admin-app` job that builds `admin-app/` and runs `wrangler pages deploy admin-app/dist --project-name=azadi-admin`.
+CI (`.github/workflows/deploy.yml`): `npm ci` → vitest → `lint` (non-blocking) → `tsc --noEmit` → `wrangler deploy` (push to main only), plus a separate `deploy-admin-app` job that builds `admin-app/`, runs `lint` (non-blocking), and runs `wrangler pages deploy admin-app/dist --project-name=azadi-admin`.
 
 ## Architecture
 
@@ -111,6 +117,7 @@ React + Vite + `@telegram-apps/sdk` (v2). The Mini App is loaded inside Telegram
 - **Admin conversational wizards were removed from the chat interface** to avoid a webhook-retry / AI-fallback race condition (conversations stored state per-request, so retries fell through to the AI handler). All multi-step admin data entry now goes through the Mini App + REST API. The `conversations()` middleware itself is **gated by `env.USE_CONVERSATIONS === 'true'`** in `src/bot.ts` so re-introduction is a config flip — not a code change. If you flip it on, you MUST also add a `ctx.hasActiveConversation` snapshot middleware (BEFORE any `createConversation()` enter) AND a `if (ctx.hasActiveConversation) return;` skip at the top of `src/handlers/message.ts:9` — otherwise a wizard's final message will be answered by the AI rather than by the wizard. See `src/bot.ts` for the place-marker comment.
 - **Drinks don't show stock in `formatProduct`**: stock is intentionally hidden when `p.unit === 'cup'` (drinks are made-to-order). Don't add stock display to `cup` units — it would imply per-drink inventory that doesn't exist.
 - **`PERF_LOG` is a per-request env flag**, not a build-time one. Set it on the Worker (`wrangler secret put PERF_LOG` or in dashboard) to enable JSON timing lines on stdout. Off by default.
+- **ESLint/Prettier is non-blocking in CI as of Phase 4** (commit pending). Both jobs run `npm run lint` with `continue-on-error: true`; the existing warning baseline (~137 root + ~294 admin) is being whittled down file-by-file. **Do not flip to a hard gate without first checking the current warning count.** Lint config: `eslint.config.mjs` (root, governs `src/`) and `admin-app/eslint.config.mjs` (React + Vite). Prettier config: `.prettierrc.json` (root) + `.prettierignore`. Both packages use `node ./node_modules/...` shebang-free script invocations to avoid the Termux `/usr/bin/env` gap (see [[android-arm64-platform-binary-gaps]]).
 
 ## Memory (project-scoped only — global rules live in `~/.claude/CLAUDE.md` and are loaded automatically)
 

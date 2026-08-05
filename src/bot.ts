@@ -1,4 +1,4 @@
-import { Bot, session, type SessionFlavor } from "grammy";
+import { Bot, session } from "grammy";
 import { conversations } from "@grammyjs/conversations";
 import { mainMenu } from "./menus/mainMenu";
 import { beansMenu, cakesMenu } from "./menus/productsMenu";
@@ -33,7 +33,7 @@ export function createBot(env: Env) {
   });
 
   bot.use(session({
-    initial: () => ({}) as SessionData,
+    initial: () => ({}),
     storage: new D1SessionStorage(env.DB),
   }));
 

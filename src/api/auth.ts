@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Telegram initData user payload is structurally unknown; keep `any` for downstream `.id` access
 export async function validateInitData(initData: string, botToken: string): Promise<any | null> {
   const urlParams = new URLSearchParams(initData);
   const hash = urlParams.get('hash');
@@ -46,7 +47,7 @@ export async function validateInitData(initData: string, botToken: string): Prom
       if (userStr) {
         try {
           return JSON.parse(userStr);
-        } catch (e) {
+        } catch (_e) {
           return null;
         }
       }

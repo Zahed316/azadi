@@ -44,7 +44,7 @@ export default function SettingsPage() {
   const saveSettingsMutation = useMutation({
     mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.settings });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
       showToast('Saved ✓');
     },
     onError: (err: Error) => { setError(err.message); },
@@ -53,7 +53,7 @@ export default function SettingsPage() {
   const deleteSettingMutation = useMutation({
     mutationFn: (key: string) => apiFetch(`/settings/${encodeURIComponent(key)}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.settings });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
     },
     onError: (err: Error) => { setError(err.message); },
   });

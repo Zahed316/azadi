@@ -9,12 +9,15 @@ Azadi Coffee Roastery — Telegram bot + admin panel for a coffee shop in Iransh
 ```
 npm ci                          # install
 npm test                        # vitest run (unit tests only)
-./node_modules/.bin/tsc --noEmit  # typecheck
+npm run typecheck               # tsc --noEmit
+npm run lint                    # eslint (root: eslint.config.mjs)
+npm run format:check            # prettier --check
+npm run format                  # prettier --write
 npm run deploy                  # npm exec -- wrangler deploy (uses project-local wrangler)
 npm run deploy:dry              # npm exec -- wrangler deploy --dry-run --outdir ./wrangler-dry
 npm run setup:webhook           # reads TELEGRAM_BOT_TOKEN + SECRET_TOKEN from ~/.env, then curls setWebhook
 ```
-CI (GitHub Actions): npm ci → vitest → tsc --noEmit → wrangler deploy (main only).
+CI (GitHub Actions): npm ci → vitest → lint (non-blocking) → tsc --noEmit → wrangler deploy (main only).
 Admin Mini App is deployed separately to Cloudflare Pages — see Deployment section below.
 
 ## Deployment
@@ -28,6 +31,9 @@ Admin Mini App (admin-app/):
 cd admin-app && npm install
 npm run dev      # vite dev server
 npm run build    # tsc + vite build
+npm run lint     # eslint (admin-app/eslint.config.mjs — React + Vite + TSX)
+npm run typecheck
+npm run format:check
 ```
 
 ## Dev Environment

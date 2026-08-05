@@ -37,7 +37,7 @@ export default function ContentPage() {
   const saveAboutMutation = useMutation({
     mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.settings });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
       showToast('About text saved ✓');
     },
     onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },
@@ -50,7 +50,7 @@ export default function ContentPage() {
         body: data.body,
       }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.faqs });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.faqs });
       resetFaqForm();
       showToast(variables.id ? 'FAQ updated ✓' : 'FAQ added ✓');
     },
@@ -60,7 +60,7 @@ export default function ContentPage() {
   const deleteFaqMutation = useMutation({
     mutationFn: (id: number) => apiFetch(`/faqs/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.faqs });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.faqs });
       showToast('FAQ deleted ✓');
     },
     onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },

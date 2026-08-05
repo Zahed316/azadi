@@ -4,9 +4,9 @@ import { ProductRepository, BranchRepository, FaqRepository, CategoryRepository,
 import { getAdminRole } from "../middlewares/auth";
 import { getDb } from "../database/client";
 import { admins } from "../database/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-export async function handleApiRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+export async function handleApiRequest(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname.replace('/api/', ''); // e.g. "products"
   const method = request.method;

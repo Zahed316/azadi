@@ -3,7 +3,7 @@ import { adminAuth } from '../middlewares/auth';
 import { MyContext } from '../types/context';
 import { Env } from '../bot';
 
-export function setupAdminCommands(bot: Bot<MyContext>, env: Env) {
+export function setupAdminCommands(bot: Bot<MyContext>, _env: Env) {
   bot.command('admin', adminAuth, async (ctx) => {
     // We use a placeholder URL for now. 
     // This should be the deployed URL of the React admin app.

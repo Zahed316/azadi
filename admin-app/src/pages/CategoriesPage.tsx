@@ -28,7 +28,7 @@ export default function CategoriesPage() {
         body: data.body,
       }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.categories });
       resetCategoryForm();
       showToast(variables.id ? 'Category updated ✓' : 'Category added ✓');
     },
@@ -38,7 +38,7 @@ export default function CategoriesPage() {
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: number) => apiFetch(`/categories/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.categories });
       showToast('Category deleted ✓');
     },
     onError: (err: Error) => { setError(err.message); showToast(err.message, 'error'); },

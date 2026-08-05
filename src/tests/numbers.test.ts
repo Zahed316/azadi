@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { expect, test } from 'vitest';
 import { toPersianDigits, formatPersianPrice, LRI, PDI } from '../utils/numbers';
 
 test('toPersianDigits converts Latin to Persian digits', () => {
