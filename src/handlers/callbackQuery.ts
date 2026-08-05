@@ -5,6 +5,7 @@ import {
   SettingsRepository,
   FaqRepository,
   MenuConfigRepository,
+  FavoritesRepository,
 } from '../repositories';
 import { formatBranch, formatProduct, formatFaq, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
@@ -188,9 +189,22 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       if (product) {
         const priceUnit =
           (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+        const kb = backKeyboard();
+        // Phase 5.2: favorite toggle
+        if (ctx.from?.id) {
+          const isFav = await new FavoritesRepository(ctx.env.DB).isFavorited(
+            String(ctx.from.id),
+            id,
+          );
+          if (isFav) {
+            kb.row().text('💔 حذف از علاقمندی‌ها', `fav:remove:${id}`);
+          } else {
+            kb.row().text('⭐ ذخیره', `fav:add:${id}`);
+          }
+        }
         await ctx.reply(formatProduct(product, priceUnit), {
           parse_mode: 'HTML',
-          reply_markup: backKeyboard(),
+          reply_markup: kb,
         });
       } else {
         await ctx.reply('محصول مورد نظر یافت نشد.');
@@ -288,6 +302,46 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+    } catch (e) {
+      console.error(e);
+      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
+    }
+  });
+
+  // --- Phase 5.2: favorites ---
+
+  bot.callbackQuery(/^fav:add:(\d+)$/, async (ctx) => {
+    try {
+      await ctx.answerCallbackQuery();
+      if (!ctx.from?.id) return;
+      const productId = Number(ctx.match[1]);
+      const repo = new FavoritesRepository(ctx.env.DB);
+      const added = await repo.add(String(ctx.from.id), productId);
+      const msg = added
+        ? '✅ به علاقمندی‌ها اضافه شد.'
+        : 'ℹ️ این محصول از قبل در علاقمندی‌های شما بود.';
+      await ctx.reply(msg, {
+        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+      });
+    } catch (e) {
+      console.error(e);
+      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
+    }
+  });
+
+  bot.callbackQuery(/^fav:remove:(\d+)$/, async (ctx) => {
+    try {
+      await ctx.answerCallbackQuery();
+      if (!ctx.from?.id) return;
+      const productId = Number(ctx.match[1]);
+      const repo = new FavoritesRepository(ctx.env.DB);
+      const removed = await repo.remove(String(ctx.from.id), productId);
+      const msg = removed
+        ? '❌ از علاقمندی‌ها حذف شد.'
+        : 'ℹ️ این محصول در علاقمندی‌های شما نبود.';
+      await ctx.reply(msg, {
+        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+      });
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});

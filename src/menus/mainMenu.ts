@@ -1,7 +1,8 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { FaqRepository, ProductRepository, SettingsRepository } from '../repositories';
+import { FaqRepository, ProductRepository, SettingsRepository, FavoritesRepository } from '../repositories';
 import { formatFaq, formatProduct, DEFAULT_PRICE_UNIT } from '../utils/formatters';
+import { toPersianDigits } from '../utils/numbers';
 import { buildListPage } from '../utils/faqPagination';
 import { MyContext } from '../types/context';
 
@@ -117,6 +118,29 @@ export const mainMenu = new Menu<MyContext>('main-menu')
     } catch (e) {
       console.error(e);
       await ctx.reply('خطا در ارتباط با سرور.');
+    }
+  })
+  .row()
+  .text('⭐ منوهای من', async (ctx: MyContext) => {
+    try {
+      if (!ctx.from?.id) return;
+      const items = await new FavoritesRepository(ctx.env.DB).list(String(ctx.from.id));
+      if (items.length === 0) {
+        await ctx.reply('📭 هنوز محصولی به علاقمندی‌ها اضافه نکرده‌اید.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      const kb = new InlineKeyboard();
+      for (const p of items) {
+        kb.text(p.name, `product:${p.id}`).row();
+      }
+      await ctx.reply(
+        `<b>⭐ منوهای من</b> (${toPersianDigits(items.length)} مورد)\n\nبرای دیدن جزئیات هر مورد، روی آن بزنید.`,
+        { parse_mode: 'HTML', reply_markup: kb },
+      );
+    } catch (e) {
+      console.error(e);
     }
   })
   .row()
