@@ -10,6 +10,7 @@ import {
   coffeeDetails,
   menuConfig,
   userState,
+  favorites,
 } from '../database/schema';
 import { eq, and, desc, lt, sql } from 'drizzle-orm';
 
@@ -462,5 +463,93 @@ export class UserStateRepository {
       .where(and(lt(userState.lastSeenAt, cutoff), sql`${userState.streakDays} > 0`))
       .returning({ telegramId: userState.telegramId });
     return rows.length;
+  }
+}
+
+// Phase 5.2: per-user product favorites. Composite PK on (telegram_id,
+// product_id) prevents duplicates; foreign key cascades on product delete.
+export class FavoritesRepository {
+  private db: ReturnType<typeof getDb>;
+
+  constructor(d1Binding: D1Database) {
+    this.db = getDb(d1Binding);
+  }
+
+  /**
+   * Add a product to the user's favorites. Idempotent: returns true on
+   * insert, false on duplicate (composite PK collision). Uses SQLite's
+   * RETURNING to detect the actual insert vs the no-op on conflict.
+   */
+  async add(telegramId: string, productId: number): Promise<boolean> {
+    const rows = await this.db
+      .insert(favorites)
+      .values({ telegramId, productId, createdAt: new Date() })
+      .onConflictDoNothing()
+      .returning({ telegramId: favorites.telegramId });
+    return rows.length > 0;
+  }
+
+  /**
+   * Remove a product from the user's favorites. Returns true if a row was
+   * actually deleted, false if the (telegramId, productId) pair didn't exist.
+   */
+  async remove(telegramId: string, productId: number): Promise<boolean> {
+    const rows = await this.db
+      .delete(favorites)
+      .where(
+        and(eq(favorites.telegramId, telegramId), eq(favorites.productId, productId)),
+      )
+      .returning({ telegramId: favorites.telegramId });
+    return rows.length > 0;
+  }
+
+  /**
+   * List all products the user has favorited, joined with the product row
+   * and ordered by favorite creation time (newest first). Returns the full
+   * Product shape plus a `favoritedAt` timestamp for the menu surface.
+   */
+  async list(
+    telegramId: string,
+  ): Promise<Array<typeof products.$inferSelect & { favoritedAt: Date }>> {
+    return await this.db
+      .select({
+        id: products.id,
+        branchId: products.branchId,
+        categoryId: products.categoryId,
+        name: products.name,
+        description: products.description,
+        price: products.price,
+        stock: products.stock,
+        unit: products.unit,
+        imageUrl: products.imageUrl,
+        available: products.available,
+        featured: products.featured,
+        priceOnRequest: products.priceOnRequest,
+        isSeasonal: products.isSeasonal,
+        sizeOptions: products.sizeOptions,
+        syrupOptions: products.syrupOptions,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        favoritedAt: favorites.createdAt,
+      })
+      .from(favorites)
+      .innerJoin(products, eq(products.id, favorites.productId))
+      .where(eq(favorites.telegramId, telegramId))
+      .orderBy(desc(favorites.createdAt));
+  }
+
+  /**
+   * Check whether a single product is favorited by the user. Used to render
+   * the right toggle button on the product-detail page.
+   */
+  async isFavorited(telegramId: string, productId: number): Promise<boolean> {
+    const rows = await this.db
+      .select({ telegramId: favorites.telegramId })
+      .from(favorites)
+      .where(
+        and(eq(favorites.telegramId, telegramId), eq(favorites.productId, productId)),
+      )
+      .limit(1);
+    return rows.length > 0;
   }
 }

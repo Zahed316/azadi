@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, primaryKey } from 'drizzle-orm/sqlite-core';
 
 export const branches = sqliteTable('branches', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -112,3 +112,21 @@ export const userState = sqliteTable('user_state', {
   streakDays: integer('streak_days').notNull().default(0),
   lastQuizAt: integer('last_quiz_at', { mode: 'timestamp' }),
 });
+
+// Phase 5.2: per-user product favorites. Composite PK prevents duplicates;
+// the foreign key cascades on product delete so favorites don't outlive
+// the products they reference. The "user" index supports the
+// "⭐ منوهای من" list query (WHERE telegram_id = ? ORDER BY created_at DESC).
+export const favorites = sqliteTable(
+  'favorites',
+  {
+    telegramId: text('telegram_id').notNull(),
+    productId: integer('product_id')
+      .notNull()
+      .references(() => products.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.telegramId, t.productId] }),
+  }),
+);
