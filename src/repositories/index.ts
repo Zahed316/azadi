@@ -1,4 +1,5 @@
 import { getDb } from '../database/client';
+import { D1Database } from '@cloudflare/workers-types';
 import {
   products,
   categories,
@@ -14,7 +15,7 @@ import { eq, and, desc } from 'drizzle-orm';
 export class ProductRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -134,7 +135,7 @@ export class ProductRepository {
 export class CategoryRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -163,7 +164,7 @@ export class CategoryRepository {
 export class BranchRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -192,7 +193,7 @@ export class BranchRepository {
 export class FaqRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -221,7 +222,7 @@ export class FaqRepository {
 export class SettingsRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -250,7 +251,7 @@ export class SettingsRepository {
 export class AiLogRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -279,7 +280,7 @@ export class AiLogRepository {
 export class MenuConfigRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 

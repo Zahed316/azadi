@@ -318,7 +318,7 @@ export async function callRouter({
   const fakeEnv: Env = {
     TELEGRAM_BOT_TOKEN: 'test-token',
     SECRET_TOKEN: 'test-secret',
-    DB: fakeDb,
+    DB: fakeDb as unknown as import('@cloudflare/workers-types').D1Database,
     AI: null,
     ...envOverrides,
   };

@@ -188,7 +188,7 @@ test('malformed JSON body returns 500', async () => {
     {
       TELEGRAM_BOT_TOKEN: 'test-token',
       SECRET_TOKEN: 'test-secret',
-      DB: null,
+      DB: null as unknown as import('@cloudflare/workers-types').D1Database,
       AI: null,
     },
     {} as ExecutionContext,

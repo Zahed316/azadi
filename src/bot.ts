@@ -1,5 +1,6 @@
 import { Bot, session } from 'grammy';
 import { conversations } from '@grammyjs/conversations';
+import { D1Database } from '@cloudflare/workers-types';
 import { mainMenu } from './menus/mainMenu';
 import { beansMenu, cakesMenu } from './menus/productsMenu';
 import { drinksNavMenu } from './menus/drinksNavMenu';
@@ -15,7 +16,7 @@ import { D1SessionStorage } from './database/sessionStorage';
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
   SECRET_TOKEN: string;
-  DB: any;
+  DB: D1Database;
   AI: any;
   // Optional runtime flags — kept loose so workers can be deployed without
   // them being present in wrangler.toml/[vars]. Set via `wrangler secret put`.
