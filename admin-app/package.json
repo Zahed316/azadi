@@ -9,11 +9,11 @@
     "build": "node ./node_modules/typescript/bin/tsc && node ./node_modules/vite/bin/vite.js build"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.101.4",
     "@telegram-apps/sdk": "^2.0.0",
-    "esbuild": "^0.25.12",
-    "lucide-react": "^0.378.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.30.4"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
