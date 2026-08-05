@@ -1,6 +1,8 @@
 # Memory
 
 > **Canonical rules** live in `CLAUDE.md` (project root) and `~/.claude/CLAUDE.md` (user global). This file is the persona-specific companion; read CLAUDE.md first for the rules that govern commands, architecture, and pitfalls. Treat anything here that disagrees with CLAUDE.md as stale and update this file to match.
+>
+> **Global rules are binding.** The rules in `~/.claude/CLAUDE.md` take precedence over any project-specific guidance in this file or in `CLAUDE.md`. If they conflict, the global rules win — and this file should be updated to reconcile.
 
 ## Project Overview
 Azadi Coffee Roastery — Telegram bot + admin panel for a coffee shop in Iranshahr, Iran. Cloudflare Workers backend, grammY bot framework, D1 database (Drizzle ORM), Cloudflare Workers AI for chat fallback. Admin management via a standalone React Mini App (admin-app/). Persian UI text in all bot replies.

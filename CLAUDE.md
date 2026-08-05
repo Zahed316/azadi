@@ -10,6 +10,8 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 
+**Global rules are binding.** The rules in `~/.claude/CLAUDE.md` (the user's global instructions) take precedence over any project-specific guidance in this file or in `AGENTS.md`. If they conflict, the global rules win — and this file should be updated to reconcile.
+
 **Global rules** are in `~/.claude/CLAUDE.md`. They are already loaded each session via the system context, but **always re-read that file when starting work that crosses the user's global rules** (CodeGraph usage, the "memory is a hypothesis index" rule, output conventions). The file is the source of truth — never re-derive its contents from memory of past sessions.
 
 ## What this is
