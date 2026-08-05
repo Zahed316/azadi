@@ -9,8 +9,9 @@ import {
   aiConversationLogs,
   coffeeDetails,
   menuConfig,
+  userState,
 } from '../database/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, lt, sql } from 'drizzle-orm';
 
 export class ProductRepository {
   private db: ReturnType<typeof getDb>;
@@ -355,5 +356,111 @@ export class MenuConfigRepository {
       .from(menuConfig)
       .where(eq(menuConfig.isVisible, true));
     return new Set(rows.map((r) => r.categoryId));
+  }
+}
+
+// Phase 5.1: per-user streak state. Identified by Telegram user_id (cast to
+// text). Streak math uses UTC day boundaries so the daily cron sweep (21:00
+// UTC, declared in wrangler.toml) lines up with the day-rollover decision.
+export interface UpsertVisitResult {
+  /** Current streak length (0 for first-ever visit, 1 for first-visit-today). */
+  streakDays: number;
+  /** True iff this call incremented streakDays above its previous value. */
+  isNewStreak: boolean;
+  /** True iff this was the first time we've seen this telegram_id. */
+  isFirstVisit: boolean;
+}
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const STREAK_GAP_MS = 48 * 60 * 60 * 1000; // 48h
+
+function utcDayKey(d: Date): number {
+  // Days since epoch in UTC. D1 stores integer epoch for timestamp columns;
+  // we compare in days so clock skew within a day doesn't reset the streak.
+  return Math.floor(d.getTime() / ONE_DAY_MS);
+}
+
+export class UserStateRepository {
+  private db: ReturnType<typeof getDb>;
+
+  constructor(d1Binding: D1Database) {
+    this.db = getDb(d1Binding);
+  }
+
+  async getByTelegramId(telegramId: string) {
+    const rows = await this.db.select().from(userState).where(eq(userState.telegramId, telegramId));
+    return rows[0] ?? null;
+  }
+
+  /**
+   * Record a user visit and return the resulting streak state. Idempotent
+   * within a UTC day: re-calling on the same day returns isNewStreak=false.
+   *
+   * Streak rules:
+   * - First-ever visit: streakDays=1, isFirstVisit=true.
+   * - Visited yesterday (UTC): streakDays = previous + 1.
+   * - Visited 2+ days ago: streakDays resets to 1.
+   * - Visited earlier today: no change, isNewStreak=false.
+   */
+  async upsertVisit(telegramId: string, now: Date = new Date()): Promise<UpsertVisitResult> {
+    const existing = await this.getByTelegramId(telegramId);
+    const nowDay = utcDayKey(now);
+
+    if (!existing) {
+      await this.db.insert(userState).values({
+        telegramId,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        visitsTotal: 1,
+        streakDays: 1,
+      });
+      return { streakDays: 1, isNewStreak: true, isFirstVisit: true };
+    }
+
+    const lastDay = utcDayKey(existing.lastSeenAt);
+    if (lastDay === nowDay) {
+      // Same UTC day — bump visits_total, leave streak alone.
+      await this.db
+        .update(userState)
+        .set({ visitsTotal: existing.visitsTotal + 1, lastSeenAt: now })
+        .where(eq(userState.telegramId, telegramId));
+      return {
+        streakDays: existing.streakDays,
+        isNewStreak: false,
+        isFirstVisit: false,
+      };
+    }
+
+    const gap = now.getTime() - existing.lastSeenAt.getTime();
+    const newStreak = gap < STREAK_GAP_MS ? existing.streakDays + 1 : 1;
+    await this.db
+      .update(userState)
+      .set({
+        lastSeenAt: now,
+        visitsTotal: existing.visitsTotal + 1,
+        streakDays: newStreak,
+      })
+      .where(eq(userState.telegramId, telegramId));
+    return {
+      streakDays: newStreak,
+      isNewStreak: newStreak > existing.streakDays,
+      isFirstVisit: false,
+    };
+  }
+
+  /**
+   * Reset streakDays to 0 for users who haven't been seen in 48h. Idempotent:
+   * a re-run after the reset is a no-op (the WHERE clause filters them out).
+   * Returns the number of rows reset, for cron logging. Uses SQLite's
+   * RETURNING clause so the count is accurate in a single round-trip.
+   */
+  async sweepStaleStreaks(now: Date = new Date()): Promise<number> {
+    const cutoff = new Date(now.getTime() - STREAK_GAP_MS);
+    const rows = await this.db
+      .update(userState)
+      .set({ streakDays: 0 })
+      .where(and(lt(userState.lastSeenAt, cutoff), sql`${userState.streakDays} > 0`))
+      .returning({ telegramId: userState.telegramId });
+    return rows.length;
   }
 }

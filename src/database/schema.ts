@@ -99,3 +99,16 @@ export const menuConfig = sqliteTable('menu_config', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });
+
+// Phase 5.1: per-user streak counter state. Implicit identity by Telegram
+// user_id (cast to text); no signup. Drizzle's `mode: 'timestamp'` columns
+// store integer epoch under the hood, matching the rest of the schema.
+// last_quiz_at is reserved for a future quiz mechanic (Phase 5b/6).
+export const userState = sqliteTable('user_state', {
+  telegramId: text('telegram_id').primaryKey(),
+  firstSeenAt: integer('first_seen_at', { mode: 'timestamp' }).notNull(),
+  lastSeenAt: integer('last_seen_at', { mode: 'timestamp' }).notNull(),
+  visitsTotal: integer('visits_total').notNull().default(0),
+  streakDays: integer('streak_days').notNull().default(0),
+  lastQuizAt: integer('last_quiz_at', { mode: 'timestamp' }),
+});
