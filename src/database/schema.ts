@@ -36,6 +36,9 @@ export const products = sqliteTable('products', {
   isSeasonal: integer('is_seasonal', { mode: 'boolean' }).default(false),
   sizeOptions: text('size_options'),
   syrupOptions: text('syrup_options'),
+  calories: integer('calories'),
+  allergens: text('allergens'),
+  caffeineMg: integer('caffeine_mg'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });
@@ -54,6 +57,7 @@ export const coffeeDetails = sqliteTable('coffee_details', {
   recommendedBrew: text('recommended_brew'),
   acidity: text('acidity'),
   body: text('body'),
+  brewGuide: text('brew_guide'),
 });
 
 export const faq = sqliteTable('faq', {
