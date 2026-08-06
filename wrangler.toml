@@ -7,7 +7,6 @@ compatibility_flags = ["nodejs_compat"]
 enabled = true
 
 [vars]
-R2_PUBLIC_BASE = "https://pub-PLACEHOLDER.r2.dev"  # Replace with actual R2 public access domain
 # TELEGRAM_BOT_TOKEN and SECRET_TOKEN will be set as secrets
 
 [[d1_databases]]
@@ -17,10 +16,6 @@ database_id = "2c020279-a453-4105-984d-c09bdda89819"
 migrations_dir = "drizzle"
 [ai]
 binding = "AI"
-
-[[r2_buckets]]
-binding = "PRODUCT_IMAGES"
-bucket_name = "azadi-products"
 
 [triggers]
 crons = ["0 21 * * *"]  # Daily at 21:00 UTC ≈ 00:30 IRST. Body is gated by env.STREAK_CRON_ENABLED; the cron trigger is harmless if the body is inert.

@@ -5,7 +5,6 @@ import { expect, test, beforeEach } from 'vitest';
 import { products } from '../database/schema';
 import {
   callRouter,
-  callRouterFormData,
   setAdminRole,
   resetAuthDefaults,
   clearStore,
@@ -191,8 +190,6 @@ test('malformed JSON body returns 500', async () => {
       SECRET_TOKEN: 'test-secret',
       DB: null as unknown as import('@cloudflare/workers-types').D1Database,
       AI: null,
-      PRODUCT_IMAGES: null as unknown as import('@cloudflare/workers-types').R2Bucket,
-      R2_PUBLIC_BASE: 'https://test-bucket.r2.dev',
     },
     {} as ExecutionContext,
   );
@@ -203,48 +200,55 @@ test('malformed JSON body returns 500', async () => {
 });
 
 // ---------------------------------------------------------------------------
-// PUT /products/:id/image
+// PUT /products/:id/image (URL-based)
 // ---------------------------------------------------------------------------
 
-test('image upload returns 404 for nonexistent product', async () => {
+test('image set returns 404 for nonexistent product', async () => {
   setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
-  const formData = new FormData();
-  formData.append('file', new Blob(['fake'], { type: 'image/jpeg' }), 'test.jpg');
-  const res = await callRouterFormData({
+  const res = await callRouter({
     method: 'PUT',
     path: 'products/999/image',
-    formData,
+    body: { imageUrl: 'https://example.com/photo.jpg' },
   });
   expect(res.status).toBe(404);
 });
 
-test('image upload rejects non-image content type', async () => {
+test('image set rejects missing imageUrl', async () => {
   setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
   seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1 }]);
-  const formData = new FormData();
-  formData.append('file', new Blob(['not an image'], { type: 'text/plain' }), 'test.txt');
-  const res = await callRouterFormData({
+  const res = await callRouter({
     method: 'PUT',
     path: 'products/1/image',
-    formData,
+    body: {},
   });
   expect(res.status).toBe(400);
-  expect(res.body.error).toContain('JPG');
+  expect(res.body.error).toContain('الزامی');
 });
 
-test('image upload succeeds for valid image', async () => {
+test('image set rejects invalid URL', async () => {
   setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
   seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1 }]);
-  const formData = new FormData();
-  const fakeImage = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]); // JPEG header
-  formData.append('file', new Blob([fakeImage], { type: 'image/jpeg' }), 'test.jpg');
-  const res = await callRouterFormData({
+  const res = await callRouter({
     method: 'PUT',
     path: 'products/1/image',
-    formData,
+    body: { imageUrl: 'not-a-url' },
+  });
+  expect(res.status).toBe(400);
+  expect(res.body.error).toContain('معتبر');
+});
+
+test('image set succeeds for valid URL', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1 }]);
+  const res = await callRouter({
+    method: 'PUT',
+    path: 'products/1/image',
+    body: { imageUrl: 'https://example.com/photo.jpg' },
   });
   expect(res.status).toBe(200);
-  expect(res.body.imageUrl).toBeDefined();
+  expect(res.body.imageUrl).toBe('https://example.com/photo.jpg');
+  const rows = readTable(products);
+  expect(rows[0].imageUrl).toBe('https://example.com/photo.jpg');
 });
 
 // ---------------------------------------------------------------------------
@@ -262,7 +266,7 @@ test('image delete returns 404 for nonexistent product', async () => {
 
 test('image delete succeeds for existing product', async () => {
   setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
-  seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1, imageUrl: 'products/1/abc.jpg' }]);
+  seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1, imageUrl: 'https://example.com/photo.jpg' }]);
   const res = await callRouter({
     method: 'DELETE',
     path: 'products/1/image',

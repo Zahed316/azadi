@@ -376,15 +376,12 @@ export async function handleApiRequest(
         }
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } else if (method === 'DELETE') {
-        // Clean up R2 images before removing the D1 row (I1 fix)
-        const { ImageService: I1ImageService } = await import('../services/imageService');
-        await I1ImageService.deleteImage(env.PRODUCT_IMAGES, id);
         await repo.deleteProduct(id);
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       }
     }
 
-    // Image upload: PUT /products/:id/image (multipart/form-data)
+    // Image URL: PUT /products/:id/image (JSON with imageUrl)
     if (path.startsWith('products/') && path.endsWith('/image') && method === 'PUT') {
       const id = parseInt(path.split('/')[1]);
       const repo = new ProductRepository(db);
@@ -403,45 +400,27 @@ export async function handleApiRequest(
       }
 
       try {
-        const contentType = request.headers.get('Content-Type') || '';
-        if (!contentType.includes('multipart/form-data')) {
-          return new Response(
-            JSON.stringify({ error: 'فقط فایل‌های JPG، PNG و WebP پشتیبانی می‌شوند' }),
-            { status: 400, headers: corsHeaders },
-          );
-        }
-
-        const formData = await request.formData();
-        const file = formData.get('file');
-        if (!file || !(file instanceof Blob)) {
-          return new Response(JSON.stringify({ error: 'فایلی ارسال نشده است' }), {
+        const body = await request.json<{ imageUrl?: string }>();
+        if (!body.imageUrl || typeof body.imageUrl !== 'string') {
+          return new Response(JSON.stringify({ error: 'آدرس تصویر الزامی است' }), {
             status: 400,
             headers: corsHeaders,
           });
         }
-
-        const fileContentType = file.type;
-        const arrayBuffer = await file.arrayBuffer();
-        const { ImageService } = await import('../services/imageService');
-        const imageUrl = await ImageService.uploadImage(
-          env.PRODUCT_IMAGES,
-          id,
-          arrayBuffer,
-          fileContentType,
-          env.R2_PUBLIC_BASE,
-        );
-
-        await repo.updateProduct(id, { imageUrl });
-        return new Response(JSON.stringify({ success: true, imageUrl }), { headers: corsHeaders });
-      } catch (e: any) {
-        if (e.name === 'ImageError') {
-          return new Response(JSON.stringify({ error: e.message }), {
+        // Basic URL validation
+        try {
+          new URL(body.imageUrl);
+        } catch {
+          return new Response(JSON.stringify({ error: 'آدرس تصویر معتبر نیست' }), {
             status: 400,
             headers: corsHeaders,
           });
         }
+        await repo.updateProduct(id, { imageUrl: body.imageUrl });
+        return new Response(JSON.stringify({ success: true, imageUrl: body.imageUrl }), { headers: corsHeaders });
+      } catch (e) {
         console.error(e);
-        return new Response(JSON.stringify({ error: 'خطا در آپلود تصویر' }), {
+        return new Response(JSON.stringify({ error: 'خطا در ذخیره تصویر' }), {
           status: 500,
           headers: corsHeaders,
         });
@@ -467,11 +446,7 @@ export async function handleApiRequest(
       }
 
       try {
-        const { ImageService } = await import('../services/imageService');
-        // I2 fix: DB update first, then R2 delete. If R2 fails, imageUrl is
-        // already null (less harmful than a dangling URL pointing to nothing).
         await repo.updateProduct(id, { imageUrl: null });
-        await ImageService.deleteImage(env.PRODUCT_IMAGES, id);
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } catch (e) {
         console.error(e);
