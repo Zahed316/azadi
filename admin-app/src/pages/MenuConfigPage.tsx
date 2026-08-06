@@ -130,6 +130,10 @@ export default function MenuConfigPage() {
   return (
     <>
       <div className="card">
+        <h2>Menu Configuration</h2>
+        <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 12 }}>
+          Menu order here controls the bot's inline keyboard layout. Sections: ☕ Drinks, 🌱 Beans, 🍰 Cakes, 📍 Branches. Use the bot's <code>/start</code> command to preview the result.
+        </p>
         <div className="section-tabs">
           {(['drinks', 'beans', 'cakes', 'extras'] as Section[]).map((sec) => (
             <button
