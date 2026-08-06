@@ -11,4 +11,5 @@ export const queryKeys = {
   streakConfig: ['streakConfig'] as const,
   favorites: ['favorites'] as const,
   aiLogs: ['aiLogs'] as const,
+  health: ['health'] as const,
 };

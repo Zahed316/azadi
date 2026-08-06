@@ -6,12 +6,13 @@ import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 
-const BUILTIN_KEYS = ['instagram', 'phone', 'price_unit', 'ai_greeting'];
+const BUILTIN_KEYS = ['instagram', 'phone', 'price_unit', 'ai_greeting', 'about'];
 const BUILTIN_LABELS: Record<string, string> = {
   instagram: 'Instagram URL',
   phone: 'Contact Phone',
   price_unit: 'Price Unit',
   ai_greeting: 'AI Greeting',
+  about: 'About Text (shown in "درباره ما" and AI context)',
 };
 
 export default function SettingsPage() {
@@ -82,6 +83,17 @@ export default function SettingsPage() {
     deleteSettingMutation.mutate(key);
   };
 
+  const { data: streakConfig } = useQuery({
+    queryKey: queryKeys.streakConfig,
+    queryFn: () => apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
+  });
+
+  const { data: health } = useQuery({
+    queryKey: queryKeys.health,
+    queryFn: () => apiFetch<{ status: string; db: boolean; timestamp: string }>('/health'),
+    refetchInterval: 30000,
+  });
+
   return (
     <>
       <div className="card">
@@ -89,11 +101,20 @@ export default function SettingsPage() {
         <form onSubmit={handleSaveSettings}>
           {BUILTIN_KEYS.map((key) => (
             <Field key={key} label={BUILTIN_LABELS[key] || key}>
-              <input
-                value={localSettings.find((s: any) => s.key === key)?.value || ''}
-                onChange={(e) => updateSetting(key, e.target.value)}
-                dir={key === 'ai_greeting' ? 'auto' : undefined}
-              />
+              {key === 'about' ? (
+                <textarea
+                  value={localSettings.find((s: any) => s.key === key)?.value || ''}
+                  onChange={(e) => updateSetting(key, e.target.value)}
+                  dir="auto"
+                  rows={4}
+                />
+              ) : (
+                <input
+                  value={localSettings.find((s: any) => s.key === key)?.value || ''}
+                  onChange={(e) => updateSetting(key, e.target.value)}
+                  dir={key === 'ai_greeting' || key === 'about' ? 'auto' : undefined}
+                />
+              )}
             </Field>
           ))}
           <button type="submit" className="primary">
@@ -146,6 +167,82 @@ export default function SettingsPage() {
             Add Setting
           </button>
         </form>
+      </div>
+
+      <div className="card">
+        <h2>System Health</h2>
+        <ul className="list">
+          <li className="list-item">
+            <div className="list-item-info">
+              <span>API Status</span>
+              <span className="list-item-meta">{health?.status === 'ok' ? '✅ Healthy' : '⚠️ ' + (health?.status ?? 'Unknown')}</span>
+            </div>
+          </li>
+          <li className="list-item">
+            <div className="list-item-info">
+              <span>Database</span>
+              <span className="list-item-meta">{health?.db ? '✅ Connected' : '❌ Unreachable'}</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div className="card">
+        <h2>Feature Flags (read-only)</h2>
+        <ul className="list">
+          <li className="list-item">
+            <div className="list-item-info">
+              <span>STREAK_MESSAGES</span>
+              <span className="list-item-meta">{streakConfig?.streakMessages ? '✅ ON' : '❌ OFF'}</span>
+            </div>
+          </li>
+          <li className="list-item">
+            <div className="list-item-info">
+              <span>STREAK_CRON_ENABLED</span>
+              <span className="list-item-meta">{streakConfig?.streakCronEnabled ? '✅ ON' : '❌ OFF'}</span>
+            </div>
+          </li>
+          <li className="list-item">
+            <div className="list-item-info">
+              <span>USE_CONVERSATIONS</span>
+              <span className="list-item-meta" style={{ color: '#999' }}>🔒 Requires code changes</span>
+            </div>
+          </li>
+          <li className="list-item">
+            <div className="list-item-info">
+              <span>PERF_LOG</span>
+              <span className="list-item-meta" style={{ color: '#999' }}>🔒 Set via wrangler secret</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div className="card">
+        <h2>🤖 AI Assistant</h2>
+        <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
+          The AI assistant's personality and behavior are configured in the bot's source code (<code>AiService</code>).
+          The settings below affect the context the AI uses:
+        </p>
+        <ul className="list">
+          <li className="list-item">
+            <div className="list-item-info">
+              <span><b>about</b> — Shop description in AI context</span>
+              <span className="list-item-meta">↑ Set above</span>
+            </div>
+          </li>
+          <li className="list-item">
+            <div className="list-item-info">
+              <span><b>ai_greeting</b> — Initial greeting message</span>
+              <span className="list-item-meta">↑ Set above</span>
+            </div>
+          </li>
+          <li className="list-item">
+            <div className="list-item-info">
+              <span><b>Products / FAQs / Branches</b> — All managed data feeds the AI</span>
+              <span className="list-item-meta">↑ Managed in their pages</span>
+            </div>
+          </li>
+        </ul>
       </div>
     </>
   );
