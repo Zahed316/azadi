@@ -341,6 +341,7 @@ export async function callRouter({
       get: vi.fn().mockResolvedValue(null),
       head: vi.fn().mockResolvedValue(null),
     } as any,
+    R2_PUBLIC_BASE: 'https://test-bucket.r2.dev',
     ...envOverrides,
   };
 
@@ -390,6 +391,7 @@ export async function callRouterFormData({
       get: vi.fn().mockResolvedValue(null),
       head: vi.fn().mockResolvedValue(null),
     } as any,
+    R2_PUBLIC_BASE: 'https://test-bucket.r2.dev',
     ...envOverrides,
   };
 

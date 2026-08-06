@@ -376,6 +376,9 @@ export async function handleApiRequest(
         }
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } else if (method === 'DELETE') {
+        // Clean up R2 images before removing the D1 row (I1 fix)
+        const { ImageService: I1ImageService } = await import('../services/imageService');
+        await I1ImageService.deleteImage(env.PRODUCT_IMAGES, id);
         await repo.deleteProduct(id);
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       }
@@ -411,7 +414,7 @@ export async function handleApiRequest(
         const formData = await request.formData();
         const file = formData.get('file');
         if (!file || !(file instanceof Blob)) {
-          return new Response(JSON.stringify({ error: 'No file provided' }), {
+          return new Response(JSON.stringify({ error: 'فایلی ارسال نشده است' }), {
             status: 400,
             headers: corsHeaders,
           });
@@ -425,6 +428,7 @@ export async function handleApiRequest(
           id,
           arrayBuffer,
           fileContentType,
+          env.R2_PUBLIC_BASE,
         );
 
         await repo.updateProduct(id, { imageUrl });
@@ -464,8 +468,10 @@ export async function handleApiRequest(
 
       try {
         const { ImageService } = await import('../services/imageService');
-        await ImageService.deleteImage(env.PRODUCT_IMAGES, id);
+        // I2 fix: DB update first, then R2 delete. If R2 fails, imageUrl is
+        // already null (less harmful than a dangling URL pointing to nothing).
         await repo.updateProduct(id, { imageUrl: null });
+        await ImageService.deleteImage(env.PRODUCT_IMAGES, id);
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } catch (e) {
         console.error(e);

@@ -13,6 +13,7 @@ export class ImageService {
     productId: number,
     file: ArrayBuffer,
     contentType: string,
+    publicBaseUrl: string,
   ): Promise<string> {
     if (!ALLOWED_TYPES.includes(contentType)) {
       throw new ImageError('INVALID_TYPE', 'فقط فایل‌های JPG، PNG و WebP پشتیبانی می‌شوند');
@@ -36,7 +37,7 @@ export class ImageService {
 
     // Return the R2.dev public URL
     // In production, this bucket needs to have public access enabled
-    return getPublicUrl(bucket, key);
+    return getPublicUrl(key, publicBaseUrl);
   }
 
   /**
@@ -59,12 +60,16 @@ export class ImageService {
    * Get the public URL for a product's image, or null if none exists.
    * Used by router (Task 4) and callback handler (Task 7).
    */
-  static async getImageUrl(bucket: R2Bucket, productId: number): Promise<string | null> {
+  static async getImageUrl(
+    bucket: R2Bucket,
+    productId: number,
+    publicBaseUrl: string,
+  ): Promise<string | null> {
     const prefix = `products/${productId}/`;
     const listed = await bucket.list({ prefix, limit: 1 });
     const first = listed.objects[0];
     if (!first) return null;
-    return getPublicUrl(bucket, first.key);
+    return getPublicUrl(first.key, publicBaseUrl);
   }
 
   /**
@@ -90,11 +95,10 @@ function contentTypeToExt(ct: string): string {
   }
 }
 
-function getPublicUrl(_bucket: R2Bucket, key: string): string {
+function getPublicUrl(key: string, publicBaseUrl: string): string {
   // R2.dev public URL pattern: pub-{hash}.r2.dev/{key}
   // In production, configure the bucket's public access domain in the Cloudflare dashboard.
-  // For now, return the key as a relative URL — the router will prefix it.
-  return key;
+  return `${publicBaseUrl}/${key}`;
 }
 
 export class ImageError extends Error {

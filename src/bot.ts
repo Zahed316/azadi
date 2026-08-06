@@ -27,6 +27,7 @@ export interface Env {
   PERF_LOG?: string;
   STREAK_MESSAGES?: string;
   STREAK_CRON_ENABLED?: string;
+  R2_PUBLIC_BASE: string;
 }
 
 export function createBot(env: Env) {

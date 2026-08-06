@@ -192,6 +192,7 @@ test('malformed JSON body returns 500', async () => {
       DB: null as unknown as import('@cloudflare/workers-types').D1Database,
       AI: null,
       PRODUCT_IMAGES: null as unknown as import('@cloudflare/workers-types').R2Bucket,
+      R2_PUBLIC_BASE: 'https://test-bucket.r2.dev',
     },
     {} as ExecutionContext,
   );
