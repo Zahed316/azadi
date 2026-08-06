@@ -375,6 +375,101 @@ export async function handleApiRequest(
       }
     }
 
+    // Image upload: PUT /products/:id/image (multipart/form-data)
+    if (path.startsWith('products/') && path.endsWith('/image') && method === 'PUT') {
+      const id = parseInt(path.split('/')[1]);
+      const repo = new ProductRepository(db);
+      const product = await repo.getProductById(id);
+
+      if (!product)
+        return new Response(JSON.stringify({ error: 'Not found' }), {
+          status: 404,
+          headers: corsHeaders,
+        });
+      if (!isSuperAdmin && product.categoryId !== allowedCategoryId) {
+        return new Response(JSON.stringify({ error: 'Forbidden: Cannot modify this product' }), {
+          status: 403,
+          headers: corsHeaders,
+        });
+      }
+
+      try {
+        const contentType = request.headers.get('Content-Type') || '';
+        if (!contentType.includes('multipart/form-data')) {
+          return new Response(
+            JSON.stringify({ error: 'فقط فایل‌های JPG، PNG و WebP پشتیبانی می‌شوند' }),
+            { status: 400, headers: corsHeaders },
+          );
+        }
+
+        const formData = await request.formData();
+        const file = formData.get('file');
+        if (!file || !(file instanceof Blob)) {
+          return new Response(JSON.stringify({ error: 'No file provided' }), {
+            status: 400,
+            headers: corsHeaders,
+          });
+        }
+
+        const fileContentType = file.type;
+        const arrayBuffer = await file.arrayBuffer();
+        const { ImageService } = await import('../services/imageService');
+        const imageUrl = await ImageService.uploadImage(
+          env.PRODUCT_IMAGES,
+          id,
+          arrayBuffer,
+          fileContentType,
+        );
+
+        await repo.updateProduct(id, { imageUrl });
+        return new Response(JSON.stringify({ success: true, imageUrl }), { headers: corsHeaders });
+      } catch (e: any) {
+        if (e.name === 'ImageError') {
+          return new Response(JSON.stringify({ error: e.message }), {
+            status: 400,
+            headers: corsHeaders,
+          });
+        }
+        console.error(e);
+        return new Response(JSON.stringify({ error: 'خطا در آپلود تصویر' }), {
+          status: 500,
+          headers: corsHeaders,
+        });
+      }
+    }
+
+    // Image delete: DELETE /products/:id/image
+    if (path.startsWith('products/') && path.endsWith('/image') && method === 'DELETE') {
+      const id = parseInt(path.split('/')[1]);
+      const repo = new ProductRepository(db);
+      const product = await repo.getProductById(id);
+
+      if (!product)
+        return new Response(JSON.stringify({ error: 'Not found' }), {
+          status: 404,
+          headers: corsHeaders,
+        });
+      if (!isSuperAdmin && product.categoryId !== allowedCategoryId) {
+        return new Response(JSON.stringify({ error: 'Forbidden: Cannot modify this product' }), {
+          status: 403,
+          headers: corsHeaders,
+        });
+      }
+
+      try {
+        const { ImageService } = await import('../services/imageService');
+        await ImageService.deleteImage(env.PRODUCT_IMAGES, id);
+        await repo.updateProduct(id, { imageUrl: null });
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      } catch (e) {
+        console.error(e);
+        return new Response(JSON.stringify({ error: 'خطا در حذف تصویر' }), {
+          status: 500,
+          headers: corsHeaders,
+        });
+      }
+    }
+
     // Fallback old PUT methods (stock/toggle)
     if (path.startsWith('products/') && method === 'PUT' && path.split('/').length === 3) {
       const id = parseInt(path.split('/')[1]);

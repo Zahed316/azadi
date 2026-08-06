@@ -334,11 +334,67 @@ export async function callRouter({
     SECRET_TOKEN: 'test-secret',
     DB: fakeDb as unknown as import('@cloudflare/workers-types').D1Database,
     AI: null,
-    PRODUCT_IMAGES: null as unknown as import('@cloudflare/workers-types').R2Bucket,
+    PRODUCT_IMAGES: {
+      put: vi.fn().mockResolvedValue({}),
+      delete: vi.fn().mockResolvedValue({}),
+      list: vi.fn().mockResolvedValue({ objects: [] }),
+      get: vi.fn().mockResolvedValue(null),
+      head: vi.fn().mockResolvedValue(null),
+    } as any,
     ...envOverrides,
   };
 
   const ctx = {} as ExecutionContext; // stub — not used by the router
+  const response = await handleApiRequest(request, fakeEnv, ctx);
+  const responseBody = await response.json().catch(() => null);
+
+  return { status: response.status, body: responseBody, headers: response.headers };
+}
+
+export interface CallRouterFormDataOpts {
+  method: string;
+  path: string;
+  formData: FormData;
+  auth?: string | null;
+  env?: Record<string, unknown>;
+}
+
+export async function callRouterFormData({
+  method,
+  path,
+  formData,
+  auth,
+  env: envOverrides,
+}: CallRouterFormDataOpts): Promise<{ status: number; body: any; headers: Headers }> {
+  const { handleApiRequest } = await import('../../api/router');
+
+  const url = `https://bot.test/api/${path}`;
+  const headers: Record<string, string> = {};
+
+  if (auth !== null) {
+    headers['Authorization'] = auth ?? 'Telegram fake-init-data';
+  }
+
+  // Don't set Content-Type — browser/fetch sets it automatically with boundary
+  const init: RequestInit = { method, headers, body: formData };
+
+  const fakeEnv: Env = {
+    TELEGRAM_BOT_TOKEN: 'test-token',
+    SECRET_TOKEN: 'test-secret',
+    DB: fakeDb as unknown as import('@cloudflare/workers-types').D1Database,
+    AI: null,
+    PRODUCT_IMAGES: {
+      put: vi.fn().mockResolvedValue({}),
+      delete: vi.fn().mockResolvedValue({}),
+      list: vi.fn().mockResolvedValue({ objects: [] }),
+      get: vi.fn().mockResolvedValue(null),
+      head: vi.fn().mockResolvedValue(null),
+    } as any,
+    ...envOverrides,
+  };
+
+  const request = new Request(url, init);
+  const ctx = {} as ExecutionContext;
   const response = await handleApiRequest(request, fakeEnv, ctx);
   const responseBody = await response.json().catch(() => null);
 

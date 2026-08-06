@@ -5,6 +5,7 @@ import { expect, test, beforeEach } from 'vitest';
 import { products } from '../database/schema';
 import {
   callRouter,
+  callRouterFormData,
   setAdminRole,
   resetAuthDefaults,
   clearStore,
@@ -198,4 +199,75 @@ test('malformed JSON body returns 500', async () => {
   const body: any = await response.json().catch(() => null);
   expect(body).toBeDefined();
   expect(body.error).toBeDefined();
+});
+
+// ---------------------------------------------------------------------------
+// PUT /products/:id/image
+// ---------------------------------------------------------------------------
+
+test('image upload returns 404 for nonexistent product', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  const formData = new FormData();
+  formData.append('file', new Blob(['fake'], { type: 'image/jpeg' }), 'test.jpg');
+  const res = await callRouterFormData({
+    method: 'PUT',
+    path: 'products/999/image',
+    formData,
+  });
+  expect(res.status).toBe(404);
+});
+
+test('image upload rejects non-image content type', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1 }]);
+  const formData = new FormData();
+  formData.append('file', new Blob(['not an image'], { type: 'text/plain' }), 'test.txt');
+  const res = await callRouterFormData({
+    method: 'PUT',
+    path: 'products/1/image',
+    formData,
+  });
+  expect(res.status).toBe(400);
+  expect(res.body.error).toContain('JPG');
+});
+
+test('image upload succeeds for valid image', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1 }]);
+  const formData = new FormData();
+  const fakeImage = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]); // JPEG header
+  formData.append('file', new Blob([fakeImage], { type: 'image/jpeg' }), 'test.jpg');
+  const res = await callRouterFormData({
+    method: 'PUT',
+    path: 'products/1/image',
+    formData,
+  });
+  expect(res.status).toBe(200);
+  expect(res.body.imageUrl).toBeDefined();
+});
+
+// ---------------------------------------------------------------------------
+// DELETE /products/:id/image
+// ---------------------------------------------------------------------------
+
+test('image delete returns 404 for nonexistent product', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  const res = await callRouter({
+    method: 'DELETE',
+    path: 'products/999/image',
+  });
+  expect(res.status).toBe(404);
+});
+
+test('image delete succeeds for existing product', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1, imageUrl: 'products/1/abc.jpg' }]);
+  const res = await callRouter({
+    method: 'DELETE',
+    path: 'products/1/image',
+  });
+  expect(res.status).toBe(200);
+  expect(res.body.success).toBe(true);
+  const rows = readTable(products);
+  expect(rows[0].imageUrl).toBeNull();
 });
