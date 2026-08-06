@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
@@ -32,6 +32,12 @@ function median(nums: number[]): number {
 
 export default function StreaksPage() {
   const { setError } = useAppContext();
+  const queryClient = useQueryClient();
+
+  const { data: config } = useQuery({
+    queryKey: queryKeys.streakConfig,
+    queryFn: () => apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.streaks,
@@ -72,6 +78,35 @@ export default function StreaksPage() {
   return (
     <>
       <div className="card">
+        <h2>Streak Configuration</h2>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input
+              type="checkbox"
+              checked={config?.streakMessages ?? false}
+              onChange={(e) => {
+                apiFetch('/streaks/config', { method: 'POST', body: { streakMessages: e.target.checked } })
+                  .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.streakConfig }))
+                  .catch((err) => setError(err.message));
+              }}
+            />
+            Streak Messages
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input
+              type="checkbox"
+              checked={config?.streakCronEnabled ?? false}
+              onChange={(e) => {
+                apiFetch('/streaks/config', { method: 'POST', body: { streakCronEnabled: e.target.checked } })
+                  .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.streakConfig }))
+                  .catch((err) => setError(err.message));
+              }}
+            />
+            Streak Sweep Cron
+          </label>
+        </div>
+      </div>
+      <div className="card">
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <StatTile label="Users tracked" value={users.length} hint="all-time" />
           <StatTile label="Active today" value={activeToday} hint="UTC" />
@@ -100,6 +135,17 @@ export default function StreaksPage() {
                     onClick={() => toggleSort('streakDays')}
                   >
                     🔥 {u.streakDays}d
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={async () => {
+                      if (!(await confirm(`Reset streak for ${u.telegramId}?`))) return;
+                      await apiFetch('/streaks/reset', { method: 'POST', body: { telegramId: u.telegramId } });
+                      void queryClient.invalidateQueries({ queryKey: queryKeys.streaks });
+                    }}
+                  >
+                    ↺ Reset
                   </button>
                   <button
                     type="button"

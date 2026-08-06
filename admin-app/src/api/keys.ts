@@ -8,6 +8,7 @@ export const queryKeys = {
   faqs: ['faqs'] as const,
   branches: ['branches'] as const,
   streaks: ['streaks'] as const,
+  streakConfig: ['streakConfig'] as const,
   favorites: ['favorites'] as const,
   aiLogs: ['aiLogs'] as const,
 };
