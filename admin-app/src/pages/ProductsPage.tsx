@@ -50,6 +50,11 @@ export default function ProductsPage() {
   const [coffeeAcidity, setCoffeeAcidity] = useState('');
   const [coffeeBody, setCoffeeBody] = useState('');
 
+  // Nutritional info
+  const [prodCalories, setProdCalories] = useState('');
+  const [prodAllergens, setProdAllergens] = useState('');
+  const [prodCaffeine, setProdCaffeine] = useState('');
+
   // Image
   const [productImage, setProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -185,6 +190,9 @@ export default function ProductsPage() {
         categoryId: parseInt(prodCatId),
         description: prodDesc,
         available: prodAvailable,
+        calories: prodCalories ? parseInt(prodCalories) : null,
+        allergens: prodAllergens || null,
+        caffeineMg: prodCaffeine ? parseInt(prodCaffeine) : null,
         coffeeDetails: buildCoffeeDetails(),
       },
       image: productImage,
@@ -206,6 +214,9 @@ export default function ProductsPage() {
     setProdCatId(p.categoryId?.toString() || '');
     setProdDesc(p.description || '');
     setProdAvailable(p.available);
+    setProdCalories(p.calories?.toString() || '');
+    setProdAllergens(p.allergens || '');
+    setProdCaffeine(p.caffeineMg?.toString() || '');
     const cd = p.coffee_details;
     setIsCoffeeBean(!!cd);
     setCoffeeOrigin(cd?.origin || '');
@@ -241,6 +252,9 @@ export default function ProductsPage() {
     setCoffeeRecommendedBrew('');
     setCoffeeAcidity('');
     setCoffeeBody('');
+    setProdCalories('');
+    setProdAllergens('');
+    setProdCaffeine('');
   };
 
   return (
@@ -320,6 +334,32 @@ export default function ProductsPage() {
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handleImageUpload}
+              />
+            </Field>
+
+            <div className="section-divider">Nutritional Information</div>
+            <Field label="Calories (kcal)">
+              <input
+                type="number"
+                value={prodCalories}
+                onChange={(e) => setProdCalories(e.target.value)}
+                placeholder="e.g. 120"
+              />
+            </Field>
+            <Field label="Caffeine (mg)">
+              <input
+                type="number"
+                value={prodCaffeine}
+                onChange={(e) => setProdCaffeine(e.target.value)}
+                placeholder="e.g. 63"
+              />
+            </Field>
+            <Field label="Allergens">
+              <input
+                value={prodAllergens}
+                onChange={(e) => setProdAllergens(e.target.value)}
+                placeholder="e.g. milk, gluten"
+                dir="auto"
               />
             </Field>
 
@@ -410,6 +450,13 @@ export default function ProductsPage() {
                   )}
                   <span dir="auto">{p.name}</span>
                   <span className="list-item-meta">{p.price}</span>
+                  {(p.calories || p.caffeineMg) && (
+                    <span className="list-item-meta" style={{ fontSize: '0.8em' }}>
+                      {p.calories ? `${p.calories} kcal` : ''}
+                      {p.calories && p.caffeineMg ? ' · ' : ''}
+                      {p.caffeineMg ? `${p.caffeineMg}mg caf` : ''}
+                    </span>
+                  )}
                 </div>
                 {(isSuperAdmin || allowedCatId) && (
                   <div className="list-item-actions">
