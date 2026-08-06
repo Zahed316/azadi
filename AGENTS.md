@@ -48,9 +48,9 @@ npm run format:check
 - **Runtime**: Cloudflare Workers (TypeScript, `"type": "commonjs"`)
 - **tsconfig**: ES2022 target/module, strict mode, `@cloudflare/workers-types`
 - **Database**: Cloudflare D1 (SQLite), Drizzle ORM. Schema: `src/database/schema.ts`. Migrations: `drizzle/` directory.
-- **Wrangler config**: `wrangler.toml` — bindings: `DB` (D1), `AI` (Workers AI)
-- **Required secrets** (gitignored via `.env`): `TELEGRAM_BOT_TOKEN`, `SECRET_TOKEN`
-- **AI model**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` via Cloudflare Workers AI
+- **Wrangler config**: `wrangler.toml` — bindings: `DB` (D1). **wrangler deploy validates all bindings** — if `wrangler.toml` references a non-existent binding, deploy fails even if code doesn't use it. Run `wrangler deploy --dry-run` after binding changes.
+- **Required secrets** (gitignored via `.env`): `TELEGRAM_BOT_TOKEN`, `SECRET_TOKEN`, `OPENCODE_API_KEY`
+- **AI provider**: OpenCode API (`https://opencode.ai/zen/go/v1/chat/completions`), model `mimo-v2.5`. API key stored as `OPENCODE_API_KEY` secret.
 
 ## Code Style Guidelines
 
@@ -68,6 +68,11 @@ npm run format:check
   - **Current state**: `conversations()` middleware is **gated by `env.USE_CONVERSATIONS === 'true'`** in `src/bot.ts` (off by default). Re-introduction requires flipping that env flag AND adding a `ctx.hasActiveConversation` snapshot middleware (BEFORE any `createConversation()` enter) AND a `if (ctx.hasActiveConversation) return;` skip at the top of `src/handlers/message.ts:9` — see the comment block in `src/bot.ts` for the recipe.
 - **Admin auth**: Two roles — `super_admin` (full access) and `category_admin` (restricted to one category). Auth middleware in `src/middlewares/auth.ts`. API routes in `src/api/router.ts` use Telegram Mini App `initData` for auth (header: `Authorization: Telegram <initData>`).
 - **Bot context type**: `MyContext` (defined in `src/types/context.ts`) combines grammY `Context`, `SessionFlavor<SessionData>`, `ConversationFlavor`, and custom fields (`env`, `execCtx`). Always use this type for bot handlers.
+- **Streak middleware (Phase 5.1)**: Inserted at `src/bot.ts:44-61`, gated by `env.STREAK_MESSAGES === 'true'` (off by default). On every non-`/` message it calls `UserStateRepository.upsertVisit(telegramId)`; on a new streak day (day > 1) it `waitUntil`s a `🔥 N روز متوالی` reply. Wrapped in `try/catch` so a streak failure never breaks the chain. The `user_state` table will be empty until the flag is enabled — this is expected, not a bug.
+- **Favorites (Phase 5.2)**: Callback handlers `fav:add:${id}` and `fav:remove:${id}` live in `src/handlers/callbackQuery.ts` (~lines 313 and 332). The product detail page renders the right toggle button by checking `FavoritesRepository.isFavorited(telegramId, productId)`. Both verified end-to-end 2026-08-06: 3 rows landed in `favorites` from a single smoke-test session.
+- **Product display (Phase 6a)**: `formatProduct()` in `src/utils/formatters.ts` shows nutritional info (calories, caffeine, allergens) when present. Bot uses `replyWithPhoto(url)` for products with images, falling back to `reply()` for text-only. Coffee details callback shows `brewGuide` for coffee beans.
+- **D1 migrations**: `npx drizzle-kit generate` creates SQL in `drizzle/`. Apply with `wrangler d1 execute azadi-db --remote --file=drizzle/XXXX_name.sql`. **Never use `drizzle-kit push`** — D1 doesn't have a URL.
+- **Product images**: stored as full public URLs in D1 (`imageUrl` column). Admins paste URLs from free hosts (imgbb, imgur, etc.) via the admin app. `PUT /products/:id/image` accepts `{ imageUrl: string }` (validates URL format). `DELETE /products/:id/image` clears the field. Bot displays via `replyWithPhoto(url)` when `imageUrl` is set. **R2 is not used** — requires credit card activation.
 
 ## Conventions
 
@@ -78,6 +83,7 @@ npm run format:check
 - Tests: `src/tests/*.test.ts`, use vitest (`import { expect, test } from 'vitest'`). No vitest config file — uses defaults.
 - Drizzle schema uses `sqliteTable` with explicit column name strings matching snake_case DB columns.
 - Error handling: catch blocks log to `console.error`, reply with Persian error messages to users.
+- **Delete ordering**: when deleting resources with cross-store references (D1 + external), update D1 first then the external store. A dangling URL is less harmful than a missing resource with a live reference.
 - Bot commands: only `/start` and `/admin` are registered. Do not re-add `/help` or `/cancel` without updating `setMyCommands` in `src/commands/admin.ts`.
 - Menu navigation: category/product lists use `editMessageText(...).catch(() => ctx.reply(...))` to edit in place with a fresh-reply fallback. Detail replies carry a `back:main` inline button handled in `src/handlers/callbackQuery.ts`.
 - Admin app UX patterns: toast notifications via `showToast()` (never `alert()`), form fields wrapped in the `<Field label>` component (placeholder is a hint, not a label), every list renders an `.empty-state` block when empty, Persian data elements get `dir="auto"` while chrome stays English.

@@ -36,6 +36,8 @@ export default function ProductsPage() {
   const [prodCatId, setProdCatId] = useState('');
   const [prodDesc, setProdDesc] = useState('');
   const [prodAvailable, setProdAvailable] = useState(true);
+  const [prodFeatured, setProdFeatured] = useState(false);
+  const [prodSeasonal, setProdSeasonal] = useState(false);
 
   // Coffee Details
   const [isCoffeeBean, setIsCoffeeBean] = useState(false);
@@ -183,6 +185,8 @@ export default function ProductsPage() {
         categoryId: parseInt(prodCatId),
         description: prodDesc,
         available: prodAvailable,
+        featured: prodFeatured,
+        isSeasonal: prodSeasonal,
         calories: prodCalories ? parseInt(prodCalories) : null,
         allergens: prodAllergens || null,
         caffeineMg: prodCaffeine ? parseInt(prodCaffeine) : null,
@@ -207,6 +211,8 @@ export default function ProductsPage() {
     setProdCatId(p.categoryId?.toString() || '');
     setProdDesc(p.description || '');
     setProdAvailable(p.available);
+    setProdFeatured(p.featured ?? false);
+    setProdSeasonal(p.isSeasonal ?? false);
     setProdCalories(p.calories?.toString() || '');
     setProdAllergens(p.allergens || '');
     setProdCaffeine(p.caffeineMg?.toString() || '');
@@ -233,6 +239,8 @@ export default function ProductsPage() {
     setProdStock('');
     setProdDesc('');
     setProdAvailable(true);
+    setProdFeatured(false);
+    setProdSeasonal(false);
     setProdImageUrl('');
     setIsCoffeeBean(false);
     setCoffeeOrigin('');
@@ -293,6 +301,20 @@ export default function ProductsPage() {
                 type="checkbox"
                 checked={prodAvailable}
                 onChange={(e) => setProdAvailable(e.target.checked)}
+              />
+            </Field>
+            <Field label="⭐ Featured">
+              <input
+                type="checkbox"
+                checked={prodFeatured}
+                onChange={(e) => setProdFeatured(e.target.checked)}
+              />
+            </Field>
+            <Field label="🌿 Seasonal">
+              <input
+                type="checkbox"
+                checked={prodSeasonal}
+                onChange={(e) => setProdSeasonal(e.target.checked)}
               />
             </Field>
 
@@ -453,6 +475,8 @@ export default function ProductsPage() {
                     />
                   )}
                   <span dir="auto">{p.name}</span>
+                  {p.featured && <span title="Featured">⭐</span>}
+                  {p.isSeasonal && <span title="Seasonal">🌿</span>}
                   <span className="list-item-meta">{p.price}</span>
                   {(p.calories || p.caffeineMg) && (
                     <span className="list-item-meta" style={{ fontSize: '0.8em' }}>

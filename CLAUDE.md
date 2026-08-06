@@ -16,7 +16,7 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 
 ## What this is
 
-A Telegram bot + admin Web App for **Azadi Coffee Roastery** (Iranshahr, Iran). Cloudflare Workers backend, grammY bot, D1 (SQLite) via Drizzle ORM, Cloudflare Workers AI for chat fallback. All bot UI text is **Persian (Farsi)** with HTML parse mode.
+A Telegram bot + admin Web App for **Azadi Coffee Roastery** (Iranshahr, Iran). Cloudflare Workers backend, grammY bot, D1 (SQLite) via Drizzle ORM, OpenCode API (`mimo-v2.5`) for chat fallback. All bot UI text is **Persian (Farsi)** with HTML parse mode.
 
 Two deployable units:
 
@@ -68,31 +68,36 @@ Worker `fetch` routes:
 - `createBot(env)` returns a `Bot<MyContext>`. `botInstance` is cached at module scope in `src/index.ts`.
 - Middleware order matters:
   1. Inject `ctx.env` / `ctx.execCtx` from request context
-  2. `session({ storage: new D1SessionStorage(env.DB) })`
-  3. **Idempotency guard**: skip duplicate `update_id` (Telegram retry protection)
-  4. `conversations({ storage: { type: "key", prefix: "convo_", adapter: new D1SessionStorage(env.DB) } })` — gated by `env.USE_CONVERSATIONS === 'true'` (off by default; see Pitfalls). When on, must use persistent storage + `prefix: "convo_"` so session and conversation state don't overwrite each other in D1
-  5. `mainMenu` (grammY menu)
-  6. Command & handler registration
+  2. **Streak counter** — gated by `env.STREAK_MESSAGES === 'true'` (off by default). Writes to `user_state` via `UserStateRepository.upsertVisit` on every non-`/` message; replies with the streak-increment message in `ctx.execCtx.waitUntil` so the rest of the chain isn't blocked. **Never re-throw** (the streak path must not break the bot chain — wrapped in `try/catch` with a `console.error` only).
+  3. `session({ storage: new D1SessionStorage(env.DB) })`
+  4. **Idempotency guard**: skip duplicate `update_id` (Telegram retry protection)
+  5. `conversations({ storage: { type: "key", prefix: "convo_", adapter: new D1SessionStorage(env.DB) } })` — gated by `env.USE_CONVERSATIONS === 'true'` (off by default; see Pitfalls). When on, must use persistent storage + `prefix: "convo_"` so session and conversation state don't overwrite each other in D1
+  6. `mainMenu` (grammY menu)
+  7. Command & handler registration
 - `MyContext` = `Context & SessionFlavor<SessionData> & ConversationFlavor<Context> & { env, execCtx? }`. **Always use this type** for handlers.
+- **Product display**: `formatProduct()` in `src/utils/formatters.ts` shows nutritional info (calories, caffeine, allergens) when present. Bot uses `replyWithPhoto(url)` for products with images, falling back to `reply()` for text-only. Coffee details callback shows `brewGuide` for coffee beans.
 
 ### Database (`src/database/`, `src/repositories/`)
 
 - Drizzle schema in `src/database/schema.ts` (snake_case columns, explicit `text('name')` strings). Migrations in `drizzle/`.
+- **D1 migrations**: `npx drizzle-kit generate` creates SQL in `drizzle/`. Apply with `wrangler d1 execute azadi-db --remote --file=drizzle/XXXX_name.sql`. **Never use `drizzle-kit push`** — D1 doesn't have a URL. See [[d1-migrations-use-wrangler]].
 - `getDb(d1Binding)` (`src/database/client.ts`) is the only Drizzle factory. Repositories call it in their constructor.
-- **Repository pattern**: one class per table group (`ProductRepository`, `CategoryRepository`, `BranchRepository`, `FaqRepository`, `SettingsRepository`, `AiLogRepository`, `MenuConfigRepository`). All take `d1Binding: any` in the constructor. Add new data access as a new repository class.
+- **Repository pattern**: one class per table group (`ProductRepository`, `CategoryRepository`, `BranchRepository`, `FaqRepository`, `SettingsRepository`, `AiLogRepository`, `MenuConfigRepository`, `UserStateRepository`, `FavoritesRepository`). All take `d1Binding: any` in the constructor. Add new data access as a new repository class.
 - `D1SessionStorage` (`src/database/sessionStorage.ts`) is a grammY `StorageAdapter` that reads/writes the `sessions` table (key/value JSON).
 
 ### Admin REST API (`src/api/router.ts`)
 
 - Auth header: `Authorization: Telegram <initData>`. Validates via `validateInitData` (src/api/auth.ts) and looks up the telegram user in the `admins` table.
 - Two roles: `super_admin` (full access) and `category_admin` (restricted to one `categoryId`). `category_admin` write paths enforce `allowedCategoryId` against `body.categoryId` / `product.categoryId`.
-- Resources: `admins`, `settings`, `categories`, `menu-config` (+ `/reorder`), `products` (+ `/batch`, `/{id}/stock`, `/{id}/toggle`), `faqs`, `branches`, `currentUser`.
+- Resources: `admins`, `settings`, `categories`, `menu-config` (+ `/reorder`), `products` (+ `/batch`, `/{id}/stock`, `/{id}/toggle`, `/{id}/image`), `faqs`, `branches`, `currentUser`.
+- **Product images**: stored as full public URLs in D1 (`imageUrl` column). Admins paste URLs from free hosts (imgbb, imgur, etc.) via the admin app. `PUT /products/:id/image` accepts `{ imageUrl: string }` (validates URL format). `DELETE /products/:id/image` clears the field. Bot displays via `replyWithPhoto(url)` when `imageUrl` is set. **R2 is not used** — requires credit card activation. See [[r2-requires-credit-card]].
 - All responses use `corsHeaders` (`Access-Control-Allow-Origin: *`); `OPTIONS` is preflight-only.
 
 ### AI fallback (`src/services/aiService.ts`, `src/handlers/message.ts`)
 
 - `message:text` handler skips when text starts with `/` (commands are handled upstream). When `USE_CONVERSATIONS` is enabled and a wizard is active, you must add a `ctx.hasActiveConversation` skip here — see Pitfalls.
-- Loads `products`, `branches`, `faqs`, `recentLogs`, `visibleCategoryIds` in parallel, builds a minimal context (`buildMinimalContext` in `src/utils/menuContext.ts`), then calls Workers AI (`@cf/meta/llama-3.3-70b-instruct-fp8-fast`).
+- Loads `products`, `branches`, `faqs`, `recentLogs`, `visibleCategoryIds`, `about` setting, `userFavorites`, and `popularProducts` in parallel. Builds enriched context via `buildMinimalContext` (options object form in `src/utils/menuContext.ts`), then calls OpenCode API (`mimo-v2.5` model via `OPENCODE_API_KEY` secret).
+- **Context enrichment**: `buildMinimalContext` now includes shop identity (about text), enriched product details (farm, altitude, processing, brew guide, nutritional info), product flags (⭐ Featured, 🌿 Seasonal), and popular items (most-favorited across all users). The AI system prompt (`AiService`) has a comprehensive personality, language rules, and personalization section that includes the user's favorited products for tailored recommendations.
 - 20s timeout via `Promise.race`. Logs to `ai_conversation_logs` after replying (in `ctx.execCtx.waitUntil` if available so the response isn't blocked).
 - `PERF_LOG === 'true'` env var emits per-request timing JSON to stdout.
 
@@ -115,10 +120,11 @@ React + Vite + `@telegram-apps/sdk` (v2). The Mini App is loaded inside Telegram
 - **Mini App UX**: toast notifications via `showToast()` (never `alert()`), form fields wrapped in `<Field label>` (placeholder is a hint, not a label), every list renders an `.empty-state` block when empty, Persian data elements get `dir="auto"` while chrome stays English.
 - **Tests**: `src/tests/*.test.ts`, vitest (`import { expect, test } from 'vitest'`). No vitest config — uses defaults. The Worker API tests in `src/tests/router-*.test.ts` share a harness at `src/tests/_helpers/routerHarness.ts` that mocks Drizzle, `validateInitData`, and `getAdminRole` to exercise `handleApiRequest` end-to-end. **Caveat**: the harness's `extractEq()` parser only matches Drizzle's `eq()` shape; any other predicate (`and`/`or`/`gt`/etc.) silently no-ops, so tests pass without actually filtering — see the global memory `permissive-where-parsers-mask-sql-bugs`.
 - **Errors**: catch blocks log to `console.error`, reply with Persian error messages to users.
+- **Delete ordering**: when deleting resources with cross-store references (D1 + external), update D1 first then the external store. A dangling URL is less harmful than a missing resource with a live reference. See [[db-first-delete-ordering]].
 
 ## Pitfalls
 
-- **Hardcoded D1 `database_id` in `wrangler.toml`** — don't change it without updating the Cloudflare dashboard binding.
+- **Hardcoded D1 `database_id` in `wrangler.toml`** — don't change it without updating the Cloudflare dashboard binding. **wrangler deploy validates all bindings** — if `wrangler.toml` references a non-existent R2 bucket, KV namespace, or D1 database, deploy fails even if code doesn't use it. Run `wrangler deploy --dry-run` after binding changes. See [[wrangler-deploy-validates-bindings]].
 - **`requestContext.ts` module globals are not safe to share across test cases.** Mock `env` directly.
 - **`setup:webhook` script reads `SECRET_TOKEN` from `~/.env`** alongside `TELEGRAM_BOT_TOKEN`. To rotate, edit `~/.env` (`SECRET_TOKEN=...`) and re-run `npm run setup:webhook`. Do not commit either token to source control.
 - **`admin-app/` is a separate package** with its own `node_modules`. Run `npm install` inside it independently.
@@ -128,6 +134,8 @@ React + Vite + `@telegram-apps/sdk` (v2). The Mini App is loaded inside Telegram
 - **Admin conversational wizards were removed from the chat interface** to avoid a webhook-retry / AI-fallback race condition (conversations stored state per-request, so retries fell through to the AI handler). All multi-step admin data entry now goes through the Mini App + REST API. The `conversations()` middleware itself is **gated by `env.USE_CONVERSATIONS === 'true'`** in `src/bot.ts` so re-introduction is a config flip — not a code change. If you flip it on, you MUST also add a `ctx.hasActiveConversation` snapshot middleware (BEFORE any `createConversation()` enter) AND a `if (ctx.hasActiveConversation) return;` skip at the top of `src/handlers/message.ts:9` — otherwise a wizard's final message will be answered by the AI rather than by the wizard. See `src/bot.ts` for the place-marker comment.
 - **Drinks don't show stock in `formatProduct`**: stock is intentionally hidden when `p.unit === 'cup'` (drinks are made-to-order). Don't add stock display to `cup` units — it would imply per-drink inventory that doesn't exist.
 - **`PERF_LOG` is a per-request env flag**, not a build-time one. Set it on the Worker (`wrangler secret put PERF_LOG` or in dashboard) to enable JSON timing lines on stdout. Off by default.
+- **`STREAK_MESSAGES` is a per-request env flag** that gates the streak middleware (`src/bot.ts:44-61`). Off by default. Set with `echo "true" | wrangler secret put STREAK_MESSAGES` to enable consecutive-day tracking and the `🔥 N روز متوالی` reply. **Phase 5 verified end-to-end 2026-08-06**: with the flag set, `user_state` rows are created on first non-`/` message and `visits_total` increments per message; without the flag the middleware is inert (the empty-table behavior the prior session observed is *expected*, not a bug).
+- **Favorites (Phase 5.2)** — callback handlers `fav:add:${id}` and `fav:remove:${id}` are in `src/handlers/callbackQuery.ts` (~lines 313 and 332). **Phase 5 verified end-to-end 2026-08-06**: 3 rows appeared in `favorites` after the user tapped the toggle on three product detail pages in a single smoke-test session, confirming the toggle works through the cached reply_markup. If a future smoke test sees an empty `favorites` table, the most likely causes are (a) the user never navigated to a product detail page, or (b) a stale keyboard from a pre-Phase-5 build is still cached in their Telegram client (fix: close and reopen the chat).
 - **ESLint/Prettier is non-blocking in CI as of Phase 4** (commit pending). Both jobs run `npm run lint` with `continue-on-error: true`; the existing warning baseline (~137 root + ~294 admin) is being whittled down file-by-file. **Do not flip to a hard gate without first checking the current warning count.** Lint config: `eslint.config.mjs` (root, governs `src/`) and `admin-app/eslint.config.mjs` (React + Vite). Prettier config: `.prettierrc.json` (root) + `.prettierignore`. Both packages use `node ./node_modules/...` shebang-free script invocations to avoid the Termux `/usr/bin/env` gap (see [[android-arm64-platform-binary-gaps]]).
 
 ## Memory (project-scoped only — global rules live in `~/.claude/CLAUDE.md` and are loaded automatically)
