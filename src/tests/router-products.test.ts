@@ -190,6 +190,7 @@ test('malformed JSON body returns 500', async () => {
       SECRET_TOKEN: 'test-secret',
       DB: null as unknown as import('@cloudflare/workers-types').D1Database,
       AI: null,
+      PRODUCT_IMAGES: null as unknown as import('@cloudflare/workers-types').R2Bucket,
     },
     {} as ExecutionContext,
   );

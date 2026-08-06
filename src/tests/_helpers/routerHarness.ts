@@ -334,6 +334,7 @@ export async function callRouter({
     SECRET_TOKEN: 'test-secret',
     DB: fakeDb as unknown as import('@cloudflare/workers-types').D1Database,
     AI: null,
+    PRODUCT_IMAGES: null as unknown as import('@cloudflare/workers-types').R2Bucket,
     ...envOverrides,
   };
 

@@ -88,6 +88,7 @@ test('OPTIONS /anything returns 200 with CORS headers but no Content-Type', asyn
       SECRET_TOKEN: 'test',
       DB: null as unknown as import('@cloudflare/workers-types').D1Database,
       AI: null,
+      PRODUCT_IMAGES: null as unknown as import('@cloudflare/workers-types').R2Bucket,
     },
     {} as ExecutionContext,
   );

@@ -1,6 +1,6 @@
 import { Bot, session } from 'grammy';
 import { conversations } from '@grammyjs/conversations';
-import { D1Database } from '@cloudflare/workers-types';
+import { D1Database, R2Bucket } from '@cloudflare/workers-types';
 import { mainMenu } from './menus/mainMenu';
 import { beansMenu, cakesMenu } from './menus/productsMenu';
 import { drinksNavMenu } from './menus/drinksNavMenu';
@@ -20,6 +20,7 @@ export interface Env {
   SECRET_TOKEN: string;
   DB: D1Database;
   AI: any;
+  PRODUCT_IMAGES: R2Bucket;
   // Optional runtime flags — kept loose so workers can be deployed without
   // them being present in wrangler.toml/[vars]. Set via `wrangler secret put`.
   USE_CONVERSATIONS?: string;

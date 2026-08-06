@@ -17,5 +17,9 @@ migrations_dir = "drizzle"
 [ai]
 binding = "AI"
 
+[[r2_buckets]]
+binding = "PRODUCT_IMAGES"
+bucket_name = "azadi-products"
+
 [triggers]
 crons = ["0 21 * * *"]  # Daily at 21:00 UTC ≈ 00:30 IRST. Body is gated by env.STREAK_CRON_ENABLED; the cron trigger is harmless if the body is inert.
