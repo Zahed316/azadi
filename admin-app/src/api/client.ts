@@ -30,3 +30,22 @@ export async function apiFetch<T = unknown>(
   }
   return res.json();
 }
+
+export async function apiUpload<T = unknown>(
+  path: string,
+  file: File,
+): Promise<T> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'PUT',
+    headers: getAuthHeader(),
+    body: formData,
+    // Don't set Content-Type — fetch sets it with boundary automatically
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(errText || `HTTP ${res.status}`);
+  }
+  return res.json();
+}

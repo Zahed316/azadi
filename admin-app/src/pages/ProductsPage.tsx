@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
-import { apiFetch } from '../api/client';
+import { apiFetch, apiUpload } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
@@ -50,6 +50,10 @@ export default function ProductsPage() {
   const [coffeeAcidity, setCoffeeAcidity] = useState('');
   const [coffeeBody, setCoffeeBody] = useState('');
 
+  // Image
+  const [productImage, setProductImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+
   const buildCoffeeDetails = () => {
     if (!isCoffeeBean) return null;
     const details: Record<string, string | null> = {};
@@ -71,6 +75,26 @@ export default function ProductsPage() {
     return details;
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingProduct) return;
+    setProductImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeImage = async (productId: number) => {
+    try {
+      await apiFetch(`/products/${productId}/image`, { method: 'DELETE' });
+      setProductImage(null);
+      setImagePreview('');
+      showToast('Image removed');
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+    } catch (err: any) {
+      setError(err.message);
+      showToast(err.message, 'error');
+    }
+  };
+
   const batchMutation = useMutation({
     mutationFn: (data: { ids: number[]; action: string; updateData?: any }) =>
       apiFetch('/products/batch', { method: 'POST', body: data }),
@@ -87,13 +111,28 @@ export default function ProductsPage() {
   });
 
   const saveProductMutation = useMutation({
-    mutationFn: (data: { method: string; id?: number; body: any }) =>
+    mutationFn: (data: { method: string; id?: number; body: any; image?: File | null }) =>
       apiFetch(data.id ? `/products/${data.id}` : '/products', {
         method: data.method,
         body: data.body,
       }),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      // Upload image if one was selected
+      if (variables.image && variables.id) {
+        try {
+          await apiUpload(`/products/${variables.id}/image`, variables.image);
+          showToast('Image uploaded');
+          void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+        } catch (err: any) {
+          setError(err.message);
+          showToast(err.message, 'error');
+        }
+      } else if (variables.image && !variables.id) {
+        // For new products, the API doesn't return the new ID in the response.
+        // User can add image via Edit after creating the product.
+        showToast('Product added. Add image via Edit.');
+      }
       resetProductForm();
       showToast(variables.id ? 'Product updated ✓' : 'Product added ✓');
     },
@@ -148,6 +187,7 @@ export default function ProductsPage() {
         available: prodAvailable,
         coffeeDetails: buildCoffeeDetails(),
       },
+      image: productImage,
     });
   };
 
@@ -158,6 +198,8 @@ export default function ProductsPage() {
 
   const startEditProduct = (p: any) => {
     setEditingProduct(p);
+    setProductImage(null);
+    setImagePreview('');
     setProdName(p.name);
     setProdPrice(p.price?.toString() || '');
     setProdStock(p.stock?.toString() || '0');
@@ -186,6 +228,8 @@ export default function ProductsPage() {
     setProdStock('');
     setProdDesc('');
     setProdAvailable(true);
+    setProductImage(null);
+    setImagePreview('');
     setIsCoffeeBean(false);
     setCoffeeOrigin('');
     setCoffeeFarm('');
@@ -241,6 +285,41 @@ export default function ProductsPage() {
                 type="checkbox"
                 checked={prodAvailable}
                 onChange={(e) => setProdAvailable(e.target.checked)}
+              />
+            </Field>
+
+            <div className="section-divider">Product Image</div>
+            {editingProduct?.imageUrl && !productImage && (
+              <div style={{ marginBottom: '8px' }}>
+                <img
+                  src={editingProduct.imageUrl}
+                  alt="Product"
+                  style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
+                />
+                <button
+                  type="button"
+                  className="danger"
+                  style={{ marginLeft: '8px' }}
+                  onClick={() => removeImage(editingProduct.id)}
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+            {imagePreview && (
+              <div style={{ marginBottom: '8px' }}>
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
+                />
+              </div>
+            )}
+            <Field label="Upload Image">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageUpload}
               />
             </Field>
 
