@@ -188,16 +188,4 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         .catch(() => {});
     }
   })
-  .row()
-  .text('🤖 دستیار هوشمند قهوه', async (ctx: any) => {
-    try {
-      const repo = new SettingsRepository(ctx.env.DB);
-      const greeting =
-        (await repo.getValue('ai_greeting')) ||
-        'من دستیار هوشمند قهوه شما هستم! 🤖☕\n\nهر سوالی درباره قهوه، روش‌های دم‌آوری، شعب یا هر چیز دیگری دارید از من بپرسید.';
-      await ctx.reply(greeting, { parse_mode: 'HTML' });
-    } catch (e) {
-      console.error(e);
-      await ctx.reply('خطا در ارتباط با سرور.');
-    }
-  });
+  ;

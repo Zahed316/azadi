@@ -19,7 +19,7 @@ export interface Env {
   TELEGRAM_BOT_TOKEN: string;
   SECRET_TOKEN: string;
   DB: D1Database;
-  AI: any;
+  OPENCODE_API_KEY: string;
   // Optional runtime flags — kept loose so workers can be deployed without
   // them being present in wrangler.toml/[vars]. Set via `wrangler secret put`.
   USE_CONVERSATIONS?: string;
@@ -117,9 +117,9 @@ export function createBot(env: Env) {
     await ctx.conversation?.exitAll();
     return ctx.reply(
       'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
-        'از منوی زیر می‌توانید نوشیدنی‌ها، دانه‌های قهوه، کیک و کوکی، شعب و سوالات متداول را ببینید.\n' +
-        'یا همین‌جا سوالتان را بنویسید تا دستیار هوشمند پاسخ دهد. 🤖',
-      { reply_markup: mainMenu },
+        'از منوی زیر می‌توانید نوشیدنی‌ها، دانه‌های قهوه، کیک و کوکی، شعب و سوالات متداول را ببینید.\n\n' +
+        '💬 <b>هر سوالی دارید همین‌جا بنویسید</b> — دستیار هوشمند قهوه درباره منو، قیمت‌ها، روش‌های دم‌آوری و هر چیز دیگری به شما پاسخ می‌دهد!',
+      { reply_markup: mainMenu, parse_mode: 'HTML' },
     );
   });
 

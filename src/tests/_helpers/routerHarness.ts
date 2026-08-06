@@ -333,7 +333,7 @@ export async function callRouter({
     TELEGRAM_BOT_TOKEN: 'test-token',
     SECRET_TOKEN: 'test-secret',
     DB: fakeDb as unknown as import('@cloudflare/workers-types').D1Database,
-    AI: null,
+    OPENCODE_API_KEY: 'test-key',
     ...envOverrides,
   };
 

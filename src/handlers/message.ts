@@ -8,13 +8,15 @@ import {
   FaqRepository,
   AiLogRepository,
   MenuConfigRepository,
+  SettingsRepository,
+  FavoritesRepository,
 } from '../repositories';
 import { buildMinimalContext } from '../utils/menuContext';
 
 export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
   bot.on('message:text', async (ctx) => {
     if (!ctx.message.text.startsWith('/')) {
-      if (!ctx.env.AI) {
+      if (!ctx.env.OPENCODE_API_KEY) {
         return ctx.reply('دستیار هوشمند در حال حاضر غیرفعال است.');
       }
 
@@ -28,33 +30,40 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
         const faqRepo = new FaqRepository(db);
         const aiLogRepo = new AiLogRepository(db);
         const menuConfigRepo = new MenuConfigRepository(db);
+        const settingsRepo = new SettingsRepository(db);
+        const favoritesRepo = new FavoritesRepository(db);
 
         const catalogStartedAt = performance.now();
-        const [productsWithDetails, branches, faqs, recentLogs, visibleCategoryIds] =
+        const [productsWithDetails, branches, faqs, recentLogs, visibleCategoryIds, aboutSetting, userFavorites, popularProducts] =
           await Promise.all([
             productRepo.getAllProductsWithDetails(),
             branchRepo.getAllBranches(),
             faqRepo.getAll(),
             aiLogRepo.getRecentLogs(userId, 5),
             menuConfigRepo.getVisibleCategoryIds(),
+            settingsRepo.getValue('about'),
+            favoritesRepo.list(userId).then((rows) => rows.map((r) => r.name)),
+            productRepo.getPopularProducts(5),
           ]);
         const catalogDuration = performance.now() - catalogStartedAt;
 
         const contextStartedAt = performance.now();
-        const menuContext = buildMinimalContext(
-          ctx.message.text,
+        const menuContext = buildMinimalContext({
+          query: ctx.message.text,
           productsWithDetails,
           branches,
           faqs,
           visibleCategoryIds,
-        );
+          settings: aboutSetting ? { about: aboutSetting } : undefined,
+          popularProducts,
+        });
         const contextDuration = performance.now() - contextStartedAt;
 
-        const aiService = new AiService(ctx.env.AI, menuContext);
+        const aiService = new AiService(ctx.env.OPENCODE_API_KEY, menuContext);
 
         const AI_TIMEOUT_MS = 20_000;
         const aiStartedAt = performance.now();
-        const aiPromise = aiService.processQuery(ctx.message.text, userId, recentLogs);
+        const aiPromise = aiService.processQuery(ctx.message.text, userId, recentLogs, userFavorites);
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('AI_TIMEOUT')), AI_TIMEOUT_MS),
         );

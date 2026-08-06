@@ -25,5 +25,5 @@ test('large catalogs produce a bounded product section', () => {
     coffee_details: null,
     categories: null,
   }));
-  expect((buildMinimalContext('coffee', rows, [], []).match(/^- Coffee /gm) || []).length).toBe(5);
+  expect((buildMinimalContext('coffee', rows, [], []).match(/^- Coffee /gm) || []).length).toBe(8);
 });

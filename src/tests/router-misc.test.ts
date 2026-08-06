@@ -87,7 +87,7 @@ test('OPTIONS /anything returns 200 with CORS headers but no Content-Type', asyn
       TELEGRAM_BOT_TOKEN: 'test',
       SECRET_TOKEN: 'test',
       DB: null as unknown as import('@cloudflare/workers-types').D1Database,
-      AI: null,
+      OPENCODE_API_KEY: 'test-key',
     },
     {} as ExecutionContext,
   );
