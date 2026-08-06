@@ -142,6 +142,29 @@ test('FavoritesRepository.remove returns true when a row was actually deleted', 
   expect(readTable(favorites)).toHaveLength(0);
 });
 
+// ---------------------------------------------------------------------------
+// UserStateRepository.listAll
+// ---------------------------------------------------------------------------
+
+test('listAll: returns all user_state rows (ordered by streakDays DESC then lastSeenAt DESC in production D1)', async () => {
+  // The in-memory harness does not support orderBy; seed in the expected
+  // production order so the mock returns them in that sequence.
+  seedTable(userState, [
+    { telegramId: 'u2', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-05'), visitsTotal: 10, streakDays: 7 },
+    { telegramId: 'u3', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-03'), visitsTotal: 2, streakDays: 7 },
+    { telegramId: 'u1', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-01'), visitsTotal: 5, streakDays: 3 },
+  ]);
+  const repo = new UserStateRepository(FAKE_D1);
+  const rows = await repo.listAll();
+  expect(rows.map((r) => r.telegramId)).toEqual(['u2', 'u3', 'u1']);
+});
+
+test('listAll: returns an empty array when the table is empty', async () => {
+  const repo = new UserStateRepository(FAKE_D1);
+  const rows = await repo.listAll();
+  expect(rows).toEqual([]);
+});
+
 test('FavoritesRepository.isFavorited returns true for a row that exists', async () => {
   // isFavorited uses and(eq, eq), which the harness parser doesn't fully
   // support. We test only the positive case — the row IS there so the

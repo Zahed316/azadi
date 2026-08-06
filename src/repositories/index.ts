@@ -394,6 +394,18 @@ export class UserStateRepository {
   }
 
   /**
+   * Admin read: return every user_state row, ordered by streak length then
+   * most-recent activity. No WHERE clause — the admin surface sees every
+   * tracked user. No pagination (the table is small in practice).
+   */
+  async listAll() {
+    return await this.db
+      .select()
+      .from(userState)
+      .orderBy(desc(userState.streakDays), desc(userState.lastSeenAt));
+  }
+
+  /**
    * Record a user visit and return the resulting streak state. Idempotent
    * within a UTC day: re-calling on the same day returns isNewStreak=false.
    *
