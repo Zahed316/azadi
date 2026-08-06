@@ -421,3 +421,28 @@ button.secondary:hover {
   color: var(--success);
   margin-bottom: 16px;
 }
+
+/* Stat tiles */
+.stat-tile {
+  flex: 1 1 0;
+  min-width: 120px;
+  padding: 12px;
+  background: var(--bg-card, #f5f5f5);
+  border-radius: 8px;
+  text-align: center;
+}
+.stat-tile-label {
+  font-size: 12px;
+  color: var(--text-muted, #666);
+  margin-bottom: 4px;
+}
+.stat-tile-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-main, #222);
+}
+.stat-tile-hint {
+  font-size: 11px;
+  color: var(--text-muted, #999);
+  margin-top: 2px;
+}
