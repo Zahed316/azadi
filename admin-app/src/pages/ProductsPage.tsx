@@ -49,6 +49,7 @@ export default function ProductsPage() {
   const [coffeeRecommendedBrew, setCoffeeRecommendedBrew] = useState('');
   const [coffeeAcidity, setCoffeeAcidity] = useState('');
   const [coffeeBody, setCoffeeBody] = useState('');
+  const [coffeeBrewGuide, setCoffeeBrewGuide] = useState('');
 
   // Nutritional info
   const [prodCalories, setProdCalories] = useState('');
@@ -73,6 +74,7 @@ export default function ProductsPage() {
       ['recommendedBrew', coffeeRecommendedBrew],
       ['acidity', coffeeAcidity],
       ['body', coffeeBody],
+      ['brewGuide', coffeeBrewGuide],
     ] as const;
     for (const [key, val] of fields) {
       details[key] = val || null;
@@ -229,6 +231,7 @@ export default function ProductsPage() {
     setCoffeeRecommendedBrew(cd?.recommendedBrew || '');
     setCoffeeAcidity(cd?.acidity || '');
     setCoffeeBody(cd?.body || '');
+    setCoffeeBrewGuide(cd?.brewGuide || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -252,6 +255,7 @@ export default function ProductsPage() {
     setCoffeeRecommendedBrew('');
     setCoffeeAcidity('');
     setCoffeeBody('');
+    setCoffeeBrewGuide('');
     setProdCalories('');
     setProdAllergens('');
     setProdCaffeine('');
@@ -417,6 +421,14 @@ export default function ProductsPage() {
                 </Field>
                 <Field label="Body">
                   <input value={coffeeBody} onChange={(e) => setCoffeeBody(e.target.value)} />
+                </Field>
+                <Field label="Brew Guide">
+                  <textarea
+                    value={coffeeBrewGuide}
+                    onChange={(e) => setCoffeeBrewGuide(e.target.value)}
+                    placeholder="Brewing instructions in Persian"
+                    dir="auto"
+                  />
                 </Field>
               </>
             )}
