@@ -7,4 +7,6 @@ export const queryKeys = {
   menuConfigs: ['menu-config'] as const,
   faqs: ['faqs'] as const,
   branches: ['branches'] as const,
+  streaks: ['streaks'] as const,
+  favorites: ['favorites'] as const,
 };
