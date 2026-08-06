@@ -41,13 +41,30 @@ export class ImageService {
 
   /**
    * Delete all images for a product from R2.
+   * Handles pagination for products with more than 1,000 objects.
    */
   static async deleteImage(bucket: R2Bucket, productId: number): Promise<void> {
     const prefix = `products/${productId}/`;
-    const listed = await bucket.list({ prefix });
-    for (const obj of listed.objects) {
-      await bucket.delete(obj.key);
-    }
+    let cursor: string | undefined;
+    do {
+      const listed = await bucket.list({ prefix, cursor });
+      for (const obj of listed.objects) {
+        await bucket.delete(obj.key);
+      }
+      cursor = listed.truncated ? listed.cursor : undefined;
+    } while (cursor);
+  }
+
+  /**
+   * Get the public URL for a product's image, or null if none exists.
+   * Used by router (Task 4) and callback handler (Task 7).
+   */
+  static async getImageUrl(bucket: R2Bucket, productId: number): Promise<string | null> {
+    const prefix = `products/${productId}/`;
+    const listed = await bucket.list({ prefix, limit: 1 });
+    const first = listed.objects[0];
+    if (!first) return null;
+    return getPublicUrl(bucket, first.key);
   }
 
   /**
@@ -55,7 +72,7 @@ export class ImageService {
    */
   static async hasImage(bucket: R2Bucket, productId: number): Promise<boolean> {
     const prefix = `products/${productId}/`;
-    const listed = await bucket.list({ prefix });
+    const listed = await bucket.list({ prefix, limit: 1 });
     return listed.objects.length > 0;
   }
 }
