@@ -51,6 +51,32 @@ test('formatBranch formats correctly', () => {
   expect(result).toContain('555-1234');
 });
 
+test('formatProduct shows calories when present', () => {
+  const product = { name: 'Espresso', price: 35000, stock: 10, unit: 'cup', calories: 5 };
+  const result = formatProduct(product);
+  expect(result).toContain('۵ کالری');
+});
+
+test('formatProduct shows caffeine when present', () => {
+  const product = { name: 'Espresso', price: 35000, stock: 10, unit: 'cup', caffeineMg: 63 };
+  const result = formatProduct(product);
+  expect(result).toContain('۶۳ میلی‌گرم');
+});
+
+test('formatProduct shows allergens when present', () => {
+  const product = { name: 'Latte', price: 45000, stock: 10, unit: 'cup', allergens: 'milk' };
+  const result = formatProduct(product);
+  expect(result).toContain('milk');
+});
+
+test('formatProduct hides nutritional fields when null', () => {
+  const product = { name: 'Espresso', price: 35000, stock: 10, unit: 'cup' };
+  const result = formatProduct(product);
+  expect(result).not.toContain('کالری');
+  expect(result).not.toContain('کافئین');
+  expect(result).not.toContain('آلرژن');
+});
+
 test('formatFaq formats correctly', () => {
   const faq = {
     question: 'What are your hours?',

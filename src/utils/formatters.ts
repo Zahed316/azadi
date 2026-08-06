@@ -28,6 +28,10 @@ export function formatProduct(p: any, priceUnit: string = DEFAULT_PRICE_UNIT): s
     const unitLabel = unitMap[p.unit] || p.unit;
     text += `\n📦 موجودی: ${p.stock > 0 ? `${toPersianDigits(p.stock)} ${unitLabel}` : 'ناموجود'}`;
   }
+  // Nutritional info (only when present)
+  if (p.calories != null) text += `\n🔥 ${toPersianDigits(p.calories)} کالری`;
+  if (p.caffeineMg != null) text += `\n⚡ کافئین: ${toPersianDigits(p.caffeineMg)} میلی‌گرم`;
+  if (p.allergens) text += `\n⚠️ آلرژن‌ها: ${p.allergens}`;
   text += VAT_NOTE;
   return text;
 }
