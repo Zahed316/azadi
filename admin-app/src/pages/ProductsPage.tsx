@@ -354,6 +354,18 @@ export default function ProductsPage() {
                 dir="auto"
               />
             </Field>
+            {prodImageUrl && (
+              <div style={{ marginBottom: 8 }}>
+                <a
+                  href={prodImageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: '0.85em', color: '#4a90d9' }}
+                >
+                  🔗 Preview image in new tab
+                </a>
+              </div>
+            )}
 
             <div className="section-divider">Nutritional Information</div>
             <Field label="Calories (kcal)">
