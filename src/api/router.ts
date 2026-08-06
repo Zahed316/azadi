@@ -676,6 +676,59 @@ export async function handleApiRequest(
       return new Response(JSON.stringify({ logs }), { headers: corsHeaders });
     }
 
+    // --- Streak Config (super_admin) ---
+    if (path === 'streaks/config' && method === 'GET') {
+      if (!isSuperAdmin)
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: corsHeaders,
+        });
+      const repo = new SettingsRepository(db);
+      const streakMessages = (await repo.getValue('streak_messages')) ?? env.STREAK_MESSAGES ?? 'false';
+      const streakCronEnabled =
+        (await repo.getValue('streak_cron_enabled')) ?? env.STREAK_CRON_ENABLED ?? 'false';
+      return new Response(
+        JSON.stringify({
+          streakMessages: streakMessages === 'true',
+          streakCronEnabled: streakCronEnabled === 'true',
+        }),
+        { headers: corsHeaders },
+      );
+    }
+
+    if (path === 'streaks/config' && method === 'POST') {
+      if (!isSuperAdmin)
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: corsHeaders,
+        });
+      const body: any = await request.json();
+      const repo = new SettingsRepository(db);
+      if (body.streakMessages !== undefined)
+        await repo.setValue('streak_messages', body.streakMessages ? 'true' : 'false');
+      if (body.streakCronEnabled !== undefined)
+        await repo.setValue('streak_cron_enabled', body.streakCronEnabled ? 'true' : 'false');
+      return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    }
+
+    // --- Streak Reset (super_admin) ---
+    if (path === 'streaks/reset' && method === 'POST') {
+      if (!isSuperAdmin)
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: corsHeaders,
+        });
+      const body: any = await request.json();
+      if (!body.telegramId)
+        return new Response(JSON.stringify({ error: 'telegramId required' }), {
+          status: 400,
+          headers: corsHeaders,
+        });
+      const repo = new UserStateRepository(db);
+      const ok = await repo.resetStreak(String(body.telegramId));
+      return new Response(JSON.stringify({ success: ok }), { headers: corsHeaders });
+    }
+
     return new Response(JSON.stringify({ error: 'Not found' }), {
       status: 404,
       headers: corsHeaders,

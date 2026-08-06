@@ -12,7 +12,7 @@ import { setupCallbackHandlers } from './handlers/callbackQuery';
 import { MyContext, SessionData } from './types/context';
 import { getEnv, getExecCtx } from './requestContext';
 import { D1SessionStorage } from './database/sessionStorage';
-import { UserStateRepository } from './repositories';
+import { SettingsRepository, UserStateRepository } from './repositories';
 import { toPersianDigits } from './utils/numbers';
 
 export interface Env {
@@ -42,7 +42,9 @@ export function createBot(env: Env) {
   // via `wrangler secret put STREAK_MESSAGES`. Never re-throw — streak path
   // must not break the rest of the bot chain.
   bot.use(async (ctx, next) => {
-    if (ctx.from?.id && ctx.env.STREAK_MESSAGES === 'true') {
+    const streakRepo = new SettingsRepository(ctx.env.DB);
+    const streakEnabled = (await streakRepo.getValue('streak_messages')) ?? ctx.env.STREAK_MESSAGES;
+    if (ctx.from?.id && streakEnabled === 'true') {
       try {
         const repo = new UserStateRepository(ctx.env.DB);
         const { streakDays, isNewStreak } = await repo.upsertVisit(String(ctx.from.id));

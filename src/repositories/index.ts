@@ -508,6 +508,20 @@ export class UserStateRepository {
   }
 
   /**
+   * Reset streakDays to 0 for a specific user. Used by the admin streak
+   * reset endpoint. Returns true if the user existed (row was updated),
+   * false if no matching telegramId was found.
+   */
+  async resetStreak(telegramId: string): Promise<boolean> {
+    const rows = await this.db
+      .update(userState)
+      .set({ streakDays: 0 })
+      .where(eq(userState.telegramId, telegramId))
+      .returning({ telegramId: userState.telegramId });
+    return rows.length > 0;
+  }
+
+  /**
    * Reset streakDays to 0 for users who haven't been seen in 48h. Idempotent:
    * a re-run after the reset is a no-op (the WHERE clause filters them out).
    * Returns the number of rows reset, for cron logging. Uses SQLite's
