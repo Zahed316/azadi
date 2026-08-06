@@ -14,6 +14,8 @@ import ContentPage from './pages/ContentPage';
 import SettingsPage from './pages/SettingsPage';
 import AdminsPage from './pages/AdminsPage';
 import MenuConfigPage from './pages/MenuConfigPage';
+import FavoritesPage from './pages/FavoritesPage';
+import StreaksPage from './pages/StreaksPage';
 
 const queryClient = new QueryClient();
 
@@ -76,6 +78,14 @@ function AppInner() {
               path="/menu-config"
               element={isSuperAdmin ? <MenuConfigPage /> : <Navigate to="/products" replace />}
             />
+            <Route
+              path="/streaks"
+              element={isSuperAdmin ? <StreaksPage /> : <Navigate to="/products" replace />}
+            />
+            <Route
+              path="/favorites"
+              element={isSuperAdmin ? <FavoritesPage /> : <Navigate to="/products" replace />}
+            />
             <Route path="*" element={<Navigate to="/products" replace />} />
           </Routes>
           <div className="bottom-nav">
@@ -129,6 +139,20 @@ function AppInner() {
                   onClick={() => window.scrollTo(0, 0)}
                 >
                   <span className="nav-icon">📋</span>Menu
+                </NavLink>
+                <NavLink
+                  to="/streaks"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
+                  <span className="nav-icon">🔥</span>Streaks
+                </NavLink>
+                <NavLink
+                  to="/favorites"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
+                  <span className="nav-icon">⭐</span>Favorites
                 </NavLink>
               </>
             )}
