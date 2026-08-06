@@ -1,5 +1,6 @@
 import { Env } from '../bot';
 import { validateInitData } from './auth';
+import { runAiQuery } from '../handlers/message';
 import {
   ProductRepository,
   BranchRepository,
@@ -13,7 +14,7 @@ import {
 } from '../repositories';
 import { getAdminRole } from '../middlewares/auth';
 import { getDb } from '../database/client';
-import { admins } from '../database/schema';
+import { admins, settings } from '../database/schema';
 import { eq } from 'drizzle-orm';
 
 export async function handleApiRequest(
@@ -39,6 +40,21 @@ export async function handleApiRequest(
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',
   };
+
+  // --- Health check (no auth) ---
+  if (path === 'health' && method === 'GET') {
+    let dbOk = false;
+    try {
+      const testDb = getDb(env.DB);
+      await testDb.select().from(settings).limit(1);
+      dbOk = true;
+    } catch { /* db unreachable */ }
+    return new Response(JSON.stringify({
+      status: dbOk ? 'ok' : 'degraded',
+      db: dbOk,
+      timestamp: new Date().toISOString(),
+    }), { headers: corsHeaders });
+  }
 
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Telegram ')) {
@@ -727,6 +743,22 @@ export async function handleApiRequest(
       const repo = new UserStateRepository(db);
       const ok = await repo.resetStreak(String(body.telegramId));
       return new Response(JSON.stringify({ success: ok }), { headers: corsHeaders });
+    }
+
+    // --- AI Test Panel (super_admin only) ---
+    if (path === 'ai-test' && method === 'POST') {
+      if (!isSuperAdmin)
+        return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+      const body: any = await request.json();
+      if (!body.query || typeof body.query !== 'string')
+        return new Response(JSON.stringify({ error: 'query required' }), { status: 400, headers: corsHeaders });
+      try {
+        const response = await runAiQuery(db, body.query);
+        return new Response(JSON.stringify({ response }), { headers: corsHeaders });
+      } catch (e: any) {
+        console.error('ai-test error:', e);
+        return new Response(JSON.stringify({ error: 'AI query failed' }), { status: 500, headers: corsHeaders });
+      }
     }
 
     return new Response(JSON.stringify({ error: 'Not found' }), {
