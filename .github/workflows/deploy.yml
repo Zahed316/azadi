@@ -5,12 +5,16 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -23,9 +27,16 @@ jobs:
       - name: Run unit tests
         run: npm test
 
+      - name: Lint (non-blocking, first iteration)
+        # Phase 4.3: lint is added as a non-blocking step. Once the existing
+        # warning baseline is fixed in follow-up PRs, drop continue-on-error
+        # to make this a hard gate.
+        continue-on-error: true
+        run: npm run lint
+
       - name: Typecheck
         run: ./node_modules/.bin/tsc --noEmit
-        
+
       - name: Deploy to Cloudflare Workers
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: cloudflare/wrangler-action@v3
@@ -37,6 +48,9 @@ jobs:
 
   deploy-admin-app:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-admin-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
 
@@ -54,6 +68,11 @@ jobs:
       - name: Build admin-app
         working-directory: admin-app
         run: npm run build
+
+      - name: Lint admin-app (non-blocking, first iteration)
+        working-directory: admin-app
+        continue-on-error: true
+        run: npm run lint
 
       - name: Deploy admin-app to Cloudflare Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

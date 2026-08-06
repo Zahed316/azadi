@@ -3,7 +3,14 @@ import { buildMinimalContext } from '../utils/menuContext';
 
 const mockProducts = [
   {
-    products: { id: 1, name: 'Espresso', categoryId: 1, price: 50000, description: 'Strong', stock: 10 },
+    products: {
+      id: 1,
+      name: 'Espresso',
+      categoryId: 1,
+      price: 50000,
+      description: 'Strong',
+      stock: 10,
+    },
     coffee_details: null,
     categories: { name: 'Hot Coffee' },
   },
@@ -36,7 +43,14 @@ test('uses category name instead of category ID', () => {
 test('handles null categories gracefully', () => {
   const productsWithNullCat = [
     {
-      products: { id: 3, name: 'Mocha', categoryId: 1, price: 55000, description: 'Sweet', stock: 3 },
+      products: {
+        id: 3,
+        name: 'Mocha',
+        categoryId: 1,
+        price: 55000,
+        description: 'Sweet',
+        stock: 3,
+      },
       coffee_details: null,
       categories: null,
     },

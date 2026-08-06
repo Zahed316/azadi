@@ -1,26 +1,31 @@
-import { Bot, session, type SessionFlavor } from "grammy";
-import { conversations } from "@grammyjs/conversations";
-import { mainMenu } from "./menus/mainMenu";
-import { beansMenu, cakesMenu } from "./menus/productsMenu";
-import { drinksNavMenu } from "./menus/drinksNavMenu";
-import { branchesMenu } from "./menus/branchesMenu";
+import { Bot, session } from 'grammy';
+import { conversations } from '@grammyjs/conversations';
+import { D1Database } from '@cloudflare/workers-types';
+import { mainMenu } from './menus/mainMenu';
+import { beansMenu, cakesMenu } from './menus/productsMenu';
+import { drinksNavMenu } from './menus/drinksNavMenu';
+import { branchesMenu } from './menus/branchesMenu';
 
-import { setupAdminCommands } from "./commands/admin";
-import { setupMessageHandlers } from "./handlers/message";
-import { setupCallbackHandlers } from "./handlers/callbackQuery";
-import { MyContext, SessionData } from "./types/context";
-import { getEnv, getExecCtx } from "./requestContext";
-import { D1SessionStorage } from "./database/sessionStorage";
+import { setupAdminCommands } from './commands/admin';
+import { setupMessageHandlers } from './handlers/message';
+import { setupCallbackHandlers } from './handlers/callbackQuery';
+import { MyContext, SessionData } from './types/context';
+import { getEnv, getExecCtx } from './requestContext';
+import { D1SessionStorage } from './database/sessionStorage';
+import { UserStateRepository } from './repositories';
+import { toPersianDigits } from './utils/numbers';
 
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
   SECRET_TOKEN: string;
-  DB: any;
+  DB: D1Database;
   AI: any;
   // Optional runtime flags — kept loose so workers can be deployed without
   // them being present in wrangler.toml/[vars]. Set via `wrangler secret put`.
   USE_CONVERSATIONS?: string;
   PERF_LOG?: string;
+  STREAK_MESSAGES?: string;
+  STREAK_CRON_ENABLED?: string;
 }
 
 export function createBot(env: Env) {
@@ -32,10 +37,35 @@ export function createBot(env: Env) {
     await next();
   });
 
-  bot.use(session({
-    initial: () => ({}) as SessionData,
-    storage: new D1SessionStorage(env.DB),
-  }));
+  // Streak counter: track consecutive-day visits and notify the user when the
+  // streak increments. Env-gated so the middleware is inert by default; flip on
+  // via `wrangler secret put STREAK_MESSAGES`. Never re-throw — streak path
+  // must not break the rest of the bot chain.
+  bot.use(async (ctx, next) => {
+    if (ctx.from?.id && ctx.env.STREAK_MESSAGES === 'true') {
+      try {
+        const repo = new UserStateRepository(ctx.env.DB);
+        const { streakDays, isNewStreak } = await repo.upsertVisit(String(ctx.from.id));
+        if (isNewStreak && streakDays > 1) {
+          // Defer: don't block the rest of the handler chain.
+          ctx.execCtx?.waitUntil(
+            ctx.reply(`🔥 ${toPersianDigits(streakDays)} روز متوالی از رستوری بازدید کردید!`).catch(() => {}),
+          );
+        }
+      } catch (e) {
+        console.error('streak middleware:', e);
+        /* never break the chain */
+      }
+    }
+    await next();
+  });
+
+  bot.use(
+    session({
+      initial: () => ({}),
+      storage: new D1SessionStorage(env.DB),
+    }),
+  );
 
   // Ignore Telegram Webhook Retries (Idempotency)
   bot.use(async (ctx, next) => {
@@ -60,13 +90,15 @@ export function createBot(env: Env) {
   // src/handlers/message.ts:9 — otherwise a wizard's final message will be
   // answered by the AI rather than the wizard's own handler.
   if (env.USE_CONVERSATIONS === 'true') {
-    bot.use(conversations({
-      storage: {
-        type: "key",
-        prefix: "convo_",
-        adapter: new D1SessionStorage(env.DB),
-      },
-    }));
+    bot.use(
+      conversations({
+        storage: {
+          type: 'key',
+          prefix: 'convo_',
+          adapter: new D1SessionStorage(env.DB),
+        },
+      }),
+    );
   }
 
   // Register Menus
@@ -74,20 +106,20 @@ export function createBot(env: Env) {
   mainMenu.register(beansMenu);
   mainMenu.register(branchesMenu);
   mainMenu.register(cakesMenu);
-  
+
   bot.use(mainMenu);
 
   // Define commands
-  bot.command("start", async (ctx) => {
+  bot.command('start', async (ctx) => {
     // `ctx.conversation` is only populated when the conversations() middleware
     // is registered (see USE_CONVERSATIONS gate above). Guard so /start works
     // in both states — the framework is currently dormant.
     await ctx.conversation?.exitAll();
     return ctx.reply(
-      "به روستری قهوه آزادی خوش آمدید! ☕\n\n" +
-      "از منوی زیر می‌توانید نوشیدنی‌ها، دانه‌های قهوه، کیک و کوکی، شعب و سوالات متداول را ببینید.\n" +
-      "یا همین‌جا سوالتان را بنویسید تا دستیار هوشمند پاسخ دهد. 🤖",
-      { reply_markup: mainMenu }
+      'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
+        'از منوی زیر می‌توانید نوشیدنی‌ها، دانه‌های قهوه، کیک و کوکی، شعب و سوالات متداول را ببینید.\n' +
+        'یا همین‌جا سوالتان را بنویسید تا دستیار هوشمند پاسخ دهد. 🤖',
+      { reply_markup: mainMenu },
     );
   });
 

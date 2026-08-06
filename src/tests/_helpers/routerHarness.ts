@@ -6,6 +6,7 @@
  * without a real Cloudflare D1 binding or HMAC signature verification.
  */
 import { vi } from 'vitest';
+import type { Env } from '../../bot';
 
 // ---------------------------------------------------------------------------
 // 1. In-memory store
@@ -26,7 +27,10 @@ function tableNameOf(table: any): string {
 
 /** Seed a table with rows (overwrites existing). */
 export function seedTable(table: any, rows: TableRow[]): void {
-  store.set(tableNameOf(table), rows.map((r) => ({ ...r })));
+  store.set(
+    tableNameOf(table),
+    rows.map((r) => ({ ...r })),
+  );
 }
 
 /** Read current rows (for assertions). */
@@ -56,8 +60,13 @@ function extractEq(condition: unknown): EqCondition | null {
   const left = c.queryChunks[1];
   const right = c.queryChunks[3];
   if (!left || !right) return null;
+  // Drizzle columns carry the SQL column name in `.name` (e.g. `telegram_id`)
+  // but rows in the harness store are seeded with the JS property name
+  // (camelCase, e.g. `telegramId`). Convert snake→camel so the WHERE clause
+  // finds the matching key.
+  const camel = String(left.name).replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
   return {
-    column: left.name ?? left.key,
+    column: camel,
     tableName: tableNameOf(left.table),
     value: right.value ?? right,
   };
@@ -128,6 +137,15 @@ class QueryChain {
     return this;
   }
 
+  /**
+   * For tests: treat the insert as a no-op. The harness doesn't track
+   * conflict targets, so callers using this should set up rows that
+   * can't collide (or seed/clear the store around the test).
+   */
+  onConflictDoNothing() {
+    return this;
+  }
+
   returning() {
     this._hasReturning = true;
     return this;
@@ -150,9 +168,10 @@ class QueryChain {
 
     switch (this._op) {
       case 'select': {
-        let matched = this._eqs.length > 0
-          ? rows.filter((r) => matchesCondition(r, this._eqs))
-          : rows.map((r) => ({ ...r }));
+        let matched =
+          this._eqs.length > 0
+            ? rows.filter((r) => matchesCondition(r, this._eqs))
+            : rows.map((r) => ({ ...r }));
 
         if (this._limitN !== null) matched = matched.slice(0, this._limitN);
 
@@ -177,7 +196,7 @@ class QueryChain {
       }
 
       case 'update': {
-        let updated: TableRow[] = [];
+        const updated: TableRow[] = [];
         for (const row of rows) {
           if (this._eqs.length === 0 || matchesCondition(row, this._eqs)) {
             Object.assign(row, this._setData);
@@ -242,14 +261,14 @@ vi.mock('../../database/client', () => ({
 let mockValidateResult: any = { id: 12345, first_name: 'Test' };
 
 vi.mock('../../api/auth', () => ({
-  validateInitData: vi.fn(async () => mockValidateResult),
+  validateInitData: vi.fn(() => Promise.resolve(mockValidateResult)),
 }));
 
 const defaultAdminRole = { telegramId: 12345, role: 'super_admin', categoryId: null };
 let mockAdminRole: any = { ...defaultAdminRole };
 
 vi.mock('../../middlewares/auth', () => ({
-  getAdminRole: vi.fn(async () => mockAdminRole),
+  getAdminRole: vi.fn(() => Promise.resolve(mockAdminRole)),
 }));
 
 // ---------------------------------------------------------------------------
@@ -310,16 +329,16 @@ export async function callRouter({
 
   const request = new Request(url, init);
 
-  const fakeEnv: Record<string, unknown> = {
+  const fakeEnv: Env = {
     TELEGRAM_BOT_TOKEN: 'test-token',
     SECRET_TOKEN: 'test-secret',
-    DB: fakeDb,
+    DB: fakeDb as unknown as import('@cloudflare/workers-types').D1Database,
     AI: null,
     ...envOverrides,
   };
 
   const ctx = {} as ExecutionContext; // stub — not used by the router
-  const response = await handleApiRequest(request as any, fakeEnv as any, ctx);
+  const response = await handleApiRequest(request, fakeEnv, ctx);
   const responseBody = await response.json().catch(() => null);
 
   return { status: response.status, body: responseBody, headers: response.headers };

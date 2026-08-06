@@ -11,9 +11,9 @@ test('setCoffeeDetails shape: all fields are strings or null', () => {
     flavorNotes: 'Floral, citrus',
     recommendedBrew: 'Pour Over',
     acidity: 'Bright',
-    body: 'Medium'
+    body: 'Medium',
   };
-  for (const [key, val] of Object.entries(details)) {
+  for (const [_key, val] of Object.entries(details)) {
     expect(typeof val === 'string' || val === null).toBe(true);
   }
 });

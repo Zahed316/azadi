@@ -1,7 +1,7 @@
 export class AiService {
   constructor(
     private ai: any,
-    private menuContext: string
+    private menuContext: string,
   ) {}
 
   async processQuery(query: string, userId: string, recentLogs: any[]): Promise<string> {
@@ -9,7 +9,7 @@ export class AiService {
       const lastMessageTime = new Date(recentLogs[0].timestamp).getTime();
       const now = new Date().getTime();
       if (now - lastMessageTime < 5000) {
-        return "⏳ لطفاً چند ثانیه صبر کنید و دوباره سؤال بپرسید.";
+        return '⏳ لطفاً چند ثانیه صبر کنید و دوباره سؤال بپرسید.';
       }
     }
 
@@ -17,25 +17,29 @@ export class AiService {
 Answer ONLY coffee/menu/branch questions. Reply in the user's language. Prices in Tomans. Be brief.
 ${this.menuContext}`;
 
-    const historyMessages = recentLogs.slice(-3).reverse().flatMap(log => [
-      { role: 'user', content: log.question },
-      { role: 'assistant', content: log.response }
-    ]);
+    const historyMessages = recentLogs
+      .slice(-3)
+      .reverse()
+      .flatMap((log) => [
+        { role: 'user', content: log.question },
+        { role: 'assistant', content: log.response },
+      ]);
 
     try {
       const response = await this.ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
         messages: [
           { role: 'system', content: systemPrompt },
           ...historyMessages,
-          { role: 'user', content: query }
+          { role: 'user', content: query },
         ],
-        max_tokens: 512
+        max_tokens: 512,
       });
-      const answer = response.response ?? "⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.";
+      const answer =
+        response.response ?? '⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
       return answer;
     } catch (e: any) {
       console.error(e);
-      return "⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.";
+      return '⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
     }
   }
 }

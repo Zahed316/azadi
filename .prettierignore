@@ -1,0 +1,8 @@
+node_modules
+dist
+wrangler-dry
+.wrangler
+admin-app/dist
+drizzle
+package-lock.json
+admin-app/package-lock.json

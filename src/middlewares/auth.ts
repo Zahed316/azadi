@@ -17,9 +17,9 @@ export async function isAdmin(userId?: number, d1Binding?: any): Promise<boolean
 }
 
 export async function adminAuth(ctx: MyContext, next: NextFunction) {
-  if (ctx.from && await isAdmin(ctx.from.id, ctx.env.DB)) {
+  if (ctx.from && (await isAdmin(ctx.from.id, ctx.env.DB))) {
     await next();
   } else {
-    await ctx.reply("Unauthorized: You do not have admin permissions.");
+    await ctx.reply('Unauthorized: You do not have admin permissions.');
   }
 }

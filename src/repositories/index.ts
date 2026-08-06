@@ -1,11 +1,23 @@
 import { getDb } from '../database/client';
-import { products, categories, branches, faq, settings, aiConversationLogs, coffeeDetails, menuConfig } from '../database/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { D1Database } from '@cloudflare/workers-types';
+import {
+  products,
+  categories,
+  branches,
+  faq,
+  settings,
+  aiConversationLogs,
+  coffeeDetails,
+  menuConfig,
+  userState,
+  favorites,
+} from '../database/schema';
+import { eq, and, desc, lt, sql } from 'drizzle-orm';
 
 export class ProductRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -14,7 +26,9 @@ export class ProductRepository {
   }
 
   async getAllProductsWithDetails() {
-    return await this.db.select().from(products)
+    return await this.db
+      .select()
+      .from(products)
       .leftJoin(coffeeDetails, eq(products.id, coffeeDetails.productId))
       .leftJoin(categories, eq(products.categoryId, categories.id));
   }
@@ -29,7 +43,11 @@ export class ProductRepository {
   }
 
   async updateProduct(id: number, data: Partial<typeof products.$inferInsert>) {
-    return await this.db.update(products).set({ ...data, updatedAt: new Date() }).where(eq(products.id, id)).returning();
+    return await this.db
+      .update(products)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
   }
 
   async deleteProduct(id: number) {
@@ -37,29 +55,76 @@ export class ProductRepository {
   }
 
   async updateStock(id: number, newStock: number) {
-    return await this.db.update(products).set({ stock: newStock, updatedAt: new Date() }).where(eq(products.id, id)).returning();
+    return await this.db
+      .update(products)
+      .set({ stock: newStock, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
   }
 
   async getProductsByCategory(categoryId: number) {
-    return await this.db.select().from(products).where(and(eq(products.categoryId, categoryId), eq(products.available, true)));
+    return await this.db
+      .select()
+      .from(products)
+      .where(and(eq(products.categoryId, categoryId), eq(products.available, true)));
+  }
+
+  /**
+   * Get all *available* products with a given boolean flag set to true.
+   * Used by the bot's "⭐ پیشنهاد ویژه" and "🌿 مخصوص فصل" surfaces to
+   * surface dormant product fields. Only `featured` and `isSeasonal` are
+   * allowed — both are non-null boolean columns on `products` and are
+   * the only flags exposed in the public menu (others like `priceOnRequest`
+   * are per-product pricing concerns, not catalogue surface flags).
+   */
+  async getByFlag(flag: 'featured' | 'isSeasonal') {
+    const column = flag === 'featured' ? products.featured : products.isSeasonal;
+    return await this.db
+      .select()
+      .from(products)
+      .where(and(eq(column, true), eq(products.available, true)));
+  }
+
+  /**
+   * Get all available beans (products in the 'beans' menu section) that
+   * have a `coffeeDetails` row attached — the input set for the "📖 پاسپورت قهوه"
+   * surface. Joins coffee_details so the caller can read origin/farm/etc. in
+   * one query instead of N+1.
+   */
+  async getBeansWithCoffeeDetails() {
+    return await this.db
+      .select({
+        product: products,
+        details: coffeeDetails,
+      })
+      .from(products)
+      .innerJoin(coffeeDetails, eq(coffeeDetails.productId, products.id))
+      .where(eq(products.available, true));
   }
 
   async toggleAvailability(id: number, available: boolean) {
-    return await this.db.update(products).set({ available, updatedAt: new Date() }).where(eq(products.id, id)).returning();
+    return await this.db
+      .update(products)
+      .set({ available, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
   }
 
-  async setCoffeeDetails(productId: number, details: {
-    origin?: string | null;
-    farm?: string | null;
-    altitude?: string | null;
-    processing?: string | null;
-    variety?: string | null;
-    roastLevel?: string | null;
-    flavorNotes?: string | null;
-    recommendedBrew?: string | null;
-    acidity?: string | null;
-    body?: string | null;
-  } | null) {
+  async setCoffeeDetails(
+    productId: number,
+    details: {
+      origin?: string | null;
+      farm?: string | null;
+      altitude?: string | null;
+      processing?: string | null;
+      variety?: string | null;
+      roastLevel?: string | null;
+      flavorNotes?: string | null;
+      recommendedBrew?: string | null;
+      acidity?: string | null;
+      body?: string | null;
+    } | null,
+  ) {
     // Delete existing details first
     await this.db.delete(coffeeDetails).where(eq(coffeeDetails.productId, productId));
     // Insert new details if provided
@@ -72,7 +137,7 @@ export class ProductRepository {
 export class CategoryRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -101,7 +166,7 @@ export class CategoryRepository {
 export class BranchRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -130,7 +195,7 @@ export class BranchRepository {
 export class FaqRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -159,7 +224,7 @@ export class FaqRepository {
 export class SettingsRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -173,7 +238,8 @@ export class SettingsRepository {
   }
 
   async setValue(key: string, value: string) {
-    return await this.db.insert(settings)
+    return await this.db
+      .insert(settings)
       .values({ key, value })
       .onConflictDoUpdate({ target: settings.key, set: { value } })
       .returning();
@@ -187,21 +253,25 @@ export class SettingsRepository {
 export class AiLogRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
   async logConversation(userId: string, question: string, response: string) {
-    return await this.db.insert(aiConversationLogs).values({
-      userId,
-      question,
-      response,
-      timestamp: new Date()
-    }).returning();
+    return await this.db
+      .insert(aiConversationLogs)
+      .values({
+        userId,
+        question,
+        response,
+        timestamp: new Date(),
+      })
+      .returning();
   }
 
   async getRecentLogs(userId: string, limit: number = 5) {
-    return await this.db.select()
+    return await this.db
+      .select()
       .from(aiConversationLogs)
       .where(eq(aiConversationLogs.userId, userId))
       .orderBy(desc(aiConversationLogs.timestamp))
@@ -212,7 +282,7 @@ export class AiLogRepository {
 export class MenuConfigRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 
@@ -220,15 +290,15 @@ export class MenuConfigRepository {
   async getBySection(section: string) {
     return await this.db
       .select({
-        id:              menuConfig.id,
-        categoryId:      menuConfig.categoryId,
-        menuSection:     menuConfig.menuSection,
-        displayOrder:    menuConfig.displayOrder,
-        isVisible:       menuConfig.isVisible,
-        buttonLabel:     menuConfig.buttonLabel,
-        specialMessage:  menuConfig.specialMessage,
-        categoryName:    categories.name,
-        categoryEmoji:   categories.emoji,
+        id: menuConfig.id,
+        categoryId: menuConfig.categoryId,
+        menuSection: menuConfig.menuSection,
+        displayOrder: menuConfig.displayOrder,
+        isVisible: menuConfig.isVisible,
+        buttonLabel: menuConfig.buttonLabel,
+        specialMessage: menuConfig.specialMessage,
+        categoryName: categories.name,
+        categoryEmoji: categories.emoji,
       })
       .from(menuConfig)
       .leftJoin(categories, eq(menuConfig.categoryId, categories.id))
@@ -240,15 +310,15 @@ export class MenuConfigRepository {
   async getAll() {
     return await this.db
       .select({
-        id:              menuConfig.id,
-        categoryId:      menuConfig.categoryId,
-        menuSection:     menuConfig.menuSection,
-        displayOrder:    menuConfig.displayOrder,
-        isVisible:       menuConfig.isVisible,
-        buttonLabel:     menuConfig.buttonLabel,
-        specialMessage:  menuConfig.specialMessage,
-        categoryName:    categories.name,
-        categoryEmoji:   categories.emoji,
+        id: menuConfig.id,
+        categoryId: menuConfig.categoryId,
+        menuSection: menuConfig.menuSection,
+        displayOrder: menuConfig.displayOrder,
+        isVisible: menuConfig.isVisible,
+        buttonLabel: menuConfig.buttonLabel,
+        specialMessage: menuConfig.specialMessage,
+        categoryName: categories.name,
+        categoryEmoji: categories.emoji,
       })
       .from(menuConfig)
       .leftJoin(categories, eq(menuConfig.categoryId, categories.id))
@@ -286,6 +356,200 @@ export class MenuConfigRepository {
       .select({ categoryId: menuConfig.categoryId })
       .from(menuConfig)
       .where(eq(menuConfig.isVisible, true));
-    return new Set(rows.map(r => r.categoryId));
+    return new Set(rows.map((r) => r.categoryId));
+  }
+}
+
+// Phase 5.1: per-user streak state. Identified by Telegram user_id (cast to
+// text). Streak math uses UTC day boundaries so the daily cron sweep (21:00
+// UTC, declared in wrangler.toml) lines up with the day-rollover decision.
+export interface UpsertVisitResult {
+  /** Current streak length (0 for first-ever visit, 1 for first-visit-today). */
+  streakDays: number;
+  /** True iff this call incremented streakDays above its previous value. */
+  isNewStreak: boolean;
+  /** True iff this was the first time we've seen this telegram_id. */
+  isFirstVisit: boolean;
+}
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const STREAK_GAP_MS = 48 * 60 * 60 * 1000; // 48h
+
+function utcDayKey(d: Date): number {
+  // Days since epoch in UTC. D1 stores integer epoch for timestamp columns;
+  // we compare in days so clock skew within a day doesn't reset the streak.
+  return Math.floor(d.getTime() / ONE_DAY_MS);
+}
+
+export class UserStateRepository {
+  private db: ReturnType<typeof getDb>;
+
+  constructor(d1Binding: D1Database) {
+    this.db = getDb(d1Binding);
+  }
+
+  async getByTelegramId(telegramId: string) {
+    const rows = await this.db.select().from(userState).where(eq(userState.telegramId, telegramId));
+    return rows[0] ?? null;
+  }
+
+  /**
+   * Record a user visit and return the resulting streak state. Idempotent
+   * within a UTC day: re-calling on the same day returns isNewStreak=false.
+   *
+   * Streak rules:
+   * - First-ever visit: streakDays=1, isFirstVisit=true.
+   * - Visited yesterday (UTC): streakDays = previous + 1.
+   * - Visited 2+ days ago: streakDays resets to 1.
+   * - Visited earlier today: no change, isNewStreak=false.
+   */
+  async upsertVisit(telegramId: string, now: Date = new Date()): Promise<UpsertVisitResult> {
+    const existing = await this.getByTelegramId(telegramId);
+    const nowDay = utcDayKey(now);
+
+    if (!existing) {
+      await this.db.insert(userState).values({
+        telegramId,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        visitsTotal: 1,
+        streakDays: 1,
+      });
+      return { streakDays: 1, isNewStreak: true, isFirstVisit: true };
+    }
+
+    const lastDay = utcDayKey(existing.lastSeenAt);
+    if (lastDay === nowDay) {
+      // Same UTC day — bump visits_total, leave streak alone.
+      await this.db
+        .update(userState)
+        .set({ visitsTotal: existing.visitsTotal + 1, lastSeenAt: now })
+        .where(eq(userState.telegramId, telegramId));
+      return {
+        streakDays: existing.streakDays,
+        isNewStreak: false,
+        isFirstVisit: false,
+      };
+    }
+
+    const gap = now.getTime() - existing.lastSeenAt.getTime();
+    const newStreak = gap < STREAK_GAP_MS ? existing.streakDays + 1 : 1;
+    await this.db
+      .update(userState)
+      .set({
+        lastSeenAt: now,
+        visitsTotal: existing.visitsTotal + 1,
+        streakDays: newStreak,
+      })
+      .where(eq(userState.telegramId, telegramId));
+    return {
+      streakDays: newStreak,
+      isNewStreak: newStreak > existing.streakDays,
+      isFirstVisit: false,
+    };
+  }
+
+  /**
+   * Reset streakDays to 0 for users who haven't been seen in 48h. Idempotent:
+   * a re-run after the reset is a no-op (the WHERE clause filters them out).
+   * Returns the number of rows reset, for cron logging. Uses SQLite's
+   * RETURNING clause so the count is accurate in a single round-trip.
+   */
+  async sweepStaleStreaks(now: Date = new Date()): Promise<number> {
+    const cutoff = new Date(now.getTime() - STREAK_GAP_MS);
+    const rows = await this.db
+      .update(userState)
+      .set({ streakDays: 0 })
+      .where(and(lt(userState.lastSeenAt, cutoff), sql`${userState.streakDays} > 0`))
+      .returning({ telegramId: userState.telegramId });
+    return rows.length;
+  }
+}
+
+// Phase 5.2: per-user product favorites. Composite PK on (telegram_id,
+// product_id) prevents duplicates; foreign key cascades on product delete.
+export class FavoritesRepository {
+  private db: ReturnType<typeof getDb>;
+
+  constructor(d1Binding: D1Database) {
+    this.db = getDb(d1Binding);
+  }
+
+  /**
+   * Add a product to the user's favorites. Idempotent: returns true on
+   * insert, false on duplicate (composite PK collision). Uses SQLite's
+   * RETURNING to detect the actual insert vs the no-op on conflict.
+   */
+  async add(telegramId: string, productId: number): Promise<boolean> {
+    const rows = await this.db
+      .insert(favorites)
+      .values({ telegramId, productId, createdAt: new Date() })
+      .onConflictDoNothing()
+      .returning({ telegramId: favorites.telegramId });
+    return rows.length > 0;
+  }
+
+  /**
+   * Remove a product from the user's favorites. Returns true if a row was
+   * actually deleted, false if the (telegramId, productId) pair didn't exist.
+   */
+  async remove(telegramId: string, productId: number): Promise<boolean> {
+    const rows = await this.db
+      .delete(favorites)
+      .where(
+        and(eq(favorites.telegramId, telegramId), eq(favorites.productId, productId)),
+      )
+      .returning({ telegramId: favorites.telegramId });
+    return rows.length > 0;
+  }
+
+  /**
+   * List all products the user has favorited, joined with the product row
+   * and ordered by favorite creation time (newest first). Returns the full
+   * Product shape plus a `favoritedAt` timestamp for the menu surface.
+   */
+  async list(
+    telegramId: string,
+  ): Promise<Array<typeof products.$inferSelect & { favoritedAt: Date }>> {
+    return await this.db
+      .select({
+        id: products.id,
+        branchId: products.branchId,
+        categoryId: products.categoryId,
+        name: products.name,
+        description: products.description,
+        price: products.price,
+        stock: products.stock,
+        unit: products.unit,
+        imageUrl: products.imageUrl,
+        available: products.available,
+        featured: products.featured,
+        priceOnRequest: products.priceOnRequest,
+        isSeasonal: products.isSeasonal,
+        sizeOptions: products.sizeOptions,
+        syrupOptions: products.syrupOptions,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        favoritedAt: favorites.createdAt,
+      })
+      .from(favorites)
+      .innerJoin(products, eq(products.id, favorites.productId))
+      .where(eq(favorites.telegramId, telegramId))
+      .orderBy(desc(favorites.createdAt));
+  }
+
+  /**
+   * Check whether a single product is favorited by the user. Used to render
+   * the right toggle button on the product-detail page.
+   */
+  async isFavorited(telegramId: string, productId: number): Promise<boolean> {
+    const rows = await this.db
+      .select({ telegramId: favorites.telegramId })
+      .from(favorites)
+      .where(
+        and(eq(favorites.telegramId, telegramId), eq(favorites.productId, productId)),
+      )
+      .limit(1);
+    return rows.length > 0;
   }
 }

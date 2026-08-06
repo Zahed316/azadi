@@ -8,7 +8,7 @@ test('formatProduct formats correctly', () => {
     description: 'Strong coffee',
     price: 35000,
     stock: 10,
-    unit: 'cup'
+    unit: 'cup',
   };
   const result = formatProduct(product);
   expect(result).toContain('<b>Espresso</b>');
@@ -33,7 +33,7 @@ test('formatProduct formats physical goods with stock', () => {
     description: 'Arabica',
     price: 500000,
     stock: 2,
-    unit: 'kg'
+    unit: 'kg',
   };
   const result = formatProduct(product);
   expect(result).toContain('۲ کیلوگرم');
@@ -43,7 +43,7 @@ test('formatBranch formats correctly', () => {
     name: 'Main Branch',
     address: '123 Coffee St',
     phone: '555-1234',
-    openingHours: '8am - 8pm'
+    openingHours: '8am - 8pm',
   };
   const result = formatBranch(branch);
   expect(result).toContain('<b>Main Branch</b>');
@@ -54,7 +54,7 @@ test('formatBranch formats correctly', () => {
 test('formatFaq formats correctly', () => {
   const faq = {
     question: 'What are your hours?',
-    answer: 'We are open 8am to 8pm.'
+    answer: 'We are open 8am to 8pm.',
   };
   const result = formatFaq(faq);
   expect(result).toContain('<b>What are your hours?</b>');
