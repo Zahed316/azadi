@@ -141,6 +141,25 @@ export class ProductRepository {
       .where(eq(coffeeDetails.productId, productId));
     return result[0] || null;
   }
+
+  /**
+   * Return the most-favorited products across all users, with category name
+   * and favorited count. Used by the AI context to surface popular items.
+   */
+  async getPopularProducts(limit: number = 5) {
+    return await this.db
+      .select({
+        name: products.name,
+        category: sql<string>`coalesce(${categories.name}, 'Uncategorized')`,
+        favoritedCount: sql<number>`cast(count(*) as int)`,
+      })
+      .from(favorites)
+      .innerJoin(products, eq(favorites.productId, products.id))
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .groupBy(products.id, categories.name)
+      .orderBy(desc(sql`count(*)`))
+      .limit(limit);
+  }
 }
 
 export class CategoryRepository {
@@ -279,6 +298,24 @@ export class AiLogRepository {
   }
 
   async getRecentLogs(userId: string, limit: number = 5) {
+    return await this.db
+      .select()
+      .from(aiConversationLogs)
+      .where(eq(aiConversationLogs.userId, userId))
+      .orderBy(desc(aiConversationLogs.timestamp))
+      .limit(limit);
+  }
+
+  async getAllLogs(limit: number = 50, offset: number = 0) {
+    return await this.db
+      .select()
+      .from(aiConversationLogs)
+      .orderBy(desc(aiConversationLogs.timestamp))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getLogsByUser(userId: string, limit: number = 50) {
     return await this.db
       .select()
       .from(aiConversationLogs)

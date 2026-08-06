@@ -16,6 +16,7 @@ import AdminsPage from './pages/AdminsPage';
 import MenuConfigPage from './pages/MenuConfigPage';
 import FavoritesPage from './pages/FavoritesPage';
 import StreaksPage from './pages/StreaksPage';
+import AILogsPage from './pages/AILogsPage';
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,10 @@ function AppInner() {
               path="/favorites"
               element={isSuperAdmin ? <FavoritesPage /> : <Navigate to="/products" replace />}
             />
+            <Route
+              path="/ai-logs"
+              element={isSuperAdmin ? <AILogsPage /> : <Navigate to="/products" replace />}
+            />
             <Route path="*" element={<Navigate to="/products" replace />} />
           </Routes>
           <div className="bottom-nav">
@@ -153,6 +158,13 @@ function AppInner() {
                   onClick={() => window.scrollTo(0, 0)}
                 >
                   <span className="nav-icon">⭐</span>Favorites
+                </NavLink>
+                <NavLink
+                  to="/ai-logs"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
+                  <span className="nav-icon">🤖</span>AI Logs
                 </NavLink>
               </>
             )}

@@ -9,4 +9,5 @@ export const queryKeys = {
   branches: ['branches'] as const,
   streaks: ['streaks'] as const,
   favorites: ['favorites'] as const,
+  aiLogs: ['aiLogs'] as const,
 };
