@@ -285,6 +285,9 @@ export async function handleApiRequest(
           featured: body.featured ?? false,
           priceOnRequest: body.priceOnRequest ?? false,
           isSeasonal: body.isSeasonal ?? false,
+          calories: body.calories ?? null,
+          allergens: body.allergens ?? null,
+          caffeineMg: body.caffeineMg ?? null,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -363,6 +366,9 @@ export async function handleApiRequest(
           description: body.description !== undefined ? body.description : null,
           unit: body.unit || 'item',
           available: body.available !== undefined ? body.available : true,
+          calories: body.calories !== undefined ? body.calories : undefined,
+          allergens: body.allergens !== undefined ? body.allergens : undefined,
+          caffeineMg: body.caffeineMg !== undefined ? body.caffeineMg : undefined,
         });
         // Update coffee details: if coffeeDetails is present in body, set it (null deletes)
         if (body.coffeeDetails !== undefined) {

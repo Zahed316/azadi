@@ -271,3 +271,54 @@ test('image delete succeeds for existing product', async () => {
   const rows = readTable(products);
   expect(rows[0].imageUrl).toBeNull();
 });
+
+// ---------------------------------------------------------------------------
+// Nutritional fields in POST/PUT/GET
+// ---------------------------------------------------------------------------
+
+test('POST /products accepts nutritional fields', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  const res = await callRouter({
+    method: 'POST',
+    path: 'products',
+    body: {
+      name: 'Espresso',
+      categoryId: '5',
+      price: 45000,
+      calories: 5,
+      allergens: null,
+      caffeineMg: 63,
+    },
+  });
+  expect(res.status).toBe(200);
+  const rows = readTable(products);
+  expect(rows[0].calories).toBe(5);
+  expect(rows[0].caffeineMg).toBe(63);
+  expect(rows[0].allergens).toBeNull();
+});
+
+test('GET /products returns nutritional fields', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  seedTable(products, [
+    { id: 1, name: 'Latte', categoryId: 1, calories: 120, caffeineMg: 63, allergens: 'milk' },
+  ]);
+  const res = await callRouter({ method: 'GET', path: 'products' });
+  expect(res.status).toBe(200);
+  expect(res.body.products[0].calories).toBe(120);
+  expect(res.body.products[0].caffeineMg).toBe(63);
+  expect(res.body.products[0].allergens).toBe('milk');
+});
+
+test('PUT /products updates nutritional fields', async () => {
+  setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
+  seedTable(products, [{ id: 1, name: 'Latte', categoryId: 1 }]);
+  const res = await callRouter({
+    method: 'PUT',
+    path: 'products/1',
+    body: { calories: 120, caffeineMg: 63, allergens: 'milk' },
+  });
+  expect(res.status).toBe(200);
+  const rows = readTable(products);
+  expect(rows[0].calories).toBe(120);
+  expect(rows[0].allergens).toBe('milk');
+});

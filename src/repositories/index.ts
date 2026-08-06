@@ -123,6 +123,7 @@ export class ProductRepository {
       recommendedBrew?: string | null;
       acidity?: string | null;
       body?: string | null;
+      brewGuide?: string | null;
     } | null,
   ) {
     // Delete existing details first
