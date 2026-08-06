@@ -551,6 +551,27 @@ export class FavoritesRepository {
   }
 
   /**
+   * Admin read: return every favorites row joined with the product name.
+   * Uses LEFT JOIN so orphan favorites (product deleted by cascade — the
+   * cascade normally removes them, but a stale row from before the cascade
+   * was added would still appear with productName: null) still surface.
+   * Returns a flat list; the client groups by telegramId or productId
+   * depending on the page's "groupBy" toggle.
+   */
+  async listAllGrouped() {
+    return await this.db
+      .select({
+        telegramId: favorites.telegramId,
+        productId: favorites.productId,
+        productName: products.name,
+        favoritedAt: favorites.createdAt,
+      })
+      .from(favorites)
+      .leftJoin(products, eq(products.id, favorites.productId))
+      .orderBy(desc(favorites.createdAt));
+  }
+
+  /**
    * Check whether a single product is favorited by the user. Used to render
    * the right toggle button on the product-detail page.
    */
