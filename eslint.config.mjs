@@ -16,6 +16,7 @@ export default [
       'wrangler-dry/**',
       '.wrangler/**',
       'drizzle/**', // generated migrations
+      '.superpowers/**', // design docs, tmp files, not part of runtime
       '*.config.{js,cjs,mjs,ts}',
       'eslint.config.mjs',
       'test-drizzle.ts', // 7-line smoke script, not part of runtime

@@ -4,5 +4,6 @@ wrangler-dry
 .wrangler
 admin-app/dist
 drizzle
+.superpowers
 package-lock.json
 admin-app/package-lock.json
