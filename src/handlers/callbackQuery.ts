@@ -202,10 +202,24 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
             kb.row().text('⭐ ذخیره', `fav:add:${id}`);
           }
         }
-        await ctx.reply(formatProduct(product, priceUnit), {
-          parse_mode: 'HTML',
-          reply_markup: kb,
-        });
+        let caption = formatProduct(product, priceUnit);
+        // Show brew guide for coffee beans with details
+        const details = await repo.getCoffeeDetails(id);
+        if (details?.brewGuide) {
+          caption += `\n\n📋 <b>راهنمای دم‌آوری:</b>\n${details.brewGuide}`;
+        }
+        if (product.imageUrl) {
+          await ctx.replyWithPhoto(product.imageUrl, {
+            caption,
+            parse_mode: 'HTML',
+            reply_markup: kb,
+          });
+        } else {
+          await ctx.reply(caption, {
+            parse_mode: 'HTML',
+            reply_markup: kb,
+          });
+        }
       } else {
         await ctx.reply('محصول مورد نظر یافت نشد.');
       }

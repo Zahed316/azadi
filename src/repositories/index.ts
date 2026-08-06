@@ -133,6 +133,14 @@ export class ProductRepository {
       await this.db.insert(coffeeDetails).values({ productId, ...details });
     }
   }
+
+  async getCoffeeDetails(productId: number) {
+    const result = await this.db
+      .select()
+      .from(coffeeDetails)
+      .where(eq(coffeeDetails.productId, productId));
+    return result[0] || null;
+  }
 }
 
 export class CategoryRepository {
