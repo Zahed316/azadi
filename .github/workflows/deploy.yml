@@ -65,14 +65,18 @@ jobs:
         working-directory: admin-app
         run: npm ci
 
-      - name: Build admin-app
+      - name: Typecheck admin-app
         working-directory: admin-app
-        run: npm run build
+        run: npm run typecheck
 
       - name: Lint admin-app (non-blocking, first iteration)
         working-directory: admin-app
         continue-on-error: true
         run: npm run lint
+
+      - name: Build admin-app
+        working-directory: admin-app
+        run: npm run build
 
       - name: Deploy admin-app to Cloudflare Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

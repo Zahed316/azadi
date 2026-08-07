@@ -13,7 +13,7 @@ import {
   favorites,
   messages,
 } from '../database/schema';
-import { eq, and, desc, lt, sql, isNull } from 'drizzle-orm';
+import { eq, and, desc, lt, sql } from 'drizzle-orm';
 
 export class ProductRepository {
   private db: ReturnType<typeof getDb>;

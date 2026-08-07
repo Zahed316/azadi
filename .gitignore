@@ -1,7 +1,10 @@
 node_modules/
 .env
 .hermes/
-.lint-baseline.log
-admin-app/.lint-baseline.log
+dist/
+*.log
+.wrangler/
+.claude/
+.superpowers/
 wrangler-dry/
 

@@ -40,7 +40,7 @@ export default {
       return await handleUpdate(request);
     } catch (err: any) {
       console.error(err);
-      return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
         status: 500,
       });
     }
