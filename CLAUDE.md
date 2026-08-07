@@ -38,6 +38,7 @@ npm run format                      # prettier --write (auto-fixes)
 npm run deploy                      # wraps `npm exec -- wrangler deploy`
 npm run deploy:dry                  # wraps `wrangler deploy --dry-run --outdir ./wrangler-dry`
 npm run setup:webhook               # reads TELEGRAM_BOT_TOKEN and SECRET_TOKEN from ~/.env
+./deploy.sh --dry-run               # pre-flight: test → typecheck → lint → build (no deploy)
 
 # Admin Mini App
 cd admin-app
@@ -50,6 +51,8 @@ npm run format:check                # prettier --check
 ```
 
 CI (`.github/workflows/deploy.yml`): `npm ci` → vitest → `lint` (non-blocking) → `tsc --noEmit` → `wrangler deploy` (push to main only), plus a separate `deploy-admin-app` job that builds `admin-app/`, runs `lint` (non-blocking), and runs `wrangler pages deploy admin-app/dist --project-name=azadi-admin`.
+
+**CI is the ONLY auto-deployment path** — push to `main` deploys both Worker and Pages. Local `deploy.sh` is for pre-flight validation only (see [[ci-is-single-deploy-mechanism]]).
 
 ## Architecture
 
