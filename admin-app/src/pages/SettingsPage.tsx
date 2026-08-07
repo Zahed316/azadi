@@ -6,6 +6,34 @@ import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 
+const MENU_VISIBILITY_KEYS = [
+  'menu_visible_featured',
+  'menu_visible_seasonal',
+  'menu_visible_passport',
+  'menu_visible_search',
+  'menu_visible_favorites',
+  'menu_visible_about',
+  'menu_visible_drinks',
+  'menu_visible_beans',
+  'menu_visible_cakes',
+  'menu_visible_branches',
+  'menu_visible_faq',
+] as const;
+
+const MENU_VISIBILITY_LABELS: Record<string, string> = {
+  menu_visible_featured: '⭐ Featured (پیشنهاد ویژه)',
+  menu_visible_seasonal: '🌿 Seasonal (مخصوص فصل)',
+  menu_visible_passport: '📖 Coffee Passport (پاسپورت قهوه)',
+  menu_visible_search: '🔍 Search (جستجو)',
+  menu_visible_favorites: '⭐ My Menus (منوهای من)',
+  menu_visible_about: '🏠 About Us (درباره ما)',
+  menu_visible_drinks: '☕ Drinks (نوشیدنی‌ها)',
+  menu_visible_beans: '🌱 Beans (دانه‌های قهوه)',
+  menu_visible_cakes: '🍰 Cakes (کیک و کوکی)',
+  menu_visible_branches: '📍 Branches (شعب)',
+  menu_visible_faq: '❓ FAQ (سوالات متداول)',
+};
+
 const BUILTIN_KEYS = ['instagram', 'phone', 'price_unit', 'ai_greeting', 'about'];
 const BUILTIN_LABELS: Record<string, string> = {
   instagram: 'Instagram URL',
@@ -64,6 +92,42 @@ export default function SettingsPage() {
     },
   });
 
+  const [menuVisInitialized, setMenuVisInitialized] = useState(false);
+  const [menuVis, setMenuVis] = useState<Record<string, boolean>>({});
+
+  // Initialize menu visibility state from settings data
+  if (!menuVisInitialized && settings.length > 0) {
+    const initial: Record<string, boolean> = {};
+    for (const key of MENU_VISIBILITY_KEYS) {
+      const setting = settings.find((s: any) => s.key === key);
+      // Missing key = visible (default)
+      initial[key] = setting?.value !== 'false';
+    }
+    setMenuVis(initial);
+    setMenuVisInitialized(true);
+  }
+
+  const saveMenuVisMutation = useMutation({
+    mutationFn: async (data: { key: string; visible: boolean }) => {
+      return apiFetch(`/settings/${encodeURIComponent(data.key)}`, {
+        method: 'PUT',
+        body: { value: data.visible ? 'true' : 'false' },
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
+      showToast('Saved ✓');
+    },
+    onError: (err: Error) => {
+      setError(err.message);
+    },
+  });
+
+  const handleToggleMenuVis = (key: string, visible: boolean) => {
+    setMenuVis((prev) => ({ ...prev, [key]: visible }));
+    saveMenuVisMutation.mutate({ key, visible });
+  };
+
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     saveSettingsMutation.mutate({ settings: localSettings });
@@ -96,6 +160,33 @@ export default function SettingsPage() {
 
   return (
     <>
+      <div className="card">
+        <h2>🔘 Menu Visibility</h2>
+        <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
+          Show or hide top-level bot menu sections. Hidden sections show an "unavailable" message to users.
+        </p>
+        <ul className="list">
+          {MENU_VISIBILITY_KEYS.map((key) => (
+            <li key={key} className="list-item">
+              <div className="list-item-info">
+                <span>{MENU_VISIBILITY_LABELS[key]}</span>
+                <span className="list-item-meta">
+                  {menuVis[key] ? '✅ Visible' : '❌ Hidden'}
+                </span>
+              </div>
+              <div className="list-item-actions">
+                <button
+                  className={menuVis[key] ? 'danger' : 'primary'}
+                  onClick={() => handleToggleMenuVis(key, !menuVis[key])}
+                >
+                  {menuVis[key] ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <div className="card">
         <h2>Bot Settings</h2>
         <form onSubmit={handleSaveSettings}>

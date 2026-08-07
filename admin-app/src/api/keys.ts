@@ -10,6 +10,7 @@ export const queryKeys = {
   streaks: ['streaks'] as const,
   streakConfig: ['streakConfig'] as const,
   favorites: ['favorites'] as const,
+  menuVisibility: ['menu-visibility'] as const,
   aiLogs: ['aiLogs'] as const,
   health: ['health'] as const,
 };
