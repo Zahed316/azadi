@@ -113,6 +113,13 @@ export function createBot(env: Env) {
 
   // Define commands
   bot.command('start', async (ctx) => {
+    // Force-overwrite Telegram's cached command list to clear stale commands
+    // (e.g. a deprecated /help from an earlier deployment). Safe to call on
+    // every /start — idempotent and cheap.
+    await ctx.api.setMyCommands([
+      { command: 'start', description: 'باز کردن منوی اصلی' },
+      { command: 'admin', description: 'پنل مدیریت (فقط ادمین)' },
+    ]).catch(() => {});
     // `ctx.conversation` is only populated when the conversations() middleware
     // is registered (see USE_CONVERSATIONS gate above). Guard so /start works
     // in both states — the framework is currently dormant.
