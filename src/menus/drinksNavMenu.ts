@@ -60,6 +60,18 @@ export async function buildCategoryPage(
 export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   .dynamic(async (ctx, range) => {
     try {
+      // Check drinks section visibility before rendering any category buttons
+      if (!(await isMenuVisible(ctx.env, 'drinks'))) {
+        range
+          .text(HIDDEN_MESSAGE, async (ctx) => {
+            await ctx.reply(HIDDEN_MESSAGE, {
+              reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+            });
+          })
+          .row();
+        return;
+      }
+
       const menuRepo = new MenuConfigRepository(ctx.env.DB);
       const configs = await menuRepo.getBySection('drinks');
 
@@ -70,12 +82,6 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
         range
           .text(label, async (ctx) => {
             try {
-              if (!(await isMenuVisible(ctx.env, 'drinks'))) {
-                await ctx.reply(HIDDEN_MESSAGE, {
-                  reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-                });
-                return;
-              }
               const pRepo = new ProductRepository(ctx.env.DB);
               const items = await pRepo.getProductsByCategory(config.categoryId);
 

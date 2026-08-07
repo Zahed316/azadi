@@ -29,7 +29,7 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
         return;
       }
       const repo = new BranchRepository(ctx.env.DB);
-      const branches = await repo.getActiveBranches();
+      const branches = await repo.getAllBranches();
 
       if (branches.length === 0) {
         await ctx.reply('📭 در حال حاضر شعبه‌ای موجود نیست.');
