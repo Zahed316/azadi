@@ -55,18 +55,20 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
     try {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
-      const branches = await new BranchRepository(ctx.env.DB).getActiveBranches();
+      const [aboutText, branches] = await Promise.all([
+        new SettingsRepository(ctx.env.DB).getValue('about'),
+        new BranchRepository(ctx.env.DB).getActiveBranches(),
+      ]);
       const page = buildListPage(branches, idx, 5);
       const kb = new InlineKeyboard();
       for (const b of page.items) {
-        kb.text(b.name, `branch:${b.id}`).row();
+        kb.text(`📍 ${b.name}`, `branch:${b.id}`).row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `branches:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `branches:page:${idx + 1}`);
-      const body =
-        page.items.length === 0
-          ? `<b>شعب</b> (${page.pageLabel})`
-          : `<b>شعب</b> (${page.pageLabel})\n\nیک شعبه انتخاب کنید:`;
+      const body = aboutText
+        ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
+        : '<b>🏠 درباره ما</b>';
       await ctx
         .editMessageText(body, { reply_markup: kb })
         .catch(() => ctx.reply(body, { reply_markup: kb }));

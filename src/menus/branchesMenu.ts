@@ -11,7 +11,7 @@
  */
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { BranchRepository } from '../repositories';
+import { BranchRepository, SettingsRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
 import { mainMenu } from './mainMenu';
@@ -29,23 +29,32 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
         });
         return;
       }
-      const repo = new BranchRepository(ctx.env.DB);
-      const branches = await repo.getAllBranches();
 
-      if (branches.length === 0) {
-        await ctx.reply('📭 در حال حاضر شعبه‌ای موجود نیست.');
-        return;
-      }
+      // Fetch about text and branches in parallel
+      const [aboutText, branches] = await Promise.all([
+        new SettingsRepository(ctx.env.DB).getValue('about'),
+        new BranchRepository(ctx.env.DB).getAllBranches(),
+      ]);
 
-      const page = buildListPage(branches, 0, BRANCHES_PAGE_SIZE);
+      // Build the about text section
+      const aboutSection = aboutText
+        ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
+        : '<b>🏠 درباره ما</b>';
+
+      // Build keyboard: branch buttons (if any) + back button
       const kb = new InlineKeyboard();
-      for (const b of page.items) {
-        kb.text(b.name, `branch:${b.id}`).row();
+      if (branches.length > 0) {
+        // Show branches as buttons below the about text
+        const activeBranches = branches.filter((b: any) => b.isActive !== false);
+        for (const b of activeBranches) {
+          kb.text(`📍 ${b.name}`, `branch:${b.id}`).row();
+        }
       }
-      if (page.hasPrev) kb.text('صفحه قبل ▶️', `${BRANCHES_PAGE_PREFIX}${0 - 1}`);
-      if (page.hasNext) kb.text('◀️ صفحه بعد', `${BRANCHES_PAGE_PREFIX}${0 + 1}`);
 
-      const body = `<b>🏠 درباره ما</b> (${page.pageLabel})\n\nیک شعبه انتخاب کنید:`;
+      const body = aboutText
+        ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
+        : '<b>🏠 درباره ما</b>\n\nاطلاعاتی ثبت نشده است.';
+
       await ctx
         .editMessageText(body, { reply_markup: kb })
         .catch(() => ctx.reply(body, { reply_markup: kb }));
