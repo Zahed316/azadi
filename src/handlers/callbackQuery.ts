@@ -70,8 +70,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
         ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
         : '<b>🏠 درباره ما</b>';
       await ctx
-        .editMessageText(body, { reply_markup: kb })
-        .catch(() => ctx.reply(body, { reply_markup: kb }));
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});

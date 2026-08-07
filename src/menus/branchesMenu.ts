@@ -56,8 +56,8 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
         : '<b>🏠 درباره ما</b>\n\nاطلاعاتی ثبت نشده است.';
 
       await ctx
-        .editMessageText(body, { reply_markup: kb })
-        .catch(() => ctx.reply(body, { reply_markup: kb }));
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود.' }).catch(() => {});
@@ -68,6 +68,6 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
     await ctx.answerCallbackQuery();
     const body = 'منوی اصلی:';
     await ctx
-      .editMessageText(body, { reply_markup: mainMenu })
-      .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+      .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
   });
