@@ -18,6 +18,7 @@ import FavoritesPage from './pages/FavoritesPage';
 import StreaksPage from './pages/StreaksPage';
 import AILogsPage from './pages/AILogsPage';
 import AITestPage from './pages/AITestPage';
+import { MessagesPage } from './pages/MessagesPage';
 
 const queryClient = new QueryClient();
 
@@ -95,6 +96,10 @@ function AppInner() {
             <Route
               path="/ai-test"
               element={isSuperAdmin ? <AITestPage /> : <Navigate to="/products" replace />}
+            />
+            <Route
+              path="/messages"
+              element={isSuperAdmin ? <MessagesPage /> : <Navigate to="/products" replace />}
             />
             <Route path="*" element={<Navigate to="/products" replace />} />
           </Routes>
@@ -177,6 +182,13 @@ function AppInner() {
                   onClick={() => window.scrollTo(0, 0)}
                 >
                   <span className="nav-icon">🧪</span>AI Test
+                </NavLink>
+                <NavLink
+                  to="/messages"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
+                  <span className="nav-icon">✉️</span>Messages
                 </NavLink>
               </>
             )}
