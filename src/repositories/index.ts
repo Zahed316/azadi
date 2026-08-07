@@ -11,8 +11,9 @@ import {
   menuConfig,
   userState,
   favorites,
+  messages,
 } from '../database/schema';
-import { eq, and, desc, lt, sql } from 'drizzle-orm';
+import { eq, and, desc, lt, sql, isNull } from 'drizzle-orm';
 
 export class ProductRepository {
   private db: ReturnType<typeof getDb>;
@@ -651,5 +652,59 @@ export class FavoritesRepository {
       )
       .limit(1);
     return rows.length > 0;
+  }
+}
+
+export class MessageRepository {
+  private db: ReturnType<typeof getDb>;
+
+  constructor(d1Binding: any) {
+    this.db = getDb(d1Binding);
+  }
+
+  async create(data: {
+    telegramId: string;
+    senderName?: string | null;
+    senderEmail?: string | null;
+    content: string;
+    rating?: number | null;
+    isAnonymous?: boolean;
+  }) {
+    return await this.db.insert(messages).values({
+      telegramId: data.telegramId,
+      senderName: data.senderName ?? null,
+      senderEmail: data.senderEmail ?? null,
+      content: data.content,
+      rating: data.rating ?? null,
+      isAnonymous: data.isAnonymous ?? false,
+      createdAt: new Date(),
+    }).returning();
+  }
+
+  async getAll(limit = 50, offset = 0) {
+    return await this.db.select().from(messages).orderBy(desc(messages.createdAt)).limit(limit).offset(offset);
+  }
+
+  async getById(id: number) {
+    const result = await this.db.select().from(messages).where(eq(messages.id, id));
+    return result[0] || null;
+  }
+
+  async markRead(id: number) {
+    return await this.db.update(messages).set({ isRead: true }).where(eq(messages.id, id));
+  }
+
+  async markReplied(id: number, replyText: string) {
+    return await this.db.update(messages).set({
+      replied: true,
+      replyText,
+      repliedAt: new Date(),
+      isRead: true,
+    }).where(eq(messages.id, id));
+  }
+
+  async getUnreadCount() {
+    const result = await this.db.select({ count: sql<number>`count(*)` }).from(messages).where(eq(messages.replied, false));
+    return result[0]?.count ?? 0;
   }
 }

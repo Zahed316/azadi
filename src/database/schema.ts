@@ -134,3 +134,20 @@ export const favorites = sqliteTable(
     pk: primaryKey({ columns: [t.telegramId, t.productId] }),
   }),
 );
+
+// User-to-admin messaging: feedback, contact, and anonymous messages.
+// Single reply per message (admin_reply column), not threaded chat.
+export const messages = sqliteTable('messages', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  telegramId: text('telegram_id').notNull(),
+  senderName: text('sender_name'),
+  senderEmail: text('sender_email'),
+  content: text('content').notNull(),
+  rating: integer('rating'), // 1-5 stars, null for non-feedback messages
+  isAnonymous: integer('is_anonymous', { mode: 'boolean' }).default(false),
+  isRead: integer('is_read', { mode: 'boolean' }).default(false),
+  replied: integer('replied', { mode: 'boolean' }).default(false),
+  replyText: text('reply_text'),
+  repliedAt: integer('replied_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});

@@ -4,6 +4,13 @@ import { Env } from '../bot';
 
 export interface SessionData {
   lastUpdateId?: number;
+  messageFlow?: {
+    step: 'name' | 'content' | 'rating' | 'confirm';
+    name?: string;
+    content?: string;
+    rating?: number;
+    isAnonymous?: boolean;
+  };
 }
 
 export type MyContext = Context &
