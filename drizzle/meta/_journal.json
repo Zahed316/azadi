@@ -15,6 +15,20 @@
       "when": 1785545847669,
       "tag": "0001_lumpy_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786101448930,
+      "tag": "0002_salty_jocasta",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1786144048000,
+      "tag": "0007_messages",
+      "breakpoints": true
     }
   ]
 }

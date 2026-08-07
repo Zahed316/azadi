@@ -91,6 +91,7 @@ Worker `fetch` routes:
 - Two roles: `super_admin` (full access) and `category_admin` (restricted to one `categoryId`). `category_admin` write paths enforce `allowedCategoryId` against `body.categoryId` / `product.categoryId`.
 - Resources: `admins`, `settings`, `categories`, `menu-config` (+ `/reorder`), `products` (+ `/batch`, `/{id}/stock`, `/{id}/toggle`, `/{id}/image`), `faqs`, `branches`, `currentUser`.
 - **Product images**: stored as full public URLs in D1 (`imageUrl` column). Admins paste URLs from free hosts (imgbb, imgur, etc.) via the admin app. `PUT /products/:id/image` accepts `{ imageUrl: string }` (validates URL format). `DELETE /products/:id/image` clears the field. Bot displays via `replyWithPhoto(url)` when `imageUrl` is set. **R2 is not used** — requires credit card activation. See [[r2-requires-credit-card]].
+- **Menu visibility**: `menu_visible_*` keys in `settings` table control which top-level bot menu sections are shown. Missing key = visible (safe default). Bot reads per-request via `isMenuVisible()` from `src/utils/menuVisibility.ts`. Admin toggles in the "Menu Visibility" card on SettingsPage.
 - All responses use `corsHeaders` (`Access-Control-Allow-Origin: *`); `OPTIONS` is preflight-only.
 
 ### AI fallback (`src/services/aiService.ts`, `src/handlers/message.ts`)
