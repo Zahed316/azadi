@@ -14,6 +14,7 @@ import { InlineKeyboard } from 'grammy';
 import { BranchRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
+import { mainMenu } from './mainMenu';
 import { MyContext } from '../types/context';
 
 const BRANCHES_PAGE_PREFIX = 'branches:page:';
@@ -54,4 +55,10 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
     }
   })
   .row()
-  .back('↩️ بازگشت');
+  .text('↩️ بازگشت', async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const body = 'منوی اصلی:';
+    await ctx
+      .editMessageText(body, { reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+  });

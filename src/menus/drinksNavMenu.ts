@@ -5,6 +5,7 @@ import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { formatPersianPrice } from '../utils/numbers';
 import { buildListPage } from '../utils/faqPagination';
+import { mainMenu } from './mainMenu';
 import { MyContext } from '../types/context';
 
 /**
@@ -112,4 +113,10 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
       range.text('❌ خطا در بارگذاری دسته‌بندی‌ها').row();
     }
   })
-  .back('↩️ بازگشت');
+  .text('↩️ بازگشت', async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const body = 'منوی اصلی:';
+    await ctx
+      .editMessageText(body, { reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+  });

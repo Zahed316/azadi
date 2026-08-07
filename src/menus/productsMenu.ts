@@ -3,6 +3,7 @@ import { InlineKeyboard } from 'grammy';
 import { ProductRepository, MenuConfigRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
+import { mainMenu } from './mainMenu';
 import { MyContext } from '../types/context';
 
 /**
@@ -54,7 +55,13 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
     }
   })
   .row()
-  .back('↩️ بازگشت');
+  .text('↩️ بازگشت', async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const body = 'منوی اصلی:';
+    await ctx
+      .editMessageText(body, { reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+  });
 
 export const beansMenu = new Menu<MyContext>('products-menu-beans')
   .text('🌱 مشاهده دانه‌های قهوه', async (ctx) => {
@@ -96,4 +103,10 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
     }
   })
   .row()
-  .back('↩️ بازگشت');
+  .text('↩️ بازگشت', async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const body = 'منوی اصلی:';
+    await ctx
+      .editMessageText(body, { reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+  });
