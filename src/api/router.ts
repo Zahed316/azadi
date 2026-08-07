@@ -158,6 +158,25 @@ export async function handleApiRequest(
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     }
 
+    // PUT /settings/:key — update a single setting (used by menu visibility toggles)
+    if (path.startsWith('settings/') && method === 'PUT') {
+      if (!isSuperAdmin)
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: corsHeaders,
+        });
+      const key = decodeURIComponent(path.split('/')[1]);
+      const body: any = await request.json();
+      if (body.value === undefined || typeof body.value !== 'string')
+        return new Response(JSON.stringify({ error: 'value required (string)' }), {
+          status: 400,
+          headers: corsHeaders,
+        });
+      const repo = new SettingsRepository(db);
+      await repo.setValue(key, body.value);
+      return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    }
+
     // Categories
     if (path === 'categories') {
       const repo = new CategoryRepository(db);
