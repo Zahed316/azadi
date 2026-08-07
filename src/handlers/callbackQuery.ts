@@ -6,6 +6,7 @@ import {
   FaqRepository,
   MenuConfigRepository,
   FavoritesRepository,
+  MessageRepository,
 } from '../repositories';
 import { formatBranch, formatProduct, formatFaq, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
@@ -360,5 +361,115 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
     }
+  });
+
+  // --- Message flow: confirm send ---
+  bot.callbackQuery('msg:confirm', async (ctx) => {
+    try {
+      const flow = ctx.session?.messageFlow;
+      if (!flow?.content) {
+        await ctx.answerCallbackQuery({ text: 'خطا: پیام یافت نشد.' });
+        return;
+      }
+
+      const repo = new MessageRepository(ctx.env.DB);
+      const message = await repo.create({
+        telegramId: String(ctx.from.id),
+        senderName: flow.isAnonymous ? null : flow.name ?? null,
+        senderEmail: null,
+        content: flow.content,
+        rating: flow.rating ?? null,
+        isAnonymous: flow.isAnonymous ?? false,
+      });
+
+      ctx.session.messageFlow = undefined;
+
+      await ctx.editMessageText('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
+        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+      });
+
+      // Notify admins (best-effort, don't block)
+      if (ctx.env.TELEGRAM_BOT_TOKEN) {
+        try {
+          const { getDb } = await import('../database/client');
+          const { admins } = await import('../database/schema');
+          const db = getDb(ctx.env.DB);
+          const allAdmins = await db.select().from(admins);
+          const preview = flow.content.slice(0, 150) + (flow.content.length > 150 ? '...' : '');
+          const senderName = flow.isAnonymous ? 'ناشناس' : (flow.name || 'ناشناس');
+          for (const admin of allAdmins) {
+            await fetch(`https://api.telegram.org/bot${ctx.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: admin.telegramId,
+                text: `📬 پیام جدید (#${message[0]?.id}) از ${senderName}:\n\n${preview}`,
+              }),
+            }).catch(() => {});
+          }
+        } catch (e) {
+          console.error('Admin notification failed:', e);
+        }
+      }
+
+      await ctx.answerCallbackQuery({ text: '✅ ارسال شد' });
+    } catch (e) {
+      console.error(e);
+      await ctx.answerCallbackQuery({ text: '❌ خطا در ارسال پیام' });
+    }
+  });
+
+  // Message flow: cancel
+  bot.callbackQuery('msg:cancel', async (ctx) => {
+    ctx.session.messageFlow = undefined;
+    await ctx.editMessageText('❌ ارسال پیام لغو شد.', {
+      reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+    });
+    await ctx.answerCallbackQuery();
+  });
+
+  // Rating callback (from inline keyboard buttons)
+  bot.callbackQuery(/^rate:(.+)$/, async (ctx) => {
+    const match = ctx.match;
+    const value = match[1];
+    if (value === 'skip' || !ctx.session?.messageFlow) return;
+
+    const num = parseInt(value);
+    if (num >= 1 && num <= 5) {
+      ctx.session.messageFlow.rating = num;
+      ctx.session.messageFlow.step = 'confirm';
+      const flow = ctx.session.messageFlow;
+      const stars = '⭐'.repeat(num);
+      const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
+      await ctx.editMessageText(
+        `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`,
+        {
+          parse_mode: 'HTML',
+          reply_markup: new InlineKeyboard()
+            .text('✅ ارسال', 'msg:confirm')
+            .text('❌ انصراف', 'msg:cancel'),
+        },
+      );
+    }
+    await ctx.answerCallbackQuery();
+  });
+
+  // Rating skip callback
+  bot.callbackQuery('rate:skip', async (ctx) => {
+    if (!ctx.session?.messageFlow) return;
+    ctx.session.messageFlow.rating = undefined;
+    ctx.session.messageFlow.step = 'confirm';
+    const flow = ctx.session.messageFlow;
+    const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
+    await ctx.editMessageText(
+      `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ بدون امتیاز\n\n📝 ${flow.content}`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: new InlineKeyboard()
+          .text('✅ ارسال', 'msg:confirm')
+          .text('❌ انصراف', 'msg:cancel'),
+      },
+    );
+    await ctx.answerCallbackQuery();
   });
 }

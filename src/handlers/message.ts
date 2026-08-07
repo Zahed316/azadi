@@ -1,4 +1,4 @@
-import { Bot } from 'grammy';
+import { Bot, InlineKeyboard } from 'grammy';
 import { AiService } from '../services/aiService';
 import { MyContext } from '../types/context';
 import { Env } from '../bot';
@@ -56,6 +56,75 @@ export async function runAiQuery(
 
 export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
   bot.on('message:text', async (ctx) => {
+    // Handle multi-step message flow (feedback/contact/anonymous)
+    if (ctx.session?.messageFlow) {
+      const flow = ctx.session.messageFlow;
+      const text = ctx.message.text;
+
+      if (text === '/cancel') {
+        ctx.session.messageFlow = undefined;
+        await ctx.reply('❌ ارسال پیام لغو شد.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+
+      if (flow.step === 'name') {
+        if (text === '/skip') {
+          flow.isAnonymous = true;
+          flow.step = 'content';
+          await ctx.reply('پیام خود را بنویسید:');
+        } else {
+          flow.name = text;
+          flow.step = 'content';
+          await ctx.reply(`متشکرم ${text}! حالا پیام خود را بنویسید:`);
+        }
+        return;
+      }
+
+      if (flow.step === 'content') {
+        flow.content = text;
+        flow.step = 'rating';
+        await ctx.reply('آیا می‌خواهید امتیاز بدهید؟\n(عدد ۱ تا ۵ وارد کنید یا /skip برای رد کردن)', {
+          reply_markup: new InlineKeyboard()
+            .text('۱ ⭐', 'rate:1')
+            .text('۲ ⭐', 'rate:2')
+            .text('۳ ⭐', 'rate:3')
+            .row()
+            .text('۴ ⭐', 'rate:4')
+            .text('۵ ⭐', 'rate:5')
+            .row()
+            .text('⏭ رد کردن', 'rate:skip'),
+        });
+        return;
+      }
+
+      if (flow.step === 'rating') {
+        const num = parseInt(text);
+        if (text === '/skip' || isNaN(num)) {
+          flow.rating = undefined;
+        } else if (num >= 1 && num <= 5) {
+          flow.rating = num;
+        } else {
+          await ctx.reply('لطفاً عددی بین ۱ تا ۵ وارد کنید یا /skip بزنید.');
+          return;
+        }
+        flow.step = 'confirm';
+        const stars = flow.rating ? '⭐'.repeat(flow.rating) : 'بدون امتیاز';
+        const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
+        await ctx.reply(
+          `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`,
+          {
+            parse_mode: 'HTML',
+            reply_markup: new InlineKeyboard()
+              .text('✅ ارسال', 'msg:confirm')
+              .text('❌ انصراف', 'msg:cancel'),
+          },
+        );
+        return;
+      }
+    }
+
     if (!ctx.message.text.startsWith('/')) {
       if (!ctx.env.OPENCODE_API_KEY) {
         return ctx.reply('دستیار هوشمند در حال حاضر غیرفعال است.');

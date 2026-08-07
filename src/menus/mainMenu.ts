@@ -231,4 +231,20 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         .catch(() => {});
     }
   })
+  .row()
+  .text('✉️ پیام به ما', async (ctx: any) => {
+    try {
+      if (!(await isMenuVisible(ctx.env, 'messages'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      ctx.session.messageFlow = { step: 'name' };
+      await ctx.reply('نام شما چیست؟\n(برای ارسال ناشناس، /skip بزنید)\nبرای لغو، /cancel بزنید.');
+    } catch (e) {
+      console.error(e);
+      await ctx.reply('خطا در ارتباط با سرور.');
+    }
+  })
   ;
