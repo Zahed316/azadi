@@ -1,6 +1,7 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { ProductRepository, MenuConfigRepository } from '../repositories';
+import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
 import { MyContext } from '../types/context';
 
@@ -18,6 +19,12 @@ const PRODUCTS_PAGE_SIZE = 5;
 export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
   .text('🍰 مشاهده کیک و کوکی', async (ctx) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'cakes'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       const repo = new ProductRepository(ctx.env.DB);
       const menuRepo = new MenuConfigRepository(ctx.env.DB);
       const configs = await menuRepo.getBySection('cakes');
@@ -52,6 +59,12 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
 export const beansMenu = new Menu<MyContext>('products-menu-beans')
   .text('🌱 مشاهده دانه‌های قهوه', async (ctx) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'beans'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       const repo = new ProductRepository(ctx.env.DB);
       const menuRepo = new MenuConfigRepository(ctx.env.DB);
       const configs = await menuRepo.getBySection('beans');

@@ -1,6 +1,7 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { FaqRepository, ProductRepository, SettingsRepository, FavoritesRepository } from '../repositories';
+import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { formatFaq, formatProduct, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { toPersianDigits } from '../utils/numbers';
 import { buildListPage } from '../utils/faqPagination';
@@ -16,6 +17,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   // --- Phase 3 marquee surfaces (4 new buttons) ---
   .text('⭐ پیشنهاد ویژه', async (ctx: any) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'featured'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       const items = await new ProductRepository(ctx.env.DB).getByFlag('featured');
       if (items.length === 0) {
         await ctx.reply('📭 در حال حاضر محصول ویژه‌ای نداریم.', {
@@ -45,6 +52,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .row()
   .text('🌿 مخصوص فصل', async (ctx: any) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'seasonal'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       const items = await new ProductRepository(ctx.env.DB).getByFlag('isSeasonal');
       if (items.length === 0) {
         await ctx.reply('📭 در حال حاضر محصول فصلی موجود نیست.', {
@@ -74,6 +87,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .row()
   .text('📖 پاسپورت قهوه', async (ctx: any) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'passport'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       const rows = await new ProductRepository(ctx.env.DB).getBeansWithCoffeeDetails();
       if (rows.length === 0) {
         await ctx.reply('📭 هنوز دانه قهوه‌ای با جزئیات کشت ثبت نشده است.', {
@@ -111,6 +130,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   })
   .text('🔍 جستجو', async (ctx: any) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'search'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       // Just nudge the user to type their question. The actual AI handler
       // in src/handlers/message.ts will pick up the next text message.
       await ctx.replyWithChatAction('typing');
@@ -123,6 +148,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .row()
   .text('⭐ منوهای من', async (ctx: MyContext) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'favorites'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       if (!ctx.from?.id) return;
       const items = await new FavoritesRepository(ctx.env.DB).list(String(ctx.from.id));
       if (items.length === 0) {
@@ -147,6 +178,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   // --- Existing surfaces (unchanged) ---
   .text('🏠 درباره ما', async (ctx: any) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'about'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       const repo = new SettingsRepository(ctx.env.DB);
       const aboutText =
         (await repo.getValue('about')) ||
@@ -167,6 +204,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .submenu('📍 شعب', 'branches-menu')
   .text('❓ سوالات متداول', async (ctx: any) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'faq'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       const repo = new FaqRepository(ctx.env.DB);
       const faqs = await repo.getAll();
       if (faqs.length === 0) {

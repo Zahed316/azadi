@@ -1,6 +1,7 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { ProductRepository, MenuConfigRepository, SettingsRepository } from '../repositories';
+import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { formatPersianPrice } from '../utils/numbers';
 import { buildListPage } from '../utils/faqPagination';
@@ -69,6 +70,12 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
         range
           .text(label, async (ctx) => {
             try {
+              if (!(await isMenuVisible(ctx.env, 'drinks'))) {
+                await ctx.reply(HIDDEN_MESSAGE, {
+                  reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+                });
+                return;
+              }
               const pRepo = new ProductRepository(ctx.env.DB);
               const items = await pRepo.getProductsByCategory(config.categoryId);
 

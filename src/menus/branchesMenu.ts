@@ -12,6 +12,7 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { BranchRepository } from '../repositories';
+import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
 import { MyContext } from '../types/context';
 
@@ -21,8 +22,14 @@ const BRANCHES_PAGE_SIZE = 5;
 export const branchesMenu = new Menu<MyContext>('branches-menu')
   .text('📍 مشاهده شعب', async (ctx) => {
     try {
+      if (!(await isMenuVisible(ctx.env, 'branches'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
       const repo = new BranchRepository(ctx.env.DB);
-      const branches = await repo.getAllBranches();
+      const branches = await repo.getActiveBranches();
 
       if (branches.length === 0) {
         await ctx.reply('📭 در حال حاضر شعبه‌ای موجود نیست.');
