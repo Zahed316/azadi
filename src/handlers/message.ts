@@ -2,6 +2,7 @@ import { Bot } from 'grammy';
 import { AiService } from '../services/aiService';
 import { MyContext } from '../types/context';
 import { Env } from '../bot';
+import type { D1Database } from '@cloudflare/workers-types';
 import {
   ProductRepository,
   BranchRepository,
@@ -12,6 +13,45 @@ import {
   FavoritesRepository,
 } from '../repositories';
 import { buildMinimalContext } from '../utils/menuContext';
+
+/**
+ * Run an AI query against the Azadi context without bot-specific plumbing.
+ * Used by the admin AI Test Panel endpoint (POST /api/ai-test).
+ */
+export async function runAiQuery(
+  db: D1Database,
+  query: string,
+  userId: string = 'admin-test',
+): Promise<string> {
+  const productRepo = new ProductRepository(db);
+  const branchRepo = new BranchRepository(db);
+  const faqRepo = new FaqRepository(db);
+  const menuConfigRepo = new MenuConfigRepository(db);
+  const settingsRepo = new SettingsRepository(db);
+
+  const [productsWithDetails, branches, faqs, visibleCategoryIds, aboutSetting, popularProducts] =
+    await Promise.all([
+      productRepo.getAllProductsWithDetails(),
+      branchRepo.getActiveBranches(),
+      faqRepo.getAll(),
+      menuConfigRepo.getVisibleCategoryIds(),
+      settingsRepo.getValue('about'),
+      productRepo.getPopularProducts(5),
+    ]);
+
+  const menuContext = buildMinimalContext({
+    query,
+    productsWithDetails,
+    branches,
+    faqs,
+    visibleCategoryIds,
+    settings: aboutSetting ? { about: aboutSetting } : undefined,
+    popularProducts,
+  });
+
+  const aiService = new AiService(process.env.OPENCODE_API_KEY ?? '', menuContext);
+  return aiService.processQuery(query, userId, [], []);
+}
 
 export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
   bot.on('message:text', async (ctx) => {
@@ -37,7 +77,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
         const [productsWithDetails, branches, faqs, recentLogs, visibleCategoryIds, aboutSetting, userFavorites, popularProducts] =
           await Promise.all([
             productRepo.getAllProductsWithDetails(),
-            branchRepo.getAllBranches(),
+            branchRepo.getActiveBranches(),
             faqRepo.getAll(),
             aiLogRepo.getRecentLogs(userId, 5),
             menuConfigRepo.getVisibleCategoryIds(),
