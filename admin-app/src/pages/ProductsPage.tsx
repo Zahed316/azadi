@@ -38,6 +38,10 @@ export default function ProductsPage() {
   const [prodAvailable, setProdAvailable] = useState(true);
   const [prodFeatured, setProdFeatured] = useState(false);
   const [prodSeasonal, setProdSeasonal] = useState(false);
+  const [prodUnit, setProdUnit] = useState('item');
+  const [prodSizeOptions, setProdSizeOptions] = useState('');
+  const [prodSyrupOptions, setProdSyrupOptions] = useState('');
+  const [prodPriceOnRequest, setProdPriceOnRequest] = useState(false);
 
   // Coffee Details
   const [isCoffeeBean, setIsCoffeeBean] = useState(false);
@@ -187,6 +191,10 @@ export default function ProductsPage() {
         available: prodAvailable,
         featured: prodFeatured,
         isSeasonal: prodSeasonal,
+        unit: prodUnit,
+        priceOnRequest: prodPriceOnRequest,
+        sizeOptions: prodSizeOptions || null,
+        syrupOptions: prodSyrupOptions || null,
         calories: prodCalories ? parseInt(prodCalories) : null,
         allergens: prodAllergens || null,
         caffeineMg: prodCaffeine ? parseInt(prodCaffeine) : null,
@@ -213,6 +221,10 @@ export default function ProductsPage() {
     setProdAvailable(p.available);
     setProdFeatured(p.featured ?? false);
     setProdSeasonal(p.isSeasonal ?? false);
+    setProdUnit(p.unit || 'item');
+    setProdPriceOnRequest(p.priceOnRequest ?? false);
+    setProdSizeOptions(p.sizeOptions || '');
+    setProdSyrupOptions(p.syrupOptions || '');
     setProdCalories(p.calories?.toString() || '');
     setProdAllergens(p.allergens || '');
     setProdCaffeine(p.caffeineMg?.toString() || '');
@@ -241,6 +253,10 @@ export default function ProductsPage() {
     setProdAvailable(true);
     setProdFeatured(false);
     setProdSeasonal(false);
+    setProdUnit('item');
+    setProdPriceOnRequest(false);
+    setProdSizeOptions('');
+    setProdSyrupOptions('');
     setProdImageUrl('');
     setIsCoffeeBean(false);
     setCoffeeOrigin('');
@@ -315,6 +331,39 @@ export default function ProductsPage() {
                 type="checkbox"
                 checked={prodSeasonal}
                 onChange={(e) => setProdSeasonal(e.target.checked)}
+              />
+            </Field>
+            <Field label="💲 Price on Request">
+              <input
+                type="checkbox"
+                checked={prodPriceOnRequest}
+                onChange={(e) => setProdPriceOnRequest(e.target.checked)}
+              />
+            </Field>
+            <Field label="Unit">
+              <select value={prodUnit} onChange={(e) => setProdUnit(e.target.value)}>
+                <option value="item">Item</option>
+                <option value="cup">Cup</option>
+                <option value="kg">Kilogram</option>
+                <option value="g">Gram</option>
+                <option value="slice">Slice</option>
+                <option value="piece">Piece</option>
+              </select>
+            </Field>
+            <Field label="Size Options (JSON array)">
+              <input
+                value={prodSizeOptions}
+                onChange={(e) => setProdSizeOptions(e.target.value)}
+                placeholder='["Small", "Medium", "Large"]'
+                dir="auto"
+              />
+            </Field>
+            <Field label="Syrup Options (JSON array)">
+              <input
+                value={prodSyrupOptions}
+                onChange={(e) => setProdSyrupOptions(e.target.value)}
+                placeholder='["Vanilla", "Caramel"]'
+                dir="auto"
               />
             </Field>
 
@@ -489,7 +538,14 @@ export default function ProductsPage() {
                   <span dir="auto">{p.name}</span>
                   {p.featured && <span title="Featured">⭐</span>}
                   {p.isSeasonal && <span title="Seasonal">🌿</span>}
-                  <span className="list-item-meta">{p.price}</span>
+                  <span className="list-item-meta">
+                    {p.price}
+                    {p.unit && p.unit !== 'item' && (
+                      <span style={{ marginLeft: 4, fontSize: '0.85em', opacity: 0.7 }}>
+                        /{p.unit}
+                      </span>
+                    )}
+                  </span>
                   {(p.calories || p.caffeineMg) && (
                     <span className="list-item-meta" style={{ fontSize: '0.8em' }}>
                       {p.calories ? `${p.calories} kcal` : ''}
