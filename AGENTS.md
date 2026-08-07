@@ -20,10 +20,13 @@ npm run format                  # prettier --write
 npm run deploy                  # npm exec -- wrangler deploy (uses project-local wrangler)
 npm run deploy:dry              # npm exec -- wrangler deploy --dry-run --outdir ./wrangler-dry
 npm run setup:webhook           # reads TELEGRAM_BOT_TOKEN + SECRET_TOKEN from ~/.env, then curls setWebhook
+./deploy.sh --dry-run           # pre-flight: test → typecheck → lint → build (no deploy)
 ```
 
 CI (GitHub Actions): npm ci → vitest → lint (non-blocking) → tsc --noEmit → wrangler deploy (main only).
 Admin Mini App is deployed separately to Cloudflare Pages — see Deployment section below.
+
+**CI is the ONLY auto-deployment path** — push to `main` deploys both Worker and Pages. Local `deploy.sh` is for pre-flight validation only.
 
 ## Deployment
 
