@@ -25,6 +25,8 @@ export default function MenuConfigPage() {
   const [menuAddCatId, setMenuAddCatId] = useState('');
   const [editingSpecialMsg, setEditingSpecialMsg] = useState<number | null>(null);
   const [specialMsgValue, setSpecialMsgValue] = useState('');
+  const [editingButtonLabel, setEditingButtonLabel] = useState<number | null>(null);
+  const [buttonLabelValue, setButtonLabelValue] = useState('');
 
   const sectionItems = menuConfigs
     .filter((c: any) => c.menuSection === menuActiveSection)
@@ -127,6 +129,14 @@ export default function MenuConfigPage() {
     });
   };
 
+  const handleSaveButtonLabel = (configId: number) => {
+    const config = menuConfigs.find((c: any) => c.id === configId);
+    saveSpecialMessageMutation.mutate({
+      id: configId,
+      body: { ...config, buttonLabel: buttonLabelValue || null },
+    });
+  };
+
   return (
     <>
       <div className="card">
@@ -157,6 +167,11 @@ export default function MenuConfigPage() {
                     {categories.find((c: any) => c.id === config.categoryId)?.name || 'Unknown'}
                   </span>
                   <span className="list-item-meta">{config.isVisible ? 'Visible' : 'Hidden'}</span>
+                  {config.buttonLabel && (
+                    <span className="list-item-meta" style={{ fontSize: '0.8em', opacity: 0.7 }}>
+                      "{config.buttonLabel}"
+                    </span>
+                  )}
                 </div>
                 <div className="list-item-actions">
                   <button className="secondary" onClick={() => handleToggleMenuVisibility(config)}>
@@ -187,6 +202,15 @@ export default function MenuConfigPage() {
                   >
                     Msg
                   </button>
+                  <button
+                    className="secondary"
+                    onClick={() => {
+                      setEditingButtonLabel(config.id);
+                      setButtonLabelValue(config.buttonLabel || '');
+                    }}
+                  >
+                    Label
+                  </button>
                   <button className="danger" onClick={() => handleDeleteMenuConfig(config.id)}>
                     Delete
                   </button>
@@ -205,6 +229,24 @@ export default function MenuConfigPage() {
                       Save
                     </button>
                     <button className="secondary" onClick={() => setEditingSpecialMsg(null)}>
+                      Cancel
+                    </button>
+                  </div>
+                )}
+                {editingButtonLabel === config.id && (
+                  <div className="special-msg-form">
+                    <Field label="Button Label (overrides default)">
+                      <input
+                        value={buttonLabelValue}
+                        onChange={(e) => setButtonLabelValue(e.target.value)}
+                        placeholder="Custom label for bot button"
+                        dir="auto"
+                      />
+                    </Field>
+                    <button className="primary" onClick={() => handleSaveButtonLabel(config.id)}>
+                      Save
+                    </button>
+                    <button className="secondary" onClick={() => setEditingButtonLabel(null)}>
                       Cancel
                     </button>
                   </div>
