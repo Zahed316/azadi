@@ -51,7 +51,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
     try {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
-      const branches = await new BranchRepository(ctx.env.DB).getAllBranches();
+      const branches = await new BranchRepository(ctx.env.DB).getActiveBranches();
       const page = buildListPage(branches, idx, 5);
       const kb = new InlineKeyboard();
       for (const b of page.items) {

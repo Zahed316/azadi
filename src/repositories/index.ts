@@ -202,6 +202,10 @@ export class BranchRepository {
     return await this.db.select().from(branches);
   }
 
+  async getActiveBranches() {
+    return await this.db.select().from(branches).where(eq(branches.isActive, true));
+  }
+
   async getBranchById(id: number) {
     const result = await this.db.select().from(branches).where(eq(branches.id, id));
     return result[0];
