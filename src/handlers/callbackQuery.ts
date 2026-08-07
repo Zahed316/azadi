@@ -20,7 +20,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
   bot.callbackQuery('back:main', async (ctx) => {
     try {
       await ctx.answerCallbackQuery();
-      await ctx.reply('منوی اصلی:', { reply_markup: mainMenu });
+      const body = 'منوی اصلی:';
+      await ctx
+        .editMessageText(body, { reply_markup: mainMenu })
+        .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
     } catch (e) {
       console.error(e);
     }
