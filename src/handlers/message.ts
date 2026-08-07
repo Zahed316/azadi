@@ -22,6 +22,7 @@ export async function runAiQuery(
   db: D1Database,
   query: string,
   userId: string = 'admin-test',
+  apiKey: string = '',
 ): Promise<string> {
   const productRepo = new ProductRepository(db);
   const branchRepo = new BranchRepository(db);
@@ -49,7 +50,7 @@ export async function runAiQuery(
     popularProducts,
   });
 
-  const aiService = new AiService(process.env.OPENCODE_API_KEY ?? '', menuContext);
+  const aiService = new AiService(apiKey, menuContext);
   return aiService.processQuery(query, userId, [], []);
 }
 

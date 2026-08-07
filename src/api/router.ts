@@ -756,7 +756,7 @@ export async function handleApiRequest(
       if (!body.query || typeof body.query !== 'string')
         return new Response(JSON.stringify({ error: 'query required' }), { status: 400, headers: corsHeaders });
       try {
-        const response = await runAiQuery(db, body.query);
+        const response = await runAiQuery(db, body.query, 'admin-test', env.OPENCODE_API_KEY);
         return new Response(JSON.stringify({ response }), { headers: corsHeaders });
       } catch (e: any) {
         console.error('ai-test error:', e);
