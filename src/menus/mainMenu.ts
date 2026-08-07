@@ -176,32 +176,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   })
   .row()
   // --- Existing surfaces (unchanged) ---
-  .text('🏠 درباره ما', async (ctx: any) => {
-    try {
-      if (!(await isMenuVisible(ctx.env, 'about'))) {
-        await ctx.reply(HIDDEN_MESSAGE, {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
-        return;
-      }
-      const repo = new SettingsRepository(ctx.env.DB);
-      const aboutText =
-        (await repo.getValue('about')) ||
-        'به روستری قهوه آزادی خوش آمدید — قهوه تازه‌بوشده از ایرانشهر. ☕';
-      await ctx.reply(aboutText, { parse_mode: 'HTML' });
-    } catch (e) {
-      console.error(e);
-      await ctx
-        .answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود. لطفاً دوباره امتحان کنید.' })
-        .catch(() => {});
-    }
-  })
   .submenu('☕ نوشیدنی‌ها', 'drinks-nav-menu')
   .submenu('🌱 دانه‌های قهوه', 'products-menu-beans')
   .row()
   .submenu('🍰 کیک و کوکی', 'products-menu-cakes')
   .row()
-  .submenu('📍 شعب', 'branches-menu')
+  .submenu('🏠 درباره ما', 'branches-menu')
   .text('❓ سوالات متداول', async (ctx: any) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'faq'))) {

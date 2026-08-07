@@ -20,7 +20,7 @@ const BRANCHES_PAGE_PREFIX = 'branches:page:';
 const BRANCHES_PAGE_SIZE = 5;
 
 export const branchesMenu = new Menu<MyContext>('branches-menu')
-  .text('📍 مشاهده شعب', async (ctx) => {
+  .text('🏠 درباره ما', async (ctx) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'branches'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -44,13 +44,13 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `${BRANCHES_PAGE_PREFIX}${0 - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `${BRANCHES_PAGE_PREFIX}${0 + 1}`);
 
-      const body = `<b>شعب</b> (${page.pageLabel})\n\nیک شعبه انتخاب کنید:`;
+      const body = `<b>🏠 درباره ما</b> (${page.pageLabel})\n\nیک شعبه انتخاب کنید:`;
       await ctx
         .editMessageText(body, { reply_markup: kb })
         .catch(() => ctx.reply(body, { reply_markup: kb }));
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری شعب ناموفق بود.' }).catch(() => {});
+      await ctx.answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود.' }).catch(() => {});
     }
   })
   .row()

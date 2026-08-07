@@ -10,41 +10,14 @@ export default function ContentPage() {
   const { setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
-  const { data: settings = [] } = useQuery({
-    queryKey: queryKeys.settings,
-    queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
-  });
-
   const { data: faqs = [] } = useQuery({
     queryKey: queryKeys.faqs,
     queryFn: () => apiFetch<{ faqs: any[] }>('/faqs').then((r) => r.faqs),
   });
 
-  const aboutSetting = settings.find((s: any) => s.key === 'about');
-  const [aboutText, setAboutText] = useState(aboutSetting?.value || '');
-
-  // Sync aboutText when settings query loads (handles initial load after mount)
-  const [initialized, setInitialized] = useState(false);
-  if (!initialized && aboutSetting) {
-    setAboutText(aboutSetting.value || '');
-    setInitialized(true);
-  }
-
   const [editingFaq, setEditingFaq] = useState<any>(null);
   const [faqQuestion, setFaqQuestion] = useState('');
   const [faqAnswer, setFaqAnswer] = useState('');
-
-  const saveAboutMutation = useMutation({
-    mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
-      showToast('About text saved ✓');
-    },
-    onError: (err: Error) => {
-      setError(err.message);
-      showToast(err.message, 'error');
-    },
-  });
 
   const saveFaqMutation = useMutation({
     mutationFn: (data: { method: string; id?: number; body: any }) =>
@@ -75,16 +48,6 @@ export default function ContentPage() {
     },
   });
 
-  const handleSaveAbout = () => {
-    const updatedSettings = settings.map((s: any) =>
-      s.key === 'about' ? { ...s, value: aboutText } : s,
-    );
-    if (!updatedSettings.find((s: any) => s.key === 'about')) {
-      updatedSettings.push({ key: 'about', value: aboutText });
-    }
-    saveAboutMutation.mutate({ settings: updatedSettings });
-  };
-
   const handleSaveFaq = (e: React.FormEvent) => {
     e.preventDefault();
     saveFaqMutation.mutate({
@@ -113,19 +76,6 @@ export default function ContentPage() {
 
   return (
     <>
-      <div className="card">
-        <h2>About Us</h2>
-        <textarea
-          value={aboutText}
-          onChange={(e) => setAboutText(e.target.value)}
-          rows={6}
-          dir="auto"
-        />
-        <button className="primary" onClick={handleSaveAbout}>
-          Save About Text
-        </button>
-      </div>
-
       <div className="card">
         <h2>{editingFaq ? 'Edit FAQ' : 'Add FAQ'}</h2>
         <form onSubmit={handleSaveFaq}>

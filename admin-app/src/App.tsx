@@ -9,7 +9,7 @@ import { apiFetch } from './api/client';
 import { queryKeys } from './api/keys';
 import ProductsPage from './pages/ProductsPage';
 import CategoriesPage from './pages/CategoriesPage';
-import BranchesPage from './pages/BranchesPage';
+import AboutUsPage from './pages/AboutUsPage';
 import ContentPage from './pages/ContentPage';
 import SettingsPage from './pages/SettingsPage';
 import AdminsPage from './pages/AdminsPage';
@@ -63,7 +63,7 @@ function AppInner() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route
               path="/branches"
-              element={isSuperAdmin ? <BranchesPage /> : <Navigate to="/products" replace />}
+              element={isSuperAdmin ? <AboutUsPage /> : <Navigate to="/products" replace />}
             />
             <Route
               path="/faqs"
@@ -132,7 +132,7 @@ function AppInner() {
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   onClick={() => window.scrollTo(0, 0)}
                 >
-                  <span className="nav-icon">📍</span>Branches
+                  <span className="nav-icon">🏠</span>About Us
                 </NavLink>
                 <NavLink
                   to="/faqs"

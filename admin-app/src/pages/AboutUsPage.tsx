@@ -6,10 +6,49 @@ import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 
-export default function BranchesPage() {
+export default function AboutUsPage() {
   const { setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
+  // About text
+  const { data: settings = [] } = useQuery({
+    queryKey: queryKeys.settings,
+    queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
+  });
+
+  const aboutSetting = settings.find((s: any) => s.key === 'about');
+  const [aboutText, setAboutText] = useState(aboutSetting?.value || '');
+
+  // Sync aboutText when settings query loads
+  const [initialized, setInitialized] = useState(false);
+  if (!initialized && aboutSetting) {
+    setAboutText(aboutSetting.value || '');
+    setInitialized(true);
+  }
+
+  const saveAboutMutation = useMutation({
+    mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
+      showToast('About text saved ✓');
+    },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
+  });
+
+  const handleSaveAbout = () => {
+    const updatedSettings = settings.map((s: any) =>
+      s.key === 'about' ? { ...s, value: aboutText } : s,
+    );
+    if (!updatedSettings.find((s: any) => s.key === 'about')) {
+      updatedSettings.push({ key: 'about', value: aboutText });
+    }
+    saveAboutMutation.mutate({ settings: updatedSettings });
+  };
+
+  // Branches
   const { data: branches = [] } = useQuery({
     queryKey: queryKeys.branches,
     queryFn: () => apiFetch<{ branches: any[] }>('/branches').then((r) => r.branches),
@@ -32,7 +71,7 @@ export default function BranchesPage() {
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.branches });
       resetBranchForm();
-      showToast(variables.id ? 'Branch updated ✓' : 'Branch added ✓');
+      showToast(variables.id ? 'Location updated ✓' : 'Location added ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -44,7 +83,7 @@ export default function BranchesPage() {
     mutationFn: (id: number) => apiFetch(`/branches/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.branches });
-      showToast('Branch deleted ✓');
+      showToast('Location deleted ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -69,7 +108,7 @@ export default function BranchesPage() {
   };
 
   const deleteBranch = async (id: number) => {
-    if (!(await confirm('Delete this branch?'))) return;
+    if (!(await confirm('Delete this location?'))) return;
     deleteBranchMutation.mutate(id);
   };
 
@@ -96,7 +135,21 @@ export default function BranchesPage() {
   return (
     <>
       <div className="card">
-        <h2>{editingBranch ? 'Edit Branch' : 'Add Branch'}</h2>
+        <h2>About Us</h2>
+        <textarea
+          value={aboutText}
+          onChange={(e) => setAboutText(e.target.value)}
+          rows={6}
+          dir="auto"
+          placeholder="About text shown in the bot..."
+        />
+        <button className="primary" onClick={handleSaveAbout}>
+          Save About Text
+        </button>
+      </div>
+
+      <div className="card">
+        <h2>{editingBranch ? 'Edit Location' : 'Add Location'}</h2>
         <form onSubmit={handleSaveBranch}>
           <Field label="Name">
             <input value={branchName} onChange={(e) => setBranchName(e.target.value)} required />
@@ -130,7 +183,7 @@ export default function BranchesPage() {
             />
           </Field>
           <button type="submit" className="primary">
-            {editingBranch ? 'Update' : 'Add'} Branch
+            {editingBranch ? 'Update' : 'Add'} Location
           </button>
           {editingBranch && (
             <button type="button" className="secondary" onClick={resetBranchForm}>
@@ -141,9 +194,9 @@ export default function BranchesPage() {
       </div>
 
       <div className="card">
-        <h2>Branches</h2>
+        <h2>Locations</h2>
         {branches.length === 0 ? (
-          <EmptyState message="No branches yet." />
+          <EmptyState message="No locations yet." />
         ) : (
           <ul className="list">
             {branches.map((b) => (
