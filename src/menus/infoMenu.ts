@@ -22,8 +22,9 @@ export const infoMenu = new Menu<MyContext>('info-menu')
       ]);
       const kb = new InlineKeyboard();
       const activeBranches = branches.filter((b: any) => b.isActive !== false);
-      for (const b of activeBranches) {
-        kb.text(`📍 ${b.name}`, `branch:${b.id}`).row();
+      for (let i = 0; i < activeBranches.length; i++) {
+        kb.text(`📍 ${activeBranches[i].name}`, `branch:${activeBranches[i].id}`);
+        if (i % 2 === 1 || i === activeBranches.length - 1) kb.row();
       }
       const body = aboutText
         ? `<b>🏠 درباره ما</b>\n\n${aboutText}`

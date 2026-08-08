@@ -39,16 +39,18 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
 
       const page = buildListPage(products, 0, PRODUCTS_PAGE_SIZE);
       const kb = new InlineKeyboard();
-      for (const p of page.items) {
-        kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(page.items[i].name, `product:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `${CAKES_PAGE_PREFIX}${0 - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `${CAKES_PAGE_PREFIX}${0 + 1}`);
+      if (page.hasPrev || page.hasNext) kb.row();
 
       const body = `<b>کیک و کوکی</b> (${page.pageLabel})\n\nیک کیک یا کوکی انتخاب کنید:`;
       await ctx
-        .editMessageText(body, { reply_markup: kb })
-        .catch(() => ctx.reply(body, { reply_markup: kb }));
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری کیک‌ها ناموفق بود.' }).catch(() => {});
@@ -59,8 +61,8 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
     await ctx.answerCallbackQuery();
     const body = 'منوی اصلی:';
     await ctx
-      .editMessageText(body, { reply_markup: mainMenu })
-      .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+      .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
   });
 
 export const beansMenu = new Menu<MyContext>('products-menu-beans')
@@ -85,16 +87,18 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
 
       const page = buildListPage(products, 0, PRODUCTS_PAGE_SIZE);
       const kb = new InlineKeyboard();
-      for (const p of page.items) {
-        kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(page.items[i].name, `product:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `${BEANS_PAGE_PREFIX}${0 - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `${BEANS_PAGE_PREFIX}${0 + 1}`);
+      if (page.hasPrev || page.hasNext) kb.row();
 
       const body = `<b>دانه‌های قهوه</b> (${page.pageLabel})\n\nدانه قهوه مورد نظر را انتخاب کنید:`;
       await ctx
-        .editMessageText(body, { reply_markup: kb })
-        .catch(() => ctx.reply(body, { reply_markup: kb }));
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
       await ctx
@@ -107,6 +111,6 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
     await ctx.answerCallbackQuery();
     const body = 'منوی اصلی:';
     await ctx
-      .editMessageText(body, { reply_markup: mainMenu })
-      .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+      .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
   });

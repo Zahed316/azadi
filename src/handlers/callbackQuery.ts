@@ -61,11 +61,13 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       ]);
       const page = buildListPage(branches, idx, 5);
       const kb = new InlineKeyboard();
-      for (const b of page.items) {
-        kb.text(`📍 ${b.name}`, `branch:${b.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(`📍 ${page.items[i].name}`, `branch:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `branches:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `branches:page:${idx + 1}`);
+      if (page.hasPrev || page.hasNext) kb.row();
       const body = aboutText
         ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
         : '<b>🏠 درباره ما</b>';
@@ -89,18 +91,20 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
       const page = buildListPage(products, idx, 5);
       const kb = new InlineKeyboard();
-      for (const p of page.items) {
-        kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(page.items[i].name, `product:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `beans:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `beans:page:${idx + 1}`);
+      if (page.hasPrev || page.hasNext) kb.row();
       const body =
         page.items.length === 0
           ? `<b>دانه‌های قهوه</b> (${page.pageLabel})`
           : `<b>دانه‌های قهوه</b> (${page.pageLabel})\n\nدانه قهوه مورد نظر را انتخاب کنید:`;
       await ctx
-        .editMessageText(body, { reply_markup: kb })
-        .catch(() => ctx.reply(body, { reply_markup: kb }));
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -118,18 +122,20 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
       const page = buildListPage(products, idx, 5);
       const kb = new InlineKeyboard();
-      for (const p of page.items) {
-        kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(page.items[i].name, `product:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `cakes:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `cakes:page:${idx + 1}`);
+      if (page.hasPrev || page.hasNext) kb.row();
       const body =
         page.items.length === 0
           ? `<b>کیک و کوکی</b> (${page.pageLabel})`
           : `<b>کیک و کوکی</b> (${page.pageLabel})\n\nیک کیک یا کوکی انتخاب کنید:`;
       await ctx
-        .editMessageText(body, { reply_markup: kb })
-        .catch(() => ctx.reply(body, { reply_markup: kb }));
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -249,11 +255,13 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
-      for (const p of page.items) {
-        kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(page.items[i].name, `product:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `featured:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:${idx + 1}`);
+      if (page.hasPrev || page.hasNext) kb.row();
       const body =
         page.items.length === 0
           ? `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})`
@@ -276,11 +284,13 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
-      for (const p of page.items) {
-        kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(page.items[i].name, `product:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `seasonal:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `seasonal:page:${idx + 1}`);
+      if (page.hasPrev || page.hasNext) kb.row();
       const body =
         page.items.length === 0
           ? `<b>🌿 مخصوص فصل</b> (${page.pageLabel})`
@@ -303,13 +313,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
       const page = buildListPage(rows, idx, 5);
       const kb = new InlineKeyboard();
-      for (const r of page.items) {
-        const p = r.product;
-        const origin = r.details?.origin ? ` — ${r.details.origin}` : '';
-        kb.text(`${p.name}${origin}`, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        const p = page.items[i].product;
+        const origin = page.items[i].details?.origin ? ` — ${page.items[i].details.origin}` : '';
+        kb.text(`${p.name}${origin}`, `product:${p.id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `passport:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:${idx + 1}`);
+      if (page.hasPrev || page.hasNext) kb.row();
       const origins = Array.from(
         new Set(page.items.map((r: any) => r.details?.origin).filter(Boolean)),
       );

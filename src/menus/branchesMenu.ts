@@ -46,8 +46,9 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
       if (branches.length > 0) {
         // Show branches as buttons below the about text
         const activeBranches = branches.filter((b: any) => b.isActive !== false);
-        for (const b of activeBranches) {
-          kb.text(`📍 ${b.name}`, `branch:${b.id}`).row();
+        for (let i = 0; i < activeBranches.length; i++) {
+          kb.text(`📍 ${activeBranches[i].name}`, `branch:${activeBranches[i].id}`);
+          if (i % 2 === 1 || i === activeBranches.length - 1) kb.row();
         }
       }
 

@@ -37,18 +37,21 @@ export async function buildCategoryPage(
 ): Promise<void> {
   const page = buildListPage(items, idx, DRINKS_PAGE_SIZE);
   const kb = new InlineKeyboard();
-  for (const p of page.items) {
+  for (let i = 0; i < page.items.length; i++) {
+    const p = page.items[i];
     const priceLabel =
       p.priceOnRequest || p.price == null
         ? '(سوال در کافه)'
         : formatPersianPrice(p.price, priceUnit);
     const seasonal = p.isSeasonal ? ' 🌿' : '';
-    kb.text(`${p.name}${seasonal} — ${priceLabel}`, `product:${p.id}`).row();
+    kb.text(`${p.name}${seasonal} — ${priceLabel}`, `product:${p.id}`);
+    if (i % 2 === 1 || i === page.items.length - 1) kb.row();
   }
   if (page.hasPrev)
     kb.text('صفحه قبل ▶️', `${DRINKS_PAGE_PREFIX}${config.categoryId}:page:${idx - 1}`);
   if (page.hasNext)
     kb.text('◀️ صفحه بعد', `${DRINKS_PAGE_PREFIX}${config.categoryId}:page:${idx + 1}`);
+  if (page.hasPrev || page.hasNext) kb.row();
 
   const name = config.categoryName ?? 'بدون نام';
   const header = `<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${name}</b> (${page.pageLabel})`;
@@ -90,7 +93,8 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
                 if (config.specialMessage) {
                   await ctx.reply(config.specialMessage, { parse_mode: 'HTML' });
                 } else {
-                  await ctx.reply(`📭 در حال حاضر ${config.categoryName} موجود نیست.`);
+                  const fallbackName = config.categoryName ?? 'بدون نام';
+                await ctx.reply(`📭 در حال حاضر ${fallbackName} موجود نیست.`, { parse_mode: 'HTML' });
                 }
                 return;
               }
@@ -117,6 +121,6 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
     await ctx.answerCallbackQuery();
     const body = 'منوی اصلی:';
     await ctx
-      .editMessageText(body, { reply_markup: mainMenu })
-      .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+      .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
   });

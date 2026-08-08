@@ -30,7 +30,10 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       const priceUnit = await loadPriceUnit(ctx.env);
       const page = buildListPage(items, 0, 5);
       const kb = new InlineKeyboard();
-      for (const p of page.items) kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(page.items[i].name, `product:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
+      }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:1`);
       const body = `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
 
@@ -58,7 +61,10 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       const priceUnit = await loadPriceUnit(ctx.env);
       const page = buildListPage(items, 0, 5);
       const kb = new InlineKeyboard();
-      for (const p of page.items) kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        kb.text(page.items[i].name, `product:${page.items[i].id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
+      }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `seasonal:page:1`);
       const body = `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
@@ -92,10 +98,11 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
           ? `\n\n🗺 <b>${origins.length} کشور مبدا در این صفحه:</b> ${origins.join(' · ')}`
           : '';
       const kb = new InlineKeyboard();
-      for (const r of page.items) {
-        const p = r.product;
-        const origin = r.details?.origin ? ` — ${r.details.origin}` : '';
-        kb.text(`${p.name}${origin}`, `product:${p.id}`).row();
+      for (let i = 0; i < page.items.length; i++) {
+        const p = page.items[i].product;
+        const origin = page.items[i].details?.origin ? ` — ${page.items[i].details.origin}` : '';
+        kb.text(`${p.name}${origin}`, `product:${p.id}`);
+        if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:1`);
       const body = `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit)).join('\n\n')}`;

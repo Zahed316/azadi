@@ -24,8 +24,9 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         return;
       }
       const kb = new InlineKeyboard();
-      for (const p of items) {
-        kb.text(p.name, `product:${p.id}`).row();
+      for (let i = 0; i < items.length; i++) {
+        kb.text(items[i].name, `product:${items[i].id}`);
+        if (i % 2 === 1 || i === items.length - 1) kb.row();
       }
       await ctx.reply(
         `<b>⭐ منوهای من</b> (${toPersianDigits(items.length)} مورد)\n\nبرای دیدن جزئیات هر مورد، روی آن بزنید.`,
