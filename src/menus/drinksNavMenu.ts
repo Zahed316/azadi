@@ -5,7 +5,7 @@ import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { formatPersianPrice } from '../utils/numbers';
 import { buildListPage } from '../utils/faqPagination';
-import { mainMenu } from './mainMenu';
+import { mainMenu, MAIN_MENU_TEXT } from './mainMenu';
 import { MyContext } from '../types/context';
 
 /**
@@ -119,7 +119,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   })
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = 'منوی اصلی:';
+    const body = MAIN_MENU_TEXT;
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

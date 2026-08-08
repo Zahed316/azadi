@@ -5,6 +5,12 @@ import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { toPersianDigits } from '../utils/numbers';
 import { MyContext } from '../types/context';
 
+/** Consistent message text shown when displaying the main menu. */
+export const MAIN_MENU_TEXT =
+  'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
+  'از منوی زیر می‌توانید نوشیدنی‌ها، دانه‌های قهوه، کیک و کوکی، شعب و سوالات متداول را ببینید.\n\n' +
+  '💬 <b>هر سوالی دارید همین‌جا بنویسید</b> — دستیار هوشمند قهوه درباره منو، قیمت‌ها، روش‌های دم‌آوری و هر چیز دیگری به شما پاسخ می‌دهد!';
+
 export const mainMenu = new Menu<MyContext>('main-menu')
   .submenu('🔍 کاوش', 'discover-menu')
   .text('⭐ منوهای من', async (ctx: MyContext) => {

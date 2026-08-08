@@ -11,7 +11,7 @@ import {
 import { formatBranch, formatProduct, formatFaq, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
 import { buildCategoryPage } from '../menus/drinksNavMenu';
-import { mainMenu } from '../menus/mainMenu';
+import { mainMenu, MAIN_MENU_TEXT } from '../menus/mainMenu';
 import { MyContext } from '../types/context';
 
 const backKeyboard = () => new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
@@ -20,7 +20,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
   bot.callbackQuery('back:main', async (ctx) => {
     try {
       await ctx.answerCallbackQuery();
-      const body = 'منوی اصلی:';
+      const body = MAIN_MENU_TEXT;
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

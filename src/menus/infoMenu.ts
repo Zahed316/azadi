@@ -4,7 +4,7 @@ import { BranchRepository, FaqRepository, SettingsRepository } from '../reposito
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { formatFaq } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
-import { mainMenu } from './mainMenu';
+import { mainMenu, MAIN_MENU_TEXT } from './mainMenu';
 import { MyContext } from '../types/context';
 
 export const infoMenu = new Menu<MyContext>('info-menu')
@@ -69,7 +69,7 @@ export const infoMenu = new Menu<MyContext>('info-menu')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = 'منوی اصلی:';
+    const body = MAIN_MENU_TEXT;
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

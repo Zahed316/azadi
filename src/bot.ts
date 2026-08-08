@@ -1,7 +1,7 @@
 import { Bot, session } from 'grammy';
 import { conversations } from '@grammyjs/conversations';
 import { D1Database } from '@cloudflare/workers-types';
-import { mainMenu } from './menus/mainMenu';
+import { mainMenu, MAIN_MENU_TEXT } from './menus/mainMenu';
 import { discoverMenu } from './menus/discoverMenu';
 import { infoMenu } from './menus/infoMenu';
 import { beansMenu, cakesMenu } from './menus/productsMenu';
@@ -126,12 +126,7 @@ export function createBot(env: Env): Bot<MyContext> {
     // is registered (see USE_CONVERSATIONS gate above). Guard so /start works
     // in both states — the framework is currently dormant.
     await ctx.conversation?.exitAll();
-    return ctx.reply(
-      'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
-        'از منوی زیر می‌توانید نوشیدنی‌ها، دانه‌های قهوه، کیک و کوکی، شعب و سوالات متداول را ببینید.\n\n' +
-        '💬 <b>هر سوالی دارید همین‌جا بنویسید</b> — دستیار هوشمند قهوه درباره منو، قیمت‌ها، روش‌های دم‌آوری و هر چیز دیگری به شما پاسخ می‌دهد!',
-      { reply_markup: mainMenu, parse_mode: 'HTML' },
-    );
+    return ctx.reply(MAIN_MENU_TEXT, { reply_markup: mainMenu, parse_mode: 'HTML' });
   });
 
   setupAdminCommands(bot, env);
