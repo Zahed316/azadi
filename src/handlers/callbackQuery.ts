@@ -458,30 +458,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     await ctx.answerCallbackQuery();
   });
 
-  // Rating callback (from inline keyboard buttons)
-  bot.callbackQuery(/^rate:(.+)$/, async (ctx) => {
-    const match = ctx.match;
-    const value = match[1];
-    if (value === 'skip' || !ctx.session?.messageFlow) return;
-
-    const num = parseInt(value);
-    if (num >= 1 && num <= 5) {
-      ctx.session.messageFlow.rating = num;
-      ctx.session.messageFlow.step = 'confirm';
-      const flow = ctx.session.messageFlow;
-      const stars = '⭐'.repeat(num);
-      const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
-      const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`;
-      const kb = new InlineKeyboard()
-        .text('✅ ارسال', 'msg:confirm')
-        .text('❌ انصراف', 'msg:cancel');
-      await ctx.editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
-        .catch(() => ctx.reply(preview, { parse_mode: 'HTML', reply_markup: kb }));
-    }
-    await ctx.answerCallbackQuery();
-  });
-
-  // Rating skip callback — also handles "skip name" from the initial prompt
+  // Rating skip callback — MUST be registered before the regex handler below,
+  // otherwise /^rate:(.+)$/ matches "rate:skip" first and silently no-ops.
   bot.callbackQuery('rate:skip', async (ctx) => {
     if (!ctx.session?.messageFlow) return;
     const flow = ctx.session.messageFlow;
@@ -507,6 +485,29 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       .text('❌ انصراف', 'msg:cancel');
     await ctx.editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
       .catch(() => ctx.reply(preview, { parse_mode: 'HTML', reply_markup: kb }));
+    await ctx.answerCallbackQuery();
+  });
+
+  // Rating callback (from inline keyboard buttons) — must come after rate:skip
+  bot.callbackQuery(/^rate:(.+)$/, async (ctx) => {
+    const match = ctx.match;
+    const value = match[1];
+    if (!ctx.session?.messageFlow) return;
+
+    const num = parseInt(value);
+    if (num >= 1 && num <= 5) {
+      ctx.session.messageFlow.rating = num;
+      ctx.session.messageFlow.step = 'confirm';
+      const flow = ctx.session.messageFlow;
+      const stars = '⭐'.repeat(num);
+      const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
+      const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`;
+      const kb = new InlineKeyboard()
+        .text('✅ ارسال', 'msg:confirm')
+        .text('❌ انصراف', 'msg:cancel');
+      await ctx.editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(preview, { parse_mode: 'HTML', reply_markup: kb }));
+    }
     await ctx.answerCallbackQuery();
   });
 }
