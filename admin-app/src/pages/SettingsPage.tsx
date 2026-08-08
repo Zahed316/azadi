@@ -79,6 +79,7 @@ export default function SettingsPage() {
       apiFetch(`/settings/${encodeURIComponent(key)}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
+      showToast('Setting deleted', 'success');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -212,8 +213,8 @@ export default function SettingsPage() {
               )}
             </Field>
           ))}
-          <button type="submit" className="primary">
-            Save Settings
+          <button type="submit" className="primary" disabled={saveSettingsMutation.isPending}>
+            {saveSettingsMutation.isPending ? '⏳...' : 'Save Settings'}
           </button>
         </form>
       </div>
@@ -235,7 +236,7 @@ export default function SettingsPage() {
                     </span>
                   </div>
                   <div className="list-item-actions">
-                    <button className="danger" onClick={() => handleDeleteSetting(s.key)}>
+                    <button className="danger" onClick={() => handleDeleteSetting(s.key)} disabled={deleteSettingMutation.isPending}>
                       Delete
                     </button>
                   </div>

@@ -510,8 +510,8 @@ export default function ProductsPage() {
                 </Field>
               </>
             )}
-            <button type="submit" className="primary">
-              {editingProduct ? 'Update' : 'Add'} Product
+            <button type="submit" className="primary" disabled={saveProductMutation.isPending}>
+              {saveProductMutation.isPending ? '⏳...' : (editingProduct ? 'Update' : 'Add') + ' Product'}
             </button>
             {editingProduct && (
               <button type="button" className="secondary" onClick={resetProductForm}>
@@ -562,7 +562,7 @@ export default function ProductsPage() {
                     <button className="secondary" onClick={() => startEditProduct(p)}>
                       Edit
                     </button>
-                    <button className="danger" onClick={() => deleteProduct(p.id)}>
+                    <button className="danger" onClick={() => deleteProduct(p.id)} disabled={deleteProductMutation.isPending}>
                       Delete
                     </button>
                   </div>
@@ -596,8 +596,8 @@ export default function ProductsPage() {
               <option value="false">Unavailable</option>
             </select>
           )}
-          <button className="primary" onClick={handleBatchExecute}>
-            Apply to {selectedProductIds.length} products
+          <button className="primary" onClick={handleBatchExecute} disabled={batchMutation.isPending}>
+            {batchMutation.isPending ? '⏳...' : `Apply to ${selectedProductIds.length} products`}
           </button>
         </div>
       )}

@@ -98,8 +98,8 @@ export default function ContentPage() {
               required
             />
           </Field>
-          <button type="submit" className="primary">
-            {editingFaq ? 'Update' : 'Add'} FAQ
+          <button type="submit" className="primary" disabled={saveFaqMutation.isPending}>
+            {saveFaqMutation.isPending ? '⏳...' : (editingFaq ? 'Update' : 'Add') + ' FAQ'}
           </button>
           {editingFaq && (
             <button type="button" className="secondary" onClick={resetFaqForm}>
@@ -124,7 +124,7 @@ export default function ContentPage() {
                   <button className="secondary" onClick={() => startEditFaq(f)}>
                     Edit
                   </button>
-                  <button className="danger" onClick={() => deleteFaq(f.id)}>
+                  <button className="danger" onClick={() => deleteFaq(f.id)} disabled={deleteFaqMutation.isPending}>
                     Delete
                   </button>
                 </div>
