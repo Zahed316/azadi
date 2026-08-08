@@ -3,8 +3,6 @@ import { InlineKeyboard } from 'grammy';
 import { FavoritesRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { toPersianDigits } from '../utils/numbers';
-import { discoverMenu } from './discoverMenu';
-import { infoMenu } from './infoMenu';
 import { MyContext } from '../types/context';
 
 export const mainMenu = new Menu<MyContext>('main-menu')
