@@ -1,0 +1,131 @@
+import { Menu } from '@grammyjs/menu';
+import { InlineKeyboard } from 'grammy';
+import { ProductRepository, SettingsRepository } from '../repositories';
+import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
+import { formatProduct, DEFAULT_PRICE_UNIT } from '../utils/formatters';
+import { buildListPage } from '../utils/faqPagination';
+import { mainMenu } from './mainMenu';
+import { MyContext } from '../types/context';
+
+async function loadPriceUnit(env: any): Promise<string> {
+  return (await new SettingsRepository(env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+}
+
+export const discoverMenu = new Menu<MyContext>('discover-menu')
+  .text('⭐ پیشنهاد ویژه', async (ctx: any) => {
+    try {
+      if (!(await isMenuVisible(ctx.env, 'featured'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      const items = await new ProductRepository(ctx.env.DB).getByFlag('featured');
+      if (items.length === 0) {
+        await ctx.reply('📭 در حال حاضر محصول ویژه‌ای نداریم.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      const priceUnit = await loadPriceUnit(ctx.env);
+      const page = buildListPage(items, 0, 5);
+      const kb = new InlineKeyboard();
+      for (const p of page.items) kb.text(p.name, `product:${p.id}`).row();
+      if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:1`);
+      const body = `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
+      await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
+    } catch (e) {
+      console.error(e);
+      await ctx.answerCallbackQuery({ text: '❌ بارگذاری پیشنهاد ویژه ناموفق بود.' }).catch(() => {});
+    }
+  })
+  .text('🌿 مخصوص فصل', async (ctx: any) => {
+    try {
+      if (!(await isMenuVisible(ctx.env, 'seasonal'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      const items = await new ProductRepository(ctx.env.DB).getByFlag('isSeasonal');
+      if (items.length === 0) {
+        await ctx.reply('📭 در حال حاضر محصول فصلی موجود نیست.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      const priceUnit = await loadPriceUnit(ctx.env);
+      const page = buildListPage(items, 0, 5);
+      const kb = new InlineKeyboard();
+      for (const p of page.items) kb.text(p.name, `product:${p.id}`).row();
+      if (page.hasNext) kb.text('◀️ صفحه بعد', `seasonal:page:1`);
+      const body = `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
+      await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
+    } catch (e) {
+      console.error(e);
+      await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات فصلی ناموفق بود.' }).catch(() => {});
+    }
+  })
+  .text('📖 پاسپورت قهوه', async (ctx: any) => {
+    try {
+      if (!(await isMenuVisible(ctx.env, 'passport'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      const rows = await new ProductRepository(ctx.env.DB).getBeansWithCoffeeDetails();
+      if (rows.length === 0) {
+        await ctx.reply('📭 هنوز دانه قهوه‌ای با جزئیات کشت ثبت نشده است.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      const priceUnit = await loadPriceUnit(ctx.env);
+      const page = buildListPage(rows, 0, 5);
+      const origins = Array.from(
+        new Set(page.items.map((r: any) => r.details?.origin).filter(Boolean)),
+      );
+      const originsLine =
+        origins.length > 0
+          ? `\n\n🗺 <b>${origins.length} کشور مبدا در این صفحه:</b> ${origins.join(' · ')}`
+          : '';
+      const kb = new InlineKeyboard();
+      for (const r of page.items) {
+        const p = r.product;
+        const origin = r.details?.origin ? ` — ${r.details.origin}` : '';
+        kb.text(`${p.name}${origin}`, `product:${p.id}`).row();
+      }
+      if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:1`);
+      const body = `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit)).join('\n\n')}`;
+      await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
+    } catch (e) {
+      console.error(e);
+      await ctx.answerCallbackQuery({ text: '❌ بارگذاری پاسپورت قهوه ناموفق بود.' }).catch(() => {});
+    }
+  })
+  .text('🔍 جستجو', async (ctx: MyContext) => {
+    try {
+      if (!(await isMenuVisible(ctx.env, 'search'))) {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      await ctx.replyWithChatAction('typing');
+      await ctx.reply('سؤال خود را بنویسید — دستیار هوشمند پاسخ می‌دهد 🤖', {
+        parse_mode: 'HTML',
+        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+      });
+    } catch (e) {
+      console.error(e);
+      await ctx.reply('خطا در ارتباط با سرور.');
+    }
+  })
+  .text('↩️ بازگشت', async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const body = 'منوی اصلی:';
+    await ctx
+      .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
+      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
+  });
