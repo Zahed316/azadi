@@ -164,6 +164,12 @@ button.secondary:hover {
   border-bottom: none;
 }
 
+.list-item-actions button {
+  padding: 7px 14px;
+  font-size: 13px;
+  width: auto;
+}
+
 .list-item-actions {
   display: flex;
   gap: 8px;
