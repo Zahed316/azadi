@@ -84,7 +84,7 @@ export default function AdminsPage() {
       <div className="card">
         <h2>Admins</h2>
         {admins.length === 0 ? (
-          <EmptyState message="No admins yet." />
+          <EmptyState message="No admins yet. Add a Telegram ID to grant admin access." />
         ) : (
           <ul className="list">
             {admins.map((a) => (

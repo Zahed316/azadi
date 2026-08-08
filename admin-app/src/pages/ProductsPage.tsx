@@ -547,7 +547,7 @@ export default function ProductsPage() {
       <div className="card">
         <h2>Products</h2>
         {products.length === 0 ? (
-          <EmptyState message="No products yet." />
+          <EmptyState message="No products yet. Add your first product to get started." />
         ) : (
           <ul className="list">
             {products.map((p) => (

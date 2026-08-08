@@ -117,7 +117,7 @@ export default function CategoriesPage() {
       <div className="card">
         <h2>Categories</h2>
         {categories.length === 0 ? (
-          <EmptyState message="No categories yet." />
+          <EmptyState message="Categories help organize your menu. Add one to start." />
         ) : (
           <ul className="list">
             {categories.map((c) => (

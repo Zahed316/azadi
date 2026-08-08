@@ -146,7 +146,7 @@ export function MessagesPage() {
 
       {filteredMessages.length === 0 ? (
         <div className="empty-state">
-          <p>📭 پیامی وجود ندارد</p>
+          <p>User messages and feedback will appear here.</p>
         </div>
       ) : (
         <div className="messages-list">
