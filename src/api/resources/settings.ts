@@ -8,7 +8,12 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
   if (path === 'settings' && method === 'GET') {
     const repo = new SettingsRepository(db);
     const allSettings = await repo.getAllSettings();
-    return new Response(JSON.stringify({ settings: allSettings }), { headers: corsHeaders });
+    // SEC-005: Filter out sensitive keys to prevent accidental exposure
+    const SENSITIVE_KEYS = ['bot_token', 'api_key', 'secret', 'password', 'token'];
+    const filteredSettings = allSettings.filter((s: any) =>
+      !SENSITIVE_KEYS.some(blocked => s.key.toLowerCase().includes(blocked))
+    );
+    return new Response(JSON.stringify({ settings: filteredSettings }), { headers: corsHeaders });
   }
 
   // POST /settings

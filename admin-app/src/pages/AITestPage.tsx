@@ -57,7 +57,7 @@ export default function AITestPage() {
           <ul className="list">
             {history.map((item, i) => (
               <li
-                key={i}
+                key={`${item.ts.getTime()}-${i}`}
                 className="list-item"
                 style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}
               >

@@ -164,6 +164,12 @@ button.secondary:hover {
   border-bottom: none;
 }
 
+.list-item-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .item-details h4 {
   margin: 0 0 4px 0;
   font-size: 16px;
@@ -222,6 +228,12 @@ button.secondary:hover {
 @media (max-height: 500px) {
   .batch-bar {
     position: static;
+  }
+}
+
+@media (max-height: 500px) {
+  .bottom-nav {
+    display: none;
   }
 }
 
@@ -380,6 +392,7 @@ button.secondary:hover {
 }
 .confirm-btn {
   padding: 8px 18px;
+  min-height: 44px;
   border-radius: 8px;
   border: none;
   cursor: pointer;

@@ -8,6 +8,7 @@ export interface ResourceCtx {
   db: D1Database;
   isSuperAdmin: boolean;
   allowedCategoryId: number | null;
+  telegramId: number; // Authenticated user's Telegram ID
   request: Request;
   corsHeaders: Record<string, string>;
   url: URL;

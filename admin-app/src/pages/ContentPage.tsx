@@ -5,15 +5,18 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
+import LoadingScreen from '../components/Spinner';
 
 export default function ContentPage() {
   const { setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
-  const { data: faqs = [] } = useQuery({
+  const { data: faqs = [], isLoading } = useQuery({
     queryKey: queryKeys.faqs,
     queryFn: () => apiFetch<{ faqs: any[] }>('/faqs').then((r) => r.faqs),
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const [editingFaq, setEditingFaq] = useState<any>(null);
   const [faqQuestion, setFaqQuestion] = useState('');

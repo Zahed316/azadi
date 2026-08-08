@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface ToastData {
   msg: string;
@@ -8,10 +8,18 @@ interface ToastData {
 // eslint-disable-next-line react-refresh/only-export-components -- useToast hook intentionally co-located with the Toast component export
 export function useToast() {
   const [toast, setToast] = useState<ToastData | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const showToast = (msg: string, kind: 'success' | 'error' = 'success') => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     setToast({ msg, kind });
-    setTimeout(() => setToast(null), 3000);
+    timerRef.current = setTimeout(() => setToast(null), 3000);
   };
 
   return { toast, showToast };

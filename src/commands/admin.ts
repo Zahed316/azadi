@@ -27,7 +27,7 @@ export function setupAdminCommands(bot: Bot<MyContext>, _env: Env): void {
       ]);
       await ctx.reply('✅ دستورات با موفقیت ثبت شدند.');
     } catch (e: any) {
-      await ctx.reply(`❌ خطا در ثبت دستورات: ${e.message}`);
+      await ctx.reply('❌ خطا در ثبت دستورات. لطفاً بعداً تلاش کنید.');
     }
   });
 }

@@ -31,7 +31,7 @@ function median(nums: number[]): number {
 }
 
 export default function StreaksPage() {
-  const { setError } = useAppContext();
+  const { setError, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
   const { data: config } = useQuery({

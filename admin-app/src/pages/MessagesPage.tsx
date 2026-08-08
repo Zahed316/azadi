@@ -1,46 +1,38 @@
-import { useState, useEffect } from 'react';
-import { fetchMessages, replyToMessage, Message } from '../api/client';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchMessages, replyToMessage, type Message } from '../api/client';
 import { useAppContext } from '../AppContext';
+import { queryKeys } from '../api/keys';
+import LoadingScreen from '../components/Spinner';
 
 export function MessagesPage() {
   const { showToast } = useAppContext();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyText, setReplyText] = useState('');
-  const [sending, setSending] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread' | 'replied'>('all');
 
-  useEffect(() => {
-    loadMessages();
-  }, []);
+  const { data: messages = [], isLoading } = useQuery({
+    queryKey: queryKeys.messages,
+    queryFn: fetchMessages,
+  });
 
-  const loadMessages = async () => {
-    try {
-      const data = await fetchMessages();
-      setMessages(data);
-    } catch (e) {
-      showToast('خطا در بارگذاری پیام‌ها');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleReply = async () => {
-    if (!selectedMessage || !replyText.trim()) return;
-
-    setSending(true);
-    try {
-      await replyToMessage(selectedMessage.id, replyText);
+  const replyMutation = useMutation({
+    mutationFn: ({ id, text }: { id: number; text: string }) => replyToMessage(id, text),
+    onSuccess: () => {
       showToast('✅ پاسخ ارسال شد');
       setReplyText('');
       setSelectedMessage(null);
-      await loadMessages();
-    } catch (e) {
-      showToast('❌ خطا در ارسال پاسخ');
-    } finally {
-      setSending(false);
-    }
+      void queryClient.invalidateQueries({ queryKey: queryKeys.messages });
+    },
+    onError: () => {
+      showToast('❌ خطا در ارسال پاسخ', 'error');
+    },
+  });
+
+  const handleReply = () => {
+    if (!selectedMessage || !replyText.trim()) return;
+    replyMutation.mutate({ id: selectedMessage.id, text: replyText });
   };
 
   const formatDate = (dateString: string) => {
@@ -62,9 +54,7 @@ export function MessagesPage() {
 
   const unreadCount = messages.filter((msg) => !msg.isRead && !msg.replied).length;
 
-  if (loading) {
-    return <div className="loading-state" role="status">در حال بارگذاری...</div>;
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (selectedMessage) {
     return (
@@ -114,9 +104,9 @@ export function MessagesPage() {
             <button
               className="btn-primary"
               onClick={handleReply}
-              disabled={sending || !replyText.trim()}
+              disabled={replyMutation.isPending || !replyText.trim()}
             >
-              {sending ? 'در حال ارسال...' : 'ارسال پاسخ'}
+              {replyMutation.isPending ? 'در حال ارسال...' : 'ارسال پاسخ'}
             </button>
           </div>
         )}

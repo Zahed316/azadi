@@ -5,12 +5,13 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
+import LoadingScreen from '../components/Spinner';
 
 export default function ProductsPage() {
   const { isSuperAdmin, allowedCatId, setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading } = useQuery({
     queryKey: queryKeys.products,
     queryFn: () => apiFetch<{ products: any[] }>('/products').then((r) => r.products),
   });
@@ -19,6 +20,8 @@ export default function ProductsPage() {
     queryKey: queryKeys.categories,
     queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   // Batch
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);

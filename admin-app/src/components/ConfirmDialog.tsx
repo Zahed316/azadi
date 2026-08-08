@@ -57,7 +57,7 @@ export function useConfirm() {
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [confirmState, handleCancel]);
+  }, [confirmState, handleCancel, handleConfirm]);
 
   const ConfirmModal = confirmState ? (
     <div className="confirm-backdrop" onClick={handleCancel}>

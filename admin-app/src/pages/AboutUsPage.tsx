@@ -5,16 +5,19 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
+import LoadingScreen from '../components/Spinner';
 
 export default function AboutUsPage() {
   const { setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
   // About text
-  const { data: settings = [] } = useQuery({
+  const { data: settings = [], isLoading } = useQuery({
     queryKey: queryKeys.settings,
     queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const aboutSetting = settings.find((s: any) => s.key === 'about');
   const [aboutText, setAboutText] = useState(aboutSetting?.value || '');

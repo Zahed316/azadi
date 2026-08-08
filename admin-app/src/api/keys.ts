@@ -13,4 +13,5 @@ export const queryKeys = {
   menuVisibility: ['menu-visibility'] as const,
   aiLogs: ['aiLogs'] as const,
   health: ['health'] as const,
+  messages: ['messages'] as const,
 };

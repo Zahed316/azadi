@@ -44,9 +44,18 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
         });
       }
     }
+    // AUTH-003: Validate role enum
+    const VALID_ROLES = ['super_admin', 'category_admin'];
+    const role = body.role || 'category_admin';
+    if (!VALID_ROLES.includes(role)) {
+      return new Response(JSON.stringify({ error: 'Invalid role. Must be super_admin or category_admin' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
     await dbClient.insert(admins).values({
       telegramId: parseInt(body.telegramId),
-      role: body.role || 'category_admin',
+      role,
       categoryId: body.categoryId ? parseInt(body.categoryId) : null,
     });
     return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
@@ -60,6 +69,15 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const id = parseInt(path.split('/')[1]);
+
+    // AUTH-002: Prevent self-deletion to avoid accidental lockout
+    if (id === ctx.telegramId) {
+      return new Response(JSON.stringify({ error: 'Cannot delete your own account' }), {
+        status: 403,
+        headers: corsHeaders,
+      });
+    }
+
     await dbClient.delete(admins).where(eq(admins.telegramId, id));
     return new Response(null, { status: 204, headers: corsHeaders });
   }

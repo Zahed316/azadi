@@ -419,7 +419,11 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
             ),
           );
         } catch (e) {
-          console.error('Admin notification failed:', e);
+          console.error(JSON.stringify({
+            ts: new Date().toISOString(),
+            operation: 'admin-notification-failed',
+            error: e instanceof Error ? 'fetch failed' : 'unknown error',
+          }));
         }
       }
 

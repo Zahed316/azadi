@@ -5,6 +5,7 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
+import LoadingScreen from '../components/Spinner';
 
 const MENU_VISIBILITY_KEYS = [
   'menu_visible_featured',
@@ -47,10 +48,12 @@ export default function SettingsPage() {
   const { setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
-  const { data: settings = [] } = useQuery({
+  const { data: settings = [], isLoading } = useQuery({
     queryKey: queryKeys.settings,
     queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const [localSettings, setLocalSettings] = useState<any[]>(settings);
   const [initialized, setInitialized] = useState(false);
@@ -178,8 +181,9 @@ export default function SettingsPage() {
                 <button
                   className={menuVis[key] ? 'danger' : 'primary'}
                   onClick={() => handleToggleMenuVis(key, !menuVis[key])}
+                  disabled={saveMenuVisMutation.isPending}
                 >
-                  {menuVis[key] ? 'Hide' : 'Show'}
+                  {saveMenuVisMutation.isPending ? '...' : (menuVis[key] ? 'Hide' : 'Show')}
                 </button>
               </div>
             </li>

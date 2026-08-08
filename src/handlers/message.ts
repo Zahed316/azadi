@@ -55,6 +55,15 @@ export async function runAiQuery(
 }
 
 export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
+  // INJ-003: Sanitize AI HTML output to prevent phishing links or malformed HTML
+  function sanitizeTelegramHtml(text: string): string {
+    const ALLOWED_TAGS = ['b', 'i', 'u', 's', 'code', 'pre', 'a', 'tg-spoiler'];
+    return text.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)[^>]*>/gi, (match, tag) => {
+      if (ALLOWED_TAGS.includes(tag.toLowerCase())) return match;
+      return '';
+    });
+  }
+
   bot.on('message:text', async (ctx) => {
     // Handle multi-step message flow (feedback/contact/anonymous)
     if (ctx.session?.messageFlow) {
@@ -186,7 +195,8 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         if (replyText.length > MAX_TELEGRAM_MSG) {
           replyText = replyText.slice(0, MAX_TELEGRAM_MSG - 20) + '\n\n… (پاسخ خلاصه شد)';
         }
-        await ctx.reply(replyText, { parse_mode: 'HTML' }).catch(async () => {
+        const sanitizedReply = sanitizeTelegramHtml(replyText);
+        await ctx.reply(sanitizedReply, { parse_mode: 'HTML' }).catch(async () => {
           await ctx.reply('⚠️ خطا در ارسال پاسخ').catch(() => {});
         });
 
@@ -214,7 +224,11 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
           );
         }
       } catch (e: any) {
-        console.error(e);
+        console.error(JSON.stringify({
+          ts: new Date().toISOString(),
+          operation: 'ai-message-handler',
+          error: e?.message || String(e),
+        }));
         if (e?.message === 'AI_TIMEOUT') {
           await ctx.reply('⏳ پاسخگویی دستیار هوشمند طول کشید. لطفاً کمی بعد دوباره تلاش کنید.', {
             parse_mode: 'HTML',

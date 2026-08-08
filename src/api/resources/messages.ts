@@ -99,7 +99,13 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
       );
 
       if (!telegramResponse.ok) {
-        console.error('Telegram API error:', await telegramResponse.text());
+        await telegramResponse.text().catch(() => {});
+        console.error(JSON.stringify({
+          ts: new Date().toISOString(),
+          operation: 'telegram-send-reply-error',
+          status: telegramResponse.status,
+          messageId: id,
+        }));
       }
     } catch (e) {
       console.error('Failed to send Telegram reply:', e);

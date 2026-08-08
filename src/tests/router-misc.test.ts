@@ -89,7 +89,8 @@ test('OPTIONS /anything returns 204 with CORS headers but no Content-Type', asyn
     {} as ExecutionContext,
   );
   expect(response.status).toBe(204);
-  expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  // AUTH-004: CORS restricted to specific origins; default is the first allowed origin
+  expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://azadi-admin.pages.dev');
   expect(response.headers.get('Content-Type')).toBeNull();
 });
 

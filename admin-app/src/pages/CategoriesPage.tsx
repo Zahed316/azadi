@@ -5,15 +5,18 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
+import LoadingScreen from '../components/Spinner';
 
 export default function CategoriesPage() {
   const { isSuperAdmin, setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [], isLoading } = useQuery({
     queryKey: queryKeys.categories,
     queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [catName, setCatName] = useState('');

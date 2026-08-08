@@ -4,6 +4,7 @@ import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
+import LoadingScreen from '../components/Spinner';
 
 type Section = 'drinks' | 'beans' | 'cakes' | 'extras';
 
@@ -11,7 +12,7 @@ export default function MenuConfigPage() {
   const { setError, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
-  const { data: menuConfigs = [] } = useQuery({
+  const { data: menuConfigs = [], isLoading } = useQuery({
     queryKey: queryKeys.menuConfigs,
     queryFn: () => apiFetch<{ menuConfigs: any[] }>('/menu-config').then((r) => r.menuConfigs),
   });
@@ -20,6 +21,8 @@ export default function MenuConfigPage() {
     queryKey: queryKeys.categories,
     queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const [menuActiveSection, setMenuActiveSection] = useState<Section>('drinks');
   const [menuAddCatId, setMenuAddCatId] = useState('');

@@ -19,6 +19,13 @@ import {
 } from './resources';
 import type { ResourceCtx, ResourceHandler } from './resources';
 
+const ALLOWED_ORIGINS = ['https://azadi-admin.pages.dev', 'https://web.telegram.org'];
+
+function getAllowedOrigin(origin: string | null): string {
+  if (origin && ALLOWED_ORIGINS.includes(origin)) return origin;
+  return ALLOWED_ORIGINS[0];
+}
+
 // Ordered list of resource handlers — first match wins.
 // Resource handlers MUST be checked in order of specificity (longer/more-specific
 // paths first) so that e.g. /products/batch matches before /products/:id.
@@ -50,7 +57,7 @@ export async function handleApiRequest(
     return new Response(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': getAllowedOrigin(request.headers.get('Origin')),
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Authorization, Content-Type',
       },
@@ -58,7 +65,7 @@ export async function handleApiRequest(
   }
 
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': getAllowedOrigin(request.headers.get('Origin')),
     'Content-Type': 'application/json',
   };
 
@@ -118,6 +125,7 @@ export async function handleApiRequest(
       db,
       isSuperAdmin,
       allowedCategoryId,
+      telegramId: user.id,
       request,
       corsHeaders,
       url,

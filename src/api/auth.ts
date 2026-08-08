@@ -52,6 +52,20 @@ export async function validateInitData(initData: string, botToken: string): Prom
       diff |= signatureHex.charCodeAt(i) ^ hash.charCodeAt(i);
     }
     if (diff === 0) {
+      // AUTH-001: Validate auth_date freshness to prevent replay attacks.
+      // Telegram's spec requires checking that auth_date is within a reasonable
+      // window (5 minutes) to limit token replay. Without this check, a stolen
+      // initData works indefinitely.
+      const authDateStr = urlParams.get('auth_date');
+      if (authDateStr) {
+        const authDate = parseInt(authDateStr, 10);
+        const now = Math.floor(Date.now() / 1000);
+        const MAX_AGE_SECONDS = 300; // 5 minutes
+        if (Number.isNaN(authDate) || Math.abs(now - authDate) > MAX_AGE_SECONDS) {
+          return null;
+        }
+      }
+
       const userStr = urlParams.get('user');
       if (userStr) {
         try {

@@ -5,15 +5,18 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
+import LoadingScreen from '../components/Spinner';
 
 export default function AdminsPage() {
   const { setError, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
-  const { data: admins = [] } = useQuery({
+  const { data: admins = [], isLoading } = useQuery({
     queryKey: queryKeys.admins,
     queryFn: () => apiFetch<{ admins: any[] }>('/admins').then((r) => r.admins),
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const [adminId, setAdminId] = useState('');
   const [adminRole, setAdminRole] = useState('category_admin');
