@@ -16,8 +16,6 @@ export default function CategoriesPage() {
     queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
   });
 
-  if (isLoading) return <LoadingScreen />;
-
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [catName, setCatName] = useState('');
   const [catEmoji, setCatEmoji] = useState('');
@@ -52,6 +50,8 @@ export default function CategoriesPage() {
       showToast(err.message, 'error');
     },
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const handleSaveCategory = (e: React.FormEvent) => {
     e.preventDefault();

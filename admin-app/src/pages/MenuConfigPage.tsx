@@ -22,18 +22,12 @@ export default function MenuConfigPage() {
     queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
   });
 
-  if (isLoading) return <LoadingScreen />;
-
   const [menuActiveSection, setMenuActiveSection] = useState<Section>('drinks');
   const [menuAddCatId, setMenuAddCatId] = useState('');
   const [editingSpecialMsg, setEditingSpecialMsg] = useState<number | null>(null);
   const [specialMsgValue, setSpecialMsgValue] = useState('');
   const [editingButtonLabel, setEditingButtonLabel] = useState<number | null>(null);
   const [buttonLabelValue, setButtonLabelValue] = useState('');
-
-  const sectionItems = menuConfigs
-    .filter((c: any) => c.menuSection === menuActiveSection)
-    .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
 
   const toggleVisibilityMutation = useMutation({
     mutationFn: (data: { id: number; body: any }) =>
@@ -89,6 +83,12 @@ export default function MenuConfigPage() {
       setError(err.message);
     },
   });
+
+  if (isLoading) return <LoadingScreen />;
+
+  const sectionItems = menuConfigs
+    .filter((c: any) => c.menuSection === menuActiveSection)
+    .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
 
   const handleToggleMenuVisibility = (config: any) => {
     toggleVisibilityMutation.mutate({

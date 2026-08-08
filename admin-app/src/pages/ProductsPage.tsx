@@ -21,8 +21,6 @@ export default function ProductsPage() {
     queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
   });
 
-  if (isLoading) return <LoadingScreen />;
-
   // Batch
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
   const [batchAction, setBatchAction] = useState<'move' | 'toggle' | 'delete' | ''>('');
@@ -160,6 +158,8 @@ export default function ProductsPage() {
       showToast(err.message, 'error');
     },
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const toggleProductSelect = (id: number) => {
     setSelectedProductIds((prev) =>

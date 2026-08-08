@@ -16,8 +16,6 @@ export default function AdminsPage() {
     queryFn: () => apiFetch<{ admins: any[] }>('/admins').then((r) => r.admins),
   });
 
-  if (isLoading) return <LoadingScreen />;
-
   const [adminId, setAdminId] = useState('');
   const [adminRole, setAdminRole] = useState('category_admin');
   const [adminCatId, setAdminCatId] = useState('');
@@ -43,6 +41,8 @@ export default function AdminsPage() {
       setError(err.message);
     },
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const handleSaveAdmin = (e: React.FormEvent) => {
     e.preventDefault();

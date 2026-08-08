@@ -17,13 +17,11 @@ export default function AboutUsPage() {
     queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
   });
 
-  if (isLoading) return <LoadingScreen />;
-
-  const aboutSetting = settings.find((s: any) => s.key === 'about');
-  const [aboutText, setAboutText] = useState(aboutSetting?.value || '');
+  const [aboutText, setAboutText] = useState('');
 
   // Sync aboutText when settings query loads
   const [initialized, setInitialized] = useState(false);
+  const aboutSetting = settings.find((s: any) => s.key === 'about');
   if (!initialized && aboutSetting) {
     setAboutText(aboutSetting.value || '');
     setInitialized(true);
@@ -40,16 +38,6 @@ export default function AboutUsPage() {
       showToast(err.message, 'error');
     },
   });
-
-  const handleSaveAbout = () => {
-    const updatedSettings = settings.map((s: any) =>
-      s.key === 'about' ? { ...s, value: aboutText } : s,
-    );
-    if (!updatedSettings.find((s: any) => s.key === 'about')) {
-      updatedSettings.push({ key: 'about', value: aboutText });
-    }
-    saveAboutMutation.mutate({ settings: updatedSettings });
-  };
 
   // Branches
   const { data: branches = [] } = useQuery({
@@ -93,6 +81,18 @@ export default function AboutUsPage() {
       showToast(err.message, 'error');
     },
   });
+
+  if (isLoading) return <LoadingScreen />;
+
+  const handleSaveAbout = () => {
+    const updatedSettings = settings.map((s: any) =>
+      s.key === 'about' ? { ...s, value: aboutText } : s,
+    );
+    if (!updatedSettings.find((s: any) => s.key === 'about')) {
+      updatedSettings.push({ key: 'about', value: aboutText });
+    }
+    saveAboutMutation.mutate({ settings: updatedSettings });
+  };
 
   const handleSaveBranch = (e: React.FormEvent) => {
     e.preventDefault();

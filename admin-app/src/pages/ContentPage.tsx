@@ -16,8 +16,6 @@ export default function ContentPage() {
     queryFn: () => apiFetch<{ faqs: any[] }>('/faqs').then((r) => r.faqs),
   });
 
-  if (isLoading) return <LoadingScreen />;
-
   const [editingFaq, setEditingFaq] = useState<any>(null);
   const [faqQuestion, setFaqQuestion] = useState('');
   const [faqAnswer, setFaqAnswer] = useState('');
@@ -50,6 +48,8 @@ export default function ContentPage() {
       showToast(err.message, 'error');
     },
   });
+
+  if (isLoading) return <LoadingScreen />;
 
   const handleSaveFaq = (e: React.FormEvent) => {
     e.preventDefault();

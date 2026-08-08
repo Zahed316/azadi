@@ -53,8 +53,6 @@ export default function SettingsPage() {
     queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
   });
 
-  if (isLoading) return <LoadingScreen />;
-
   const [localSettings, setLocalSettings] = useState<any[]>(settings);
   const [initialized, setInitialized] = useState(false);
   if (!initialized && settings.length > 0) {
@@ -64,14 +62,6 @@ export default function SettingsPage() {
 
   const [newSettingKey, setNewSettingKey] = useState('');
   const [newSettingValue, setNewSettingValue] = useState('');
-
-  const updateSetting = (key: string, value: string) => {
-    setLocalSettings((prev) => {
-      const exists = prev.find((s: any) => s.key === key);
-      if (exists) return prev.map((s: any) => (s.key === key ? { ...s, value } : s));
-      return [...prev, { key, value }];
-    });
-  };
 
   const saveSettingsMutation = useMutation({
     mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
@@ -98,18 +88,6 @@ export default function SettingsPage() {
   const [menuVisInitialized, setMenuVisInitialized] = useState(false);
   const [menuVis, setMenuVis] = useState<Record<string, boolean>>({});
 
-  // Initialize menu visibility state from settings data
-  if (!menuVisInitialized && settings.length > 0) {
-    const initial: Record<string, boolean> = {};
-    for (const key of MENU_VISIBILITY_KEYS) {
-      const setting = settings.find((s: any) => s.key === key);
-      // Missing key = visible (default)
-      initial[key] = setting?.value !== 'false';
-    }
-    setMenuVis(initial);
-    setMenuVisInitialized(true);
-  }
-
   const saveMenuVisMutation = useMutation({
     mutationFn: async (data: { key: string; visible: boolean }) => {
       return apiFetch(`/settings/${encodeURIComponent(data.key)}`, {
@@ -125,6 +103,39 @@ export default function SettingsPage() {
       setError(err.message);
     },
   });
+
+  const { data: streakConfig } = useQuery({
+    queryKey: queryKeys.streakConfig,
+    queryFn: () => apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
+  });
+
+  const { data: health } = useQuery({
+    queryKey: queryKeys.health,
+    queryFn: () => apiFetch<{ status: string; db: boolean; timestamp: string }>('/health'),
+    refetchInterval: 30000,
+  });
+
+  if (isLoading) return <LoadingScreen />;
+
+  const updateSetting = (key: string, value: string) => {
+    setLocalSettings((prev) => {
+      const exists = prev.find((s: any) => s.key === key);
+      if (exists) return prev.map((s: any) => (s.key === key ? { ...s, value } : s));
+      return [...prev, { key, value }];
+    });
+  };
+
+  // Initialize menu visibility state from settings data
+  if (!menuVisInitialized && settings.length > 0) {
+    const initial: Record<string, boolean> = {};
+    for (const key of MENU_VISIBILITY_KEYS) {
+      const setting = settings.find((s: any) => s.key === key);
+      // Missing key = visible (default)
+      initial[key] = setting?.value !== 'false';
+    }
+    setMenuVis(initial);
+    setMenuVisInitialized(true);
+  }
 
   const handleToggleMenuVis = (key: string, visible: boolean) => {
     setMenuVis((prev) => ({ ...prev, [key]: visible }));
@@ -149,17 +160,6 @@ export default function SettingsPage() {
     setLocalSettings((prev) => prev.filter((s: any) => s.key !== key));
     deleteSettingMutation.mutate(key);
   };
-
-  const { data: streakConfig } = useQuery({
-    queryKey: queryKeys.streakConfig,
-    queryFn: () => apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
-  });
-
-  const { data: health } = useQuery({
-    queryKey: queryKeys.health,
-    queryFn: () => apiFetch<{ status: string; db: boolean; timestamp: string }>('/health'),
-    refetchInterval: 30000,
-  });
 
   return (
     <>
