@@ -392,9 +392,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
 
       ctx.session.messageFlow = undefined;
 
+      const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
       await ctx.editMessageText('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
-        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-      });
+        reply_markup: kb,
+      }).catch(() => ctx.reply('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
+        reply_markup: kb,
+      }));
 
       // Notify admins (best-effort, parallel)
       if (ctx.env.TELEGRAM_BOT_TOKEN) {
@@ -437,9 +440,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
   // Message flow: cancel
   bot.callbackQuery('msg:cancel', async (ctx) => {
     ctx.session.messageFlow = undefined;
-    await ctx.editMessageText('❌ ارسال پیام لغو شد.', {
-      reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-    });
+    const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+    await ctx.editMessageText('❌ ارسال پیام لغو شد.', { reply_markup: kb })
+      .catch(() => ctx.reply('❌ ارسال پیام لغو شد.', { reply_markup: kb }));
     await ctx.answerCallbackQuery();
   });
 
@@ -456,15 +459,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const flow = ctx.session.messageFlow;
       const stars = '⭐'.repeat(num);
       const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
-      await ctx.editMessageText(
-        `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`,
-        {
-          parse_mode: 'HTML',
-          reply_markup: new InlineKeyboard()
-            .text('✅ ارسال', 'msg:confirm')
-            .text('❌ انصراف', 'msg:cancel'),
-        },
-      );
+      const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`;
+      const kb = new InlineKeyboard()
+        .text('✅ ارسال', 'msg:confirm')
+        .text('❌ انصراف', 'msg:cancel');
+      await ctx.editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
+        .catch(() => ctx.reply(preview, { parse_mode: 'HTML', reply_markup: kb }));
     }
     await ctx.answerCallbackQuery();
   });
@@ -478,9 +478,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     if (flow.step === 'name') {
       flow.isAnonymous = true;
       flow.step = 'content';
-      await ctx.editMessageText('پیام خود را بنویسید:', {
-        reply_markup: new InlineKeyboard().text('❌ انصراف', 'msg:cancel'),
-      });
+      const kb = new InlineKeyboard().text('❌ انصراف', 'msg:cancel');
+      await ctx.editMessageText('پیام خود را بنویسید:', { reply_markup: kb })
+        .catch(() => ctx.reply('پیام خود را بنویسید:', { reply_markup: kb }));
       await ctx.answerCallbackQuery();
       return;
     }
@@ -489,15 +489,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     flow.rating = undefined;
     flow.step = 'confirm';
     const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
-    await ctx.editMessageText(
-      `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ بدون امتیاز\n\n📝 ${flow.content}`,
-      {
-        parse_mode: 'HTML',
-        reply_markup: new InlineKeyboard()
-          .text('✅ ارسال', 'msg:confirm')
-          .text('❌ انصراف', 'msg:cancel'),
-      },
-    );
+    const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ بدون امتیاز\n\n📝 ${flow.content}`;
+    const kb = new InlineKeyboard()
+      .text('✅ ارسال', 'msg:confirm')
+      .text('❌ انصراف', 'msg:cancel');
+    await ctx.editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
+      .catch(() => ctx.reply(preview, { parse_mode: 'HTML', reply_markup: kb }));
     await ctx.answerCallbackQuery();
   });
 }
