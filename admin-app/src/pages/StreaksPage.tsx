@@ -58,7 +58,7 @@ export default function StreaksPage() {
 
   if (isLoading) return <LoadingScreen />;
   if (error) {
-    setError((error as Error).message);
+    setError(error instanceof Error ? error.message : String(error));
   }
 
   const users = data ?? [];

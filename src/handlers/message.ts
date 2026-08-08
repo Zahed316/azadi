@@ -132,6 +132,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
 
       try {
         const requestStartedAt = performance.now();
+        // Best-effort typing indicator — Telegram timeout is expected
         await ctx.replyWithChatAction('typing').catch(() => {});
         const userId = String(ctx.from?.id);
         const db = ctx.env.DB;
@@ -185,12 +186,20 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         if (replyText.length > MAX_TELEGRAM_MSG) {
           replyText = replyText.slice(0, MAX_TELEGRAM_MSG - 20) + '\n\n… (پاسخ خلاصه شد)';
         }
-        await ctx.reply(replyText, { parse_mode: 'HTML' }).catch(() => {});
+        await ctx.reply(replyText, { parse_mode: 'HTML' }).catch(async () => {
+          await ctx.reply('⚠️ خطا در ارسال پاسخ').catch(() => {});
+        });
 
         if (ctx.execCtx) {
-          ctx.execCtx.waitUntil(aiLogRepo.logConversation(userId, ctx.message.text, answer));
+          ctx.execCtx.waitUntil(
+            aiLogRepo.logConversation(userId, ctx.message.text, answer).catch((e) =>
+              console.error('AI log failed:', e),
+            ),
+          );
         } else {
-          await aiLogRepo.logConversation(userId, ctx.message.text, answer);
+          await aiLogRepo.logConversation(userId, ctx.message.text, answer).catch((e) =>
+            console.error('AI log failed:', e),
+          );
         }
 
         if (ctx.env.PERF_LOG === 'true') {

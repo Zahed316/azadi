@@ -47,7 +47,7 @@ export const handleFavorites: ResourceHandler = async (method, path, ctx) => {
     if (!ok) {
       return new Response(JSON.stringify({ ok: false }), { status: 404, headers: corsHeaders });
     }
-    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   return null;

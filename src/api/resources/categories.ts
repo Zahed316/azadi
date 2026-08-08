@@ -28,7 +28,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       emoji: body.emoji || null,
       sortOrder: body.sortOrder || 0,
     });
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
   // PUT /categories/:id
@@ -60,7 +60,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
     const id = parseInt(path.split('/')[1]);
     const repo = new CategoryRepository(db);
     await repo.deleteCategory(id);
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   return null;

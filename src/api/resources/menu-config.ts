@@ -32,6 +32,7 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
       updatedAt: now,
     });
     return new Response(JSON.stringify({ success: true, menuConfig: result[0] }), {
+      status: 201,
       headers: corsHeaders,
     });
   }
@@ -79,7 +80,7 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
     const id = parseInt(path.split('/')[1]);
     const repo = new MenuConfigRepository(db);
     await repo.delete(id);
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   return null;

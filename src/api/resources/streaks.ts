@@ -27,13 +27,16 @@ export const handleStreaks: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const repo = new SettingsRepository(db);
-    const streakMessages = (await repo.getValue('streak_messages')) ?? env.STREAK_MESSAGES ?? 'false';
-    const streakCronEnabled =
-      (await repo.getValue('streak_cron_enabled')) ?? env.STREAK_CRON_ENABLED ?? 'false';
+    const [streakMessages, streakCronEnabled] = await Promise.all([
+      repo.getValue('streak_messages'),
+      repo.getValue('streak_cron_enabled'),
+    ]);
+    const streakMessagesVal = streakMessages ?? env.STREAK_MESSAGES ?? 'false';
+    const streakCronEnabledVal = streakCronEnabled ?? env.STREAK_CRON_ENABLED ?? 'false';
     return new Response(
       JSON.stringify({
-        streakMessages: streakMessages === 'true',
-        streakCronEnabled: streakCronEnabled === 'true',
+        streakMessages: streakMessagesVal === 'true',
+        streakCronEnabled: streakCronEnabledVal === 'true',
       }),
       { headers: corsHeaders },
     );

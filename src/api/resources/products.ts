@@ -46,7 +46,7 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
     if (body.coffeeDetails && result[0]?.id) {
       await repo.setCoffeeDetails(result[0].id, body.coffeeDetails);
     }
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
   // POST /products/batch
@@ -176,6 +176,7 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
   }
 
   // PUT /products/:id/stock or /products/:id/toggle (path.split length === 3)
+  // TODO: legacy path-split guard — migrate to /products/:id/stock and /products/:id/toggle routes
   if (path.startsWith('products/') && method === 'PUT' && path.split('/').length === 3) {
     const id = parseInt(path.split('/')[1]);
     const action = path.split('/')[2];
@@ -278,7 +279,7 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
     }
 
     await repo.deleteProduct(id);
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   return null;

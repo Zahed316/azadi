@@ -1,5 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Telegram initData user payload is structurally unknown; keep `any` for downstream `.id` access
-export async function validateInitData(initData: string, botToken: string): Promise<any | null> {
+export interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+}
+
+export async function validateInitData(initData: string, botToken: string): Promise<TelegramUser | null> {
   const urlParams = new URLSearchParams(initData);
   const hash = urlParams.get('hash');
 
@@ -39,7 +45,8 @@ export async function validateInitData(initData: string, botToken: string): Prom
   // mismatched char, leaking the index of the first byte difference through
   // timing. Workers jitter dominates the side channel in practice, but the
   // canonical Telegram-spec validation is constant-time — match it.
-  if (signatureHex.length === hash.length) {
+  // SHA-256 HMAC always produces 64-char hex, so lengths always match.
+  {
     let diff = 0;
     for (let i = 0; i < signatureHex.length; i++) {
       diff |= signatureHex.charCodeAt(i) ^ hash.charCodeAt(i);

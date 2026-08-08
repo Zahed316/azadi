@@ -35,7 +35,7 @@ export default function AILogsPage() {
   });
 
   if (isLoading) return <LoadingScreen />;
-  if (error) setError((error as Error).message);
+  if (error) setError(error instanceof Error ? error.message : String(error));
 
   return (
     <>

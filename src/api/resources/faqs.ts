@@ -27,7 +27,7 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
       });
     }
     await repo.add(body.question, body.answer);
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
   // PUT /faqs/:id
@@ -60,7 +60,7 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
     const id = parseInt(path.split('/')[1]);
     const repo = new FaqRepository(db);
     await repo.delete(id);
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   return null;

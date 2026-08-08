@@ -125,7 +125,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         .catch(() => {});
     }
   })
-  .text('🔍 جستجو', async (ctx: any) => {
+  .text('🔍 جستجو', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'search'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -136,7 +136,10 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       // Just nudge the user to type their question. The actual AI handler
       // in src/handlers/message.ts will pick up the next text message.
       await ctx.replyWithChatAction('typing');
-      await ctx.reply('سؤال خود را بنویسید — دستیار هوشمند پاسخ می‌دهد 🤖', { parse_mode: 'HTML' });
+      await ctx.reply('سؤال خود را بنویسید — دستیار هوشمند پاسخ می‌دهد 🤖', {
+        parse_mode: 'HTML',
+        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+      });
     } catch (e) {
       console.error(e);
       await ctx.reply('خطا در ارتباط با سرور.');
@@ -179,7 +182,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .submenu('🍰 کیک و کوکی', 'products-menu-cakes')
   .row()
   .submenu('🏠 درباره ما', 'branches-menu')
-  .text('❓ سوالات متداول', async (ctx: any) => {
+  .text('❓ سوالات متداول', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'faq'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -190,7 +193,9 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       const repo = new FaqRepository(ctx.env.DB);
       const faqs = await repo.getAll();
       if (faqs.length === 0) {
-        await ctx.reply('📭 هنوز سوالی ثبت نشده است.');
+        await ctx.reply('📭 هنوز سوالی ثبت نشده است.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
         return;
       }
       const page = buildListPage(faqs, 0, 5);

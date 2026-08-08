@@ -20,6 +20,8 @@ import {
 import type { ResourceCtx, ResourceHandler } from './resources';
 
 // Ordered list of resource handlers — first match wins.
+// Resource handlers MUST be checked in order of specificity (longer/more-specific
+// paths first) so that e.g. /products/batch matches before /products/:id.
 const resourceHandlers: ResourceHandler[] = [
   handleAdmins,
   handleSettings,
@@ -46,6 +48,7 @@ export async function handleApiRequest(
 
   if (method === 'OPTIONS') {
     return new Response(null, {
+      status: 204,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',

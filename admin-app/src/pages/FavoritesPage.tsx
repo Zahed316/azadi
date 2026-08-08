@@ -96,7 +96,7 @@ export default function FavoritesPage() {
 
   if (isLoading) return <LoadingScreen />;
   if (error) {
-    setError((error as Error).message);
+    setError(error instanceof Error ? error.message : String(error));
   }
 
   const favorites = data ?? [];

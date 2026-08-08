@@ -1,5 +1,9 @@
 import { sqliteTable, text, integer, real, primaryKey, index } from 'drizzle-orm/sqlite-core';
 
+// TODO: Add CHECK constraints for data integrity (e.g. stock >= 0, price >= 0,
+// rating BETWEEN 1 AND 5, unit IN ('cup','kg','piece','slice','item')).
+// Requires a D1 migration — cannot be added without one.
+
 export const branches = sqliteTable('branches', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),

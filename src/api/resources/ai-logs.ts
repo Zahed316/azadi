@@ -13,7 +13,7 @@ export const handleAiLogs: ResourceHandler = async (method, path, ctx) => {
       });
     const repo = new AiLogRepository(db);
     const userId = url.searchParams.get('userId');
-    const limit = parseInt(url.searchParams.get('limit') || '50');
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50') || 50, 1), 200);
     const logs = userId
       ? await repo.getLogsByUser(userId, limit)
       : await repo.getAllLogs(limit);

@@ -49,7 +49,7 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
       role: body.role || 'category_admin',
       categoryId: body.categoryId ? parseInt(body.categoryId) : null,
     });
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
   // DELETE /admins/:id
@@ -61,7 +61,7 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
       });
     const id = parseInt(path.split('/')[1]);
     await dbClient.delete(admins).where(eq(admins.telegramId, id));
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   return null;

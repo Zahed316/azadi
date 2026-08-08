@@ -105,7 +105,7 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
       console.error('Failed to send Telegram reply:', e);
     }
 
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
   return null;

@@ -28,7 +28,7 @@ test('super_admin can add a product', async () => {
     path: 'products',
     body: { name: 'Espresso', categoryId: '5', price: 45000, unit: 'cup' },
   });
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(201);
   expect(res.body.success).toBe(true);
 
   const rows = readTable(products);
@@ -43,7 +43,7 @@ test('category_admin can add product in their allowed category', async () => {
     path: 'products',
     body: { name: 'Latte', categoryId: '5', price: 55000 },
   });
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(201);
   expect(res.body.success).toBe(true);
 });
 
@@ -295,7 +295,7 @@ test('POST /products accepts nutritional fields', async () => {
       caffeineMg: 63,
     },
   });
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(201);
   const rows = readTable(products);
   expect(rows[0].calories).toBe(5);
   expect(rows[0].caffeineMg).toBe(63);

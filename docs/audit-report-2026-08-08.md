@@ -32,6 +32,10 @@
 | 19 | `admin-app/src/App.tsx` | Bottom nav div not nav, no main landmark, error missing ARIA | ✅ Fixed — changed to `<nav>`, wrapped content in `<main>`, added role="alert" to error |
 | 20 | `admin-app/src/pages/MessagesPage.tsx` | Clickable divs not keyboard accessible | ✅ Fixed — converted to `<button>` elements |
 | 21 | `admin-app/src/pages/AboutUsPage.tsx` | Textarea has no label | ✅ Fixed — wrapped in `<Field label="About Text">` |
+| 22 | `src/api/router.ts` | Monolithic 903-line router | ✅ Fixed — split into 12 per-resource modules under `src/api/resources/`, router reduced to 148-line dispatcher |
+| 23 | `src/api/router.ts` (all endpoints) | Zero request body validation | ✅ Fixed — added lightweight validation (required field checks, type checks) to all POST/PUT handlers |
+| 24 | `src/**/*.ts` | Missing return types on exported functions | ✅ Fixed — added explicit return types to all exported functions across 8 files (bot.ts, admin.ts, callbackQuery.ts, message.ts, client.ts, auth.ts, requestContext.ts, repositories/index.ts) |
+| 25 | `src/database/schema.ts` | No Drizzle migration for new indexes | ✅ Fixed — created `drizzle/0008_indexes.sql` with 9 CREATE INDEX IF NOT EXISTS statements |
 
 **Verification:** `npm run typecheck` ✅ | `npm test` ✅ (149/149) | `npm run lint` ✅ | `admin-app build` ✅
 

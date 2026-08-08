@@ -91,14 +91,13 @@ test('GET /api/favorites?groupBy=foo returns 400', async () => {
 // DELETE /api/favorites/:telegramId/:productId
 // ---------------------------------------------------------------------------
 
-test('DELETE /api/favorites/u1/10 returns 200 with ok:true when pair exists', async () => {
+test('DELETE /api/favorites/u1/10 returns 204 when pair exists', async () => {
   setAdminRole(superAdmin);
   seedTable(favorites, [
     { telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') },
   ]);
   const res = await callRouter({ method: 'DELETE', path: 'favorites/u1/10' });
-  expect(res.status).toBe(200);
-  expect(res.body.ok).toBe(true);
+  expect(res.status).toBe(204);
 });
 
 test('DELETE /api/favorites/u1/999 returns 404 with ok:false when pair does not exist', async () => {

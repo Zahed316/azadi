@@ -1,4 +1,5 @@
 import { formatPersianPrice, toPersianDigits } from './numbers';
+import { products, branches, faq } from '../database/schema';
 
 export const VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
 
@@ -12,7 +13,7 @@ const unitMap: Record<string, string> = {
   item: 'عدد',
 };
 
-export function formatProduct(p: any, priceUnit: string = DEFAULT_PRICE_UNIT): string {
+export function formatProduct(p: typeof products.$inferSelect, priceUnit: string = DEFAULT_PRICE_UNIT): string {
   let text = `📦 <b>${p.name}</b>\n`;
   if (p.description) text += `\n${p.description}\n`;
   if (p.priceOnRequest || p.price == null) {
@@ -36,7 +37,7 @@ export function formatProduct(p: any, priceUnit: string = DEFAULT_PRICE_UNIT): s
   return text;
 }
 
-export function formatBranch(b: any): string {
+export function formatBranch(b: typeof branches.$inferSelect): string {
   let text = `📍 <b>${b.name}</b>\n`;
   text += `\n🏢 آدرس: ${b.address}`;
   if (b.phone) text += `\n📞 تلفن: ${b.phone}`;
@@ -44,6 +45,6 @@ export function formatBranch(b: any): string {
   return text;
 }
 
-export function formatFaq(f: any): string {
+export function formatFaq(f: typeof faq.$inferSelect): string {
   return `❓ <b>${f.question}</b>\n\n💬 ${f.answer}`;
 }

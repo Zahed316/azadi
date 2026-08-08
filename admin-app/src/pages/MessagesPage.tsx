@@ -63,7 +63,7 @@ export function MessagesPage() {
   const unreadCount = messages.filter((msg) => !msg.isRead && !msg.replied).length;
 
   if (loading) {
-    return <div className="loading-state">در حال بارگذاری...</div>;
+    return <div className="loading-state" role="status">در حال بارگذاری...</div>;
   }
 
   if (selectedMessage) {
@@ -98,7 +98,7 @@ export function MessagesPage() {
             <div className="reply-section">
               <h4>💬 پاسخ شما:</h4>
               <p>{selectedMessage.replyText}</p>
-              <span className="reply-date">{formatDate(selectedMessage.repliedAt!)}</span>
+              {selectedMessage.repliedAt && <span className="reply-date">{formatDate(selectedMessage.repliedAt)}</span>}
             </div>
           )}
         </div>

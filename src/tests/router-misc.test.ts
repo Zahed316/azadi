@@ -45,8 +45,7 @@ test('DELETE /settings/with%20space%20in%20key decodes the key via decodeURIComp
     method: 'DELETE',
     path: 'settings/with%20space%20in%20key',
   });
-  expect(res.status).toBe(200);
-  expect(res.body.success).toBe(true);
+  expect(res.status).toBe(204);
 });
 
 test('DELETE /settings with malformed percent-encoding returns 500', async () => {
@@ -76,9 +75,7 @@ test('GET /nonexistent returns 404', async () => {
 // OPTIONS preflight
 // ---------------------------------------------------------------------------
 
-test('OPTIONS /anything returns 200 with CORS headers but no Content-Type', async () => {
-  // Note: new Response(null) defaults to 200, not 204. The router does not
-  // explicitly set status: 204 on the OPTIONS response. This is existing behaviour.
+test('OPTIONS /anything returns 204 with CORS headers but no Content-Type', async () => {
   const { handleApiRequest } = await import('../api/router');
   const request = new Request('https://bot.test/api/anything', { method: 'OPTIONS' });
   const response = await handleApiRequest(
@@ -91,7 +88,7 @@ test('OPTIONS /anything returns 200 with CORS headers but no Content-Type', asyn
     },
     {} as ExecutionContext,
   );
-  expect(response.status).toBe(200);
+  expect(response.status).toBe(204);
   expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
   expect(response.headers.get('Content-Type')).toBeNull();
 });
@@ -140,7 +137,7 @@ test('super_admin GET /menu-config returns 200', async () => {
 // POST /menu-config with valid body returns 200 + menuConfig in response
 // ---------------------------------------------------------------------------
 
-test('super_admin POST /menu-config with valid body returns 200 and includes menuConfig', async () => {
+test('super_admin POST /menu-config with valid body returns 201 and includes menuConfig', async () => {
   setAdminRole(superAdmin);
   const res = await callRouter({
     method: 'POST',
@@ -153,7 +150,7 @@ test('super_admin POST /menu-config with valid body returns 200 and includes men
       buttonLabel: 'Coffee',
     },
   });
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(201);
   expect(res.body.success).toBe(true);
   expect(res.body.menuConfig).toBeDefined();
   expect(res.body.menuConfig.menuSection).toBe('drinks');

@@ -22,8 +22,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const body = 'منوی اصلی:';
       await ctx
-        .editMessageText(body, { reply_markup: mainMenu })
-        .catch(() => ctx.reply(body, { reply_markup: mainMenu }));
+        .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
+        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
     } catch (e) {
       console.error(e);
     }
@@ -142,13 +142,16 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const catId = parseInt(ctx.match[1]);
       const idx = parseInt(ctx.match[2]);
       const menuRepo = new MenuConfigRepository(ctx.env.DB);
-      const configs = await menuRepo.getBySection('drinks');
+      const [configs, items, priceUnitRaw] = await Promise.all([
+        menuRepo.getBySection('drinks'),
+        new ProductRepository(ctx.env.DB).getProductsByCategory(catId),
+        new SettingsRepository(ctx.env.DB).getValue('price_unit'),
+      ]);
       const config = configs.find((c: any) => c.categoryId === catId);
       if (!config) {
         await ctx.reply('دسته‌بندی مورد نظر یافت نشد.');
         return;
       }
-      const items = await new ProductRepository(ctx.env.DB).getProductsByCategory(catId);
       if (items.length === 0) {
         if (config.specialMessage) {
           await ctx.reply(config.specialMessage, { parse_mode: 'HTML' });
@@ -157,8 +160,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         }
         return;
       }
-      const priceUnit =
-        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const priceUnit = priceUnitRaw || DEFAULT_PRICE_UNIT;
       await buildCategoryPage(ctx, config, items, idx, priceUnit);
     } catch (e) {
       console.error(e);
@@ -324,6 +326,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
     } catch (e) {
       console.error(e);
+      // Telegram timeout — safe to ignore
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
     }
   });

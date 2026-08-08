@@ -23,7 +23,7 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
     for (const item of body.settings) {
       await repo.setValue(item.key, item.value);
     }
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
   // DELETE /settings/:key
@@ -36,7 +36,7 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
     const key = decodeURIComponent(path.split('/')[1]);
     const repo = new SettingsRepository(db);
     await repo.deleteSetting(key);
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   // PUT /settings/:key

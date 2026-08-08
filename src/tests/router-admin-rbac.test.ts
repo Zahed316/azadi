@@ -42,7 +42,7 @@ test('super_admin can add an admin', async () => {
     path: 'admins',
     body: { telegramId: '99999', role: 'category_admin' },
   });
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(201);
   expect(res.body.success).toBe(true);
 });
 
@@ -158,14 +158,14 @@ test('super_admin posting FAQ without question or answer returns 400', async () 
   expect(res.body.error).toMatch(/question and answer required/i);
 });
 
-test('super_admin posting FAQ with both fields returns 200', async () => {
+test('super_admin posting FAQ with both fields returns 201', async () => {
   setAdminRole(superAdmin);
   const res = await callRouter({
     method: 'POST',
     path: 'faqs',
     body: { question: 'What is coffee?', answer: 'A drink.' },
   });
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(201);
   expect(res.body.success).toBe(true);
 });
 
@@ -202,6 +202,5 @@ test('super_admin posting branch without name or address returns 400', async () 
 test('super_admin can delete a branch', async () => {
   setAdminRole(superAdmin);
   const res = await callRouter({ method: 'DELETE', path: 'branches/1' });
-  expect(res.status).toBe(200);
-  expect(res.body.success).toBe(true);
+  expect(res.status).toBe(204);
 });
