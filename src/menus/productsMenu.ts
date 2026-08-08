@@ -18,7 +18,7 @@ const BEANS_PAGE_PREFIX = 'beans:page:';
 const PRODUCTS_PAGE_SIZE = 5;
 
 export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
-  .text('🍰 مشاهده کیک و کوکی', async (ctx) => {
+  .text('🍰 کیک و کوکی', async (ctx) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'cakes'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -64,7 +64,7 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
   });
 
 export const beansMenu = new Menu<MyContext>('products-menu-beans')
-  .text('🌱 مشاهده دانه‌های قهوه', async (ctx) => {
+  .text('🌱 دانه‌های قهوه', async (ctx) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'beans'))) {
         await ctx.reply(HIDDEN_MESSAGE, {

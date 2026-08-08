@@ -33,13 +33,14 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       for (const p of page.items) kb.text(p.name, `product:${p.id}`).row();
       if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:1`);
       const body = `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
+
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری پیشنهاد ویژه ناموفق بود.' }).catch(() => {});
     }
   })
-  .text('🌿 مخصوص فصل', async (ctx: any) => {
+  .text('🌿 محصول فصلی', async (ctx: any) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'seasonal'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -66,7 +67,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات فصلی ناموفق بود.' }).catch(() => {});
     }
   })
-  .text('📖 پاسپورت قهوه', async (ctx: any) => {
+  .text('📖 پاسپورت', async (ctx: any) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'passport'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -104,6 +105,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری پاسپورت قهوه ناموفق بود.' }).catch(() => {});
     }
   })
+  .row()
   .text('🔍 جستجو', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'search'))) {
@@ -122,6 +124,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.reply('خطا در ارتباط با سرور.');
     }
   })
+  .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
     const body = 'منوی اصلی:';

@@ -65,6 +65,7 @@ export const infoMenu = new Menu<MyContext>('info-menu')
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود.' }).catch(() => {});
     }
   })
+  .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
     const body = 'منوی اصلی:';
