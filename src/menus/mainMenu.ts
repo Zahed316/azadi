@@ -38,7 +38,6 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       }));
       const kb = new InlineKeyboard();
       for (const item of list) kb.text(item.label, item.callbackData).row();
-      if (page.hasPrev) kb.text('صفحه قبل ▶️', `featured:page:0`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:1`);
       const body = `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
@@ -73,7 +72,6 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       }));
       const kb = new InlineKeyboard();
       for (const item of list) kb.text(item.label, item.callbackData).row();
-      if (page.hasPrev) kb.text('صفحه قبل ▶️', `seasonal:page:0`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `seasonal:page:1`);
       const body = `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
@@ -117,7 +115,6 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       });
       const kb = new InlineKeyboard();
       for (const item of list) kb.text(item.label, item.callbackData).row();
-      if (page.hasPrev) kb.text('صفحه قبل ▶️', `passport:page:0`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:1`);
       const body = `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit)).join('\n\n')}`;
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });

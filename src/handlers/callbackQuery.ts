@@ -393,7 +393,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
         reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
       });
 
-      // Notify admins (best-effort, don't block)
+      // Notify admins (best-effort, parallel)
       if (ctx.env.TELEGRAM_BOT_TOKEN) {
         try {
           const { getDb } = await import('../database/client');
@@ -402,16 +402,19 @@ export function setupCallbackHandlers(bot: Bot<MyContext>) {
           const allAdmins = await db.select().from(admins);
           const preview = flow.content.slice(0, 150) + (flow.content.length > 150 ? '...' : '');
           const senderName = flow.isAnonymous ? 'ناشناس' : (flow.name || 'ناشناس');
-          for (const admin of allAdmins) {
-            await fetch(`https://api.telegram.org/bot${ctx.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: admin.telegramId,
-                text: `📬 پیام جدید (#${message[0]?.id}) از ${senderName}:\n\n${preview}`,
+          const msgId = message[0]?.id;
+          await Promise.allSettled(
+            allAdmins.map((admin) =>
+              fetch(`https://api.telegram.org/bot${ctx.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  chat_id: admin.telegramId,
+                  text: `📬 پیام جدید (#${msgId}) از ${senderName}:\n\n${preview}`,
+                }),
               }),
-            }).catch(() => {});
-          }
+            ),
+          );
         } catch (e) {
           console.error('Admin notification failed:', e);
         }

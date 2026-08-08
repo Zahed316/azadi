@@ -222,7 +222,7 @@ test('image set rejects missing imageUrl', async () => {
     body: {},
   });
   expect(res.status).toBe(400);
-  expect(res.body.error).toContain('الزامی');
+  expect(res.body.error).toContain('imageUrl is required');
 });
 
 test('image set rejects invalid URL', async () => {
@@ -234,7 +234,7 @@ test('image set rejects invalid URL', async () => {
     body: { imageUrl: 'not-a-url' },
   });
   expect(res.status).toBe(400);
-  expect(res.body.error).toContain('معتبر');
+  expect(res.body.error).toContain('not a valid URL');
 });
 
 test('image set succeeds for valid URL', async () => {

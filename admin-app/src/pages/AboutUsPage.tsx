@@ -136,13 +136,15 @@ export default function AboutUsPage() {
     <>
       <div className="card">
         <h2>About Us</h2>
-        <textarea
-          value={aboutText}
-          onChange={(e) => setAboutText(e.target.value)}
-          rows={6}
-          dir="auto"
-          placeholder="About text shown in the bot..."
-        />
+        <Field label="About Text">
+          <textarea
+            value={aboutText}
+            onChange={(e) => setAboutText(e.target.value)}
+            rows={6}
+            dir="auto"
+            placeholder="About text shown in the bot..."
+          />
+        </Field>
         <button className="primary" onClick={handleSaveAbout}>
           Save About Text
         </button>

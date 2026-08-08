@@ -107,6 +107,23 @@ export async function handleApiRequest(
         return new Response(JSON.stringify({ admins: allAdmins }), { headers: corsHeaders });
       } else if (method === 'POST') {
         const body: any = await request.json();
+        if (!body.telegramId) {
+          return new Response(JSON.stringify({ error: 'telegramId required' }), {
+            status: 400,
+            headers: corsHeaders,
+          });
+        }
+        // Validate categoryId exists if provided
+        if (body.categoryId) {
+          const catRepo = new CategoryRepository(db);
+          const cat = await catRepo.getCategoryById(parseInt(body.categoryId));
+          if (!cat) {
+            return new Response(JSON.stringify({ error: 'Category not found' }), {
+              status: 400,
+              headers: corsHeaders,
+            });
+          }
+        }
         await dbClient.insert(admins).values({
           telegramId: parseInt(body.telegramId),
           role: body.role || 'category_admin',
@@ -447,26 +464,48 @@ export async function handleApiRequest(
       const body: { ids: number[]; updateData?: any; action: 'update' | 'delete' } =
         await request.json();
 
-      for (const id of body.ids) {
-        const product = await repo.getProductById(id);
-        if (!product) continue;
-        if (!isSuperAdmin && product.categoryId !== allowedCategoryId) continue; // Skip unauthorized
-
-        if (body.action === 'delete') {
-          await repo.deleteProduct(id);
-        } else if (body.action === 'update' && body.updateData) {
-          // If changing category, check permission
-          if (
-            body.updateData.categoryId &&
-            !isSuperAdmin &&
-            body.updateData.categoryId !== allowedCategoryId
-          ) {
-            continue; // Skip changing to unauthorized category
-          }
-          await repo.updateProduct(id, body.updateData);
-        }
+      if (!Array.isArray(body.ids) || body.ids.length === 0) {
+        return new Response(JSON.stringify({ error: 'ids array required' }), {
+          status: 400,
+          headers: corsHeaders,
+        });
       }
-      return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+
+      // Batch fetch all products in one query
+      const allProducts = await Promise.all(body.ids.map((id) => repo.getProductById(id)));
+      const results: { id: number; status: string }[] = [];
+
+      await Promise.allSettled(
+        allProducts.map(async (product, i) => {
+          const id = body.ids[i];
+          if (!product) {
+            results.push({ id, status: 'not_found' });
+            return;
+          }
+          if (!isSuperAdmin && product.categoryId !== allowedCategoryId) {
+            results.push({ id, status: 'forbidden' });
+            return;
+          }
+
+          if (body.action === 'delete') {
+            await repo.deleteProduct(id);
+            results.push({ id, status: 'deleted' });
+          } else if (body.action === 'update' && body.updateData) {
+            if (
+              body.updateData.categoryId &&
+              !isSuperAdmin &&
+              body.updateData.categoryId !== allowedCategoryId
+            ) {
+              results.push({ id, status: 'forbidden' });
+              return;
+            }
+            await repo.updateProduct(id, body.updateData);
+            results.push({ id, status: 'updated' });
+          }
+        }),
+      );
+
+      return new Response(JSON.stringify({ success: true, results }), { headers: corsHeaders });
     }
 
     if (path.startsWith('products/') && path.split('/').length === 2) {
@@ -549,7 +588,7 @@ export async function handleApiRequest(
       try {
         const body = await request.json<{ imageUrl?: string }>();
         if (!body.imageUrl || typeof body.imageUrl !== 'string') {
-          return new Response(JSON.stringify({ error: 'آدرس تصویر الزامی است' }), {
+          return new Response(JSON.stringify({ error: 'imageUrl is required' }), {
             status: 400,
             headers: corsHeaders,
           });
@@ -558,7 +597,7 @@ export async function handleApiRequest(
         try {
           new URL(body.imageUrl);
         } catch {
-          return new Response(JSON.stringify({ error: 'آدرس تصویر معتبر نیست' }), {
+          return new Response(JSON.stringify({ error: 'imageUrl is not a valid URL' }), {
             status: 400,
             headers: corsHeaders,
           });
@@ -567,7 +606,7 @@ export async function handleApiRequest(
         return new Response(JSON.stringify({ success: true, imageUrl: body.imageUrl }), { headers: corsHeaders });
       } catch (e) {
         console.error(e);
-        return new Response(JSON.stringify({ error: 'خطا در ذخیره تصویر' }), {
+        return new Response(JSON.stringify({ error: 'Failed to save image' }), {
           status: 500,
           headers: corsHeaders,
         });
@@ -597,7 +636,7 @@ export async function handleApiRequest(
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } catch (e) {
         console.error(e);
-        return new Response(JSON.stringify({ error: 'خطا در حذف تصویر' }), {
+        return new Response(JSON.stringify({ error: 'Failed to delete image' }), {
           status: 500,
           headers: corsHeaders,
         });
@@ -893,9 +932,17 @@ export async function handleApiRequest(
       status: 404,
       headers: corsHeaders,
     });
-  } catch (error: any) {
-    console.error(error);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error(JSON.stringify({
+      ts: new Date().toISOString(),
+      operation: 'api-error',
+      method,
+      path,
+      error: errMsg,
+      stack: error instanceof Error ? error.stack : undefined,
+    }));
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: corsHeaders,
     });

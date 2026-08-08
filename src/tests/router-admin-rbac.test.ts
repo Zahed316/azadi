@@ -40,7 +40,7 @@ test('super_admin can add an admin', async () => {
   const res = await callRouter({
     method: 'POST',
     path: 'admins',
-    body: { telegramId: '99999', role: 'category_admin', categoryId: '3' },
+    body: { telegramId: '99999', role: 'category_admin' },
   });
   expect(res.status).toBe(200);
   expect(res.body.success).toBe(true);

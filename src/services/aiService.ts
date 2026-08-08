@@ -116,14 +116,27 @@ export class AiService {
       });
 
       if (!response.ok) {
-        console.error(`OpenCode API error: ${response.status} ${response.statusText}`);
+        const errorBody = await response.text().catch(() => '');
+        console.error(JSON.stringify({
+          ts: new Date().toISOString(),
+          operation: 'opencode-api-error',
+          status: response.status,
+          statusText: response.statusText,
+          queryLength: query.length,
+          userId,
+          errorBody: errorBody.slice(0, 200),
+        }));
         return '⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
       }
 
       const data: any = await response.json();
-      const answer =
+      let answer =
         data.choices?.[0]?.message?.content ??
         '⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
+      const MAX_TELEGRAM_MSG = 4096;
+      if (answer.length > MAX_TELEGRAM_MSG) {
+        answer = answer.slice(0, MAX_TELEGRAM_MSG - 20) + '\n\n… (پاسخ خلاصه شد)';
+      }
       return answer;
     } catch (e: any) {
       console.error(e);

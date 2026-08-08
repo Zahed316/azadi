@@ -161,8 +161,9 @@ export function MessagesPage() {
       ) : (
         <div className="messages-list">
           {filteredMessages.map((msg) => (
-            <div
+            <button
               key={msg.id}
+              type="button"
               className={`message-item ${!msg.isRead && !msg.replied ? 'unread' : ''} ${msg.replied ? 'replied' : ''}`}
               onClick={() => setSelectedMessage(msg)}
             >
@@ -185,7 +186,7 @@ export function MessagesPage() {
                   <span className="status unread">● خوانده نشده</span>
                 )}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

@@ -100,7 +100,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
       }
 
       if (flow.step === 'rating') {
-        const num = parseInt(text);
+        const num = parseInt(text.replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))));
         if (text === '/skip' || isNaN(num)) {
           flow.rating = undefined;
         } else if (num >= 1 && num <= 5) {
@@ -180,7 +180,12 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
         const answer = await Promise.race([aiPromise, timeoutPromise]);
         const aiDuration = performance.now() - aiStartedAt;
 
-        await ctx.reply(answer, { parse_mode: 'HTML' }).catch(() => {});
+        const MAX_TELEGRAM_MSG = 4096;
+        let replyText = answer;
+        if (replyText.length > MAX_TELEGRAM_MSG) {
+          replyText = replyText.slice(0, MAX_TELEGRAM_MSG - 20) + '\n\n… (پاسخ خلاصه شد)';
+        }
+        await ctx.reply(replyText, { parse_mode: 'HTML' }).catch(() => {});
 
         if (ctx.execCtx) {
           ctx.execCtx.waitUntil(aiLogRepo.logConversation(userId, ctx.message.text, answer));

@@ -55,9 +55,10 @@ function AppInner() {
     <AppContext.Provider value={ctxValue}>
       <HashRouter>
         <div className="container" style={{ paddingBottom: '80px' }}>
-          {error && <div className="error">{error}</div>}
+          {error && <div className="error" role="alert" aria-live="assertive">{error}</div>}
           <Toast toast={toast} />
           {ConfirmModal}
+          <main>
           <Routes>
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
@@ -103,7 +104,8 @@ function AppInner() {
             />
             <Route path="*" element={<Navigate to="/products" replace />} />
           </Routes>
-          <div className="bottom-nav">
+          </main>
+          <nav className="bottom-nav" aria-label="Main navigation">
             <NavLink
               to="/products"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
@@ -192,7 +194,7 @@ function AppInner() {
                 </NavLink>
               </>
             )}
-          </div>
+          </nav>
         </div>
       </HashRouter>
     </AppContext.Provider>

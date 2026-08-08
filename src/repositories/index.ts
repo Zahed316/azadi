@@ -393,12 +393,14 @@ export class MenuConfigRepository {
   }
 
   async reorder(items: { id: number; displayOrder: number }[]) {
-    for (const item of items) {
-      await this.db
-        .update(menuConfig)
-        .set({ displayOrder: item.displayOrder, updatedAt: new Date() })
-        .where(eq(menuConfig.id, item.id));
-    }
+    await Promise.allSettled(
+      items.map((item) =>
+        this.db
+          .update(menuConfig)
+          .set({ displayOrder: item.displayOrder, updatedAt: new Date() })
+          .where(eq(menuConfig.id, item.id)),
+      ),
+    );
   }
 
   /** Returns the Set of category IDs that are visible in any menu section. */
