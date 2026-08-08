@@ -133,7 +133,7 @@ export default function FavoritesPage() {
           </button>
         </div>
         {favorites.length === 0 ? (
-          <EmptyState message="0 مورد علاقه ثبت نشده است" />
+          <EmptyState message="Users' favorited products will appear here." />
         ) : groupBy === 'user' ? (
           <ul className="list">
             {(grouped as Array<{ telegramId: string; count: number; lastFavorited: number }>).map(

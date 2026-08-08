@@ -9,16 +9,9 @@ import { apiFetch } from './api/client';
 import { queryKeys } from './api/keys';
 import ProductsPage from './pages/ProductsPage';
 import CategoriesPage from './pages/CategoriesPage';
-import AboutUsPage from './pages/AboutUsPage';
-import ContentPage from './pages/ContentPage';
-import SettingsPage from './pages/SettingsPage';
-import AdminsPage from './pages/AdminsPage';
-import MenuConfigPage from './pages/MenuConfigPage';
-import FavoritesPage from './pages/FavoritesPage';
-import StreaksPage from './pages/StreaksPage';
-import AILogsPage from './pages/AILogsPage';
-import AITestPage from './pages/AITestPage';
-import { MessagesPage } from './pages/MessagesPage';
+import InsightsPage from './pages/InsightsPage';
+import ConfigurePage from './pages/ConfigurePage';
+import InfoPage from './pages/InfoPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 const queryClient = new QueryClient();
@@ -66,46 +59,21 @@ function AppInner() {
             <Routes>
               <Route path="/products" element={<ProductsPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
-              <Route
-                path="/branches"
-                element={isSuperAdmin ? <AboutUsPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/faqs"
-                element={isSuperAdmin ? <ContentPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/settings"
-                element={isSuperAdmin ? <SettingsPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/admins"
-                element={isSuperAdmin ? <AdminsPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/menu-config"
-                element={isSuperAdmin ? <MenuConfigPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/streaks"
-                element={isSuperAdmin ? <StreaksPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/favorites"
-                element={isSuperAdmin ? <FavoritesPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/ai-logs"
-                element={isSuperAdmin ? <AILogsPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/ai-test"
-                element={isSuperAdmin ? <AITestPage /> : <Navigate to="/products" replace />}
-              />
-              <Route
-                path="/messages"
-                element={isSuperAdmin ? <MessagesPage /> : <Navigate to="/products" replace />}
-              />
+              {/* Grouped tabs */}
+              <Route path="/insights" element={isSuperAdmin ? <InsightsPage /> : <Navigate to="/products" replace />} />
+              <Route path="/configure" element={isSuperAdmin ? <ConfigurePage /> : <Navigate to="/products" replace />} />
+              <Route path="/info" element={isSuperAdmin ? <InfoPage /> : <Navigate to="/products" replace />} />
+              {/* Redirect old routes to grouped pages */}
+              <Route path="/settings" element={<Navigate to="/configure" replace />} />
+              <Route path="/branches" element={<Navigate to="/info" replace />} />
+              <Route path="/faqs" element={<Navigate to="/info" replace />} />
+              <Route path="/admins" element={<Navigate to="/configure" replace />} />
+              <Route path="/menu-config" element={<Navigate to="/configure" replace />} />
+              <Route path="/streaks" element={<Navigate to="/insights" replace />} />
+              <Route path="/favorites" element={<Navigate to="/insights" replace />} />
+              <Route path="/ai-logs" element={<Navigate to="/insights" replace />} />
+              <Route path="/ai-test" element={<Navigate to="/insights" replace />} />
+              <Route path="/messages" element={<Navigate to="/info" replace />} />
               <Route path="*" element={<Navigate to="/products" replace />} />
             </Routes>
           </ErrorBoundary>
@@ -128,74 +96,25 @@ function AppInner() {
             {isSuperAdmin && (
               <>
                 <NavLink
-                  to="/settings"
+                  to="/insights"
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   onClick={scrollToTop}
                 >
-                  <span className="nav-icon">⚙️</span>Settings
+                  <span className="nav-icon">📊</span>Insights
                 </NavLink>
                 <NavLink
-                  to="/branches"
+                  to="/configure"
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   onClick={scrollToTop}
                 >
-                  <span className="nav-icon">🏠</span>About Us
+                  <span className="nav-icon">⚙️</span>Configure
                 </NavLink>
                 <NavLink
-                  to="/faqs"
+                  to="/info"
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   onClick={scrollToTop}
                 >
-                  <span className="nav-icon">📝</span>Content
-                </NavLink>
-                <NavLink
-                  to="/admins"
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  onClick={scrollToTop}
-                >
-                  <span className="nav-icon">👥</span>Admins
-                </NavLink>
-                <NavLink
-                  to="/menu-config"
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  onClick={scrollToTop}
-                >
-                  <span className="nav-icon">📋</span>Menu
-                </NavLink>
-                <NavLink
-                  to="/streaks"
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  onClick={scrollToTop}
-                >
-                  <span className="nav-icon">🔥</span>Streaks
-                </NavLink>
-                <NavLink
-                  to="/favorites"
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  onClick={scrollToTop}
-                >
-                  <span className="nav-icon">⭐</span>Favorites
-                </NavLink>
-                <NavLink
-                  to="/ai-logs"
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  onClick={scrollToTop}
-                >
-                  <span className="nav-icon">🤖</span>AI Logs
-                </NavLink>
-                <NavLink
-                  to="/ai-test"
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  onClick={scrollToTop}
-                >
-                  <span className="nav-icon">🧪</span>AI Test
-                </NavLink>
-                <NavLink
-                  to="/messages"
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  onClick={scrollToTop}
-                >
-                  <span className="nav-icon">✉️</span>Messages
+                  <span className="nav-icon">ℹ️</span>Info
                 </NavLink>
               </>
             )}

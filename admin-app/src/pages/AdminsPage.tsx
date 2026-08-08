@@ -8,7 +8,7 @@ import EmptyState from '../components/EmptyState';
 import LoadingScreen from '../components/Spinner';
 
 export default function AdminsPage() {
-  const { setError, confirm } = useAppContext();
+  const { setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
   const { data: admins = [], isLoading } = useQuery({
@@ -24,6 +24,7 @@ export default function AdminsPage() {
     mutationFn: (body: any) => apiFetch('/admins', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admins });
+      showToast('Admin added', 'success');
       setAdminId('');
       setAdminCatId('');
     },
@@ -36,6 +37,7 @@ export default function AdminsPage() {
     mutationFn: (id: number) => apiFetch(`/admins/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admins });
+      showToast('Admin removed', 'success');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -73,8 +75,8 @@ export default function AdminsPage() {
               <input value={adminCatId} onChange={(e) => setAdminCatId(e.target.value)} />
             </Field>
           )}
-          <button type="submit" className="primary">
-            Add Admin
+          <button type="submit" className="primary" disabled={addAdminMutation.isPending}>
+            {addAdminMutation.isPending ? '⏳...' : 'Add Admin'}
           </button>
         </form>
       </div>
@@ -82,7 +84,7 @@ export default function AdminsPage() {
       <div className="card">
         <h2>Admins</h2>
         {admins.length === 0 ? (
-          <EmptyState message="No admins yet." />
+          <EmptyState message="No admins yet. Add a Telegram ID to grant admin access." />
         ) : (
           <ul className="list">
             {admins.map((a) => (
@@ -92,7 +94,7 @@ export default function AdminsPage() {
                   <span className="list-item-meta">{a.role}</span>
                 </div>
                 <div className="list-item-actions">
-                  <button className="danger" onClick={() => deleteAdmin(a.id)}>
+                  <button className="danger" onClick={() => deleteAdmin(a.id)} disabled={deleteAdminMutation.isPending}>
                     Remove
                   </button>
                 </div>

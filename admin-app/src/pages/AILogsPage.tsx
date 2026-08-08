@@ -51,7 +51,7 @@ export default function AILogsPage() {
       </div>
       <div className="card">
         {logs.length === 0 ? (
-          <EmptyState message="No AI logs yet." />
+          <EmptyState message="AI conversation logs will appear as users interact with the bot." />
         ) : (
           <ul className="list">
             {logs.map((log) => (

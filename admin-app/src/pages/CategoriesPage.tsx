@@ -102,8 +102,8 @@ export default function CategoriesPage() {
             <Field label="Sort Order">
               <input type="number" value={catSort} onChange={(e) => setCatSort(e.target.value)} />
             </Field>
-            <button type="submit" className="primary">
-              {editingCategory ? 'Update' : 'Add'} Category
+            <button type="submit" className="primary" disabled={saveCategoryMutation.isPending}>
+              {saveCategoryMutation.isPending ? '⏳...' : (editingCategory ? 'Update' : 'Add') + ' Category'}
             </button>
             {editingCategory && (
               <button type="button" className="secondary" onClick={resetCategoryForm}>
@@ -117,7 +117,7 @@ export default function CategoriesPage() {
       <div className="card">
         <h2>Categories</h2>
         {categories.length === 0 ? (
-          <EmptyState message="No categories yet." />
+          <EmptyState message="Categories help organize your menu. Add one to start." />
         ) : (
           <ul className="list">
             {categories.map((c) => (
@@ -132,7 +132,7 @@ export default function CategoriesPage() {
                     <button className="secondary" onClick={() => startEditCategory(c)}>
                       Edit
                     </button>
-                    <button className="danger" onClick={() => deleteCategory(c.id)}>
+                    <button className="danger" onClick={() => deleteCategory(c.id)} disabled={deleteCategoryMutation.isPending}>
                       Delete
                     </button>
                   </div>

@@ -148,8 +148,8 @@ export default function AboutUsPage() {
             placeholder="About text shown in the bot..."
           />
         </Field>
-        <button className="primary" onClick={handleSaveAbout}>
-          Save About Text
+        <button className="primary" onClick={handleSaveAbout} disabled={saveAboutMutation.isPending}>
+          {saveAboutMutation.isPending ? '⏳...' : 'Save About Text'}
         </button>
       </div>
 
@@ -187,8 +187,8 @@ export default function AboutUsPage() {
               onChange={(e) => setBranchActive(e.target.checked)}
             />
           </Field>
-          <button type="submit" className="primary">
-            {editingBranch ? 'Update' : 'Add'} Location
+          <button type="submit" className="primary" disabled={saveBranchMutation.isPending}>
+            {saveBranchMutation.isPending ? '⏳...' : (editingBranch ? 'Update' : 'Add') + ' Location'}
           </button>
           {editingBranch && (
             <button type="button" className="secondary" onClick={resetBranchForm}>
@@ -216,7 +216,7 @@ export default function AboutUsPage() {
                   <button className="secondary" onClick={() => startEditBranch(b)}>
                     Edit
                   </button>
-                  <button className="danger" onClick={() => deleteBranch(b.id)}>
+                  <button className="danger" onClick={() => deleteBranch(b.id)} disabled={deleteBranchMutation.isPending}>
                     Delete
                   </button>
                 </div>

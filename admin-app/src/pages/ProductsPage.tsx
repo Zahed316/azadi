@@ -159,6 +159,28 @@ export default function ProductsPage() {
     },
   });
 
+  const toggleProductField = useMutation({
+    mutationFn: ({ id, field, value }: { id: number; field: string; value: boolean }) =>
+      field === 'available'
+        ? apiFetch(`/products/${id}/toggle`, { method: 'PUT', body: { available: value } })
+        : apiFetch(`/products/${id}`, { method: 'PUT', body: { [field]: value } }),
+    onMutate: async ({ id, field, value }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.products });
+      const prev = queryClient.getQueryData(queryKeys.products);
+      queryClient.setQueryData(queryKeys.products, (old: any[] | undefined) =>
+        old?.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.prev) queryClient.setQueryData(queryKeys.products, context.prev);
+      showToast('Toggle failed', 'error');
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+    },
+  });
+
   if (isLoading) return <LoadingScreen />;
 
   const toggleProductSelect = (id: number) => {
@@ -510,8 +532,8 @@ export default function ProductsPage() {
                 </Field>
               </>
             )}
-            <button type="submit" className="primary">
-              {editingProduct ? 'Update' : 'Add'} Product
+            <button type="submit" className="primary" disabled={saveProductMutation.isPending}>
+              {saveProductMutation.isPending ? '⏳...' : (editingProduct ? 'Update' : 'Add') + ' Product'}
             </button>
             {editingProduct && (
               <button type="button" className="secondary" onClick={resetProductForm}>
@@ -525,7 +547,7 @@ export default function ProductsPage() {
       <div className="card">
         <h2>Products</h2>
         {products.length === 0 ? (
-          <EmptyState message="No products yet." />
+          <EmptyState message="No products yet. Add your first product to get started." />
         ) : (
           <ul className="list">
             {products.map((p) => (
@@ -559,10 +581,34 @@ export default function ProductsPage() {
                 </div>
                 {(isSuperAdmin || allowedCatId) && (
                   <div className="list-item-actions">
+                    <button
+                      className="secondary"
+                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'available', value: !p.available })}
+                      disabled={toggleProductField.isPending}
+                      title={p.available ? 'Available' : 'Unavailable'}
+                    >
+                      {p.available ? '✓' : '✗'}
+                    </button>
+                    <button
+                      className="secondary"
+                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'featured', value: !p.featured })}
+                      disabled={toggleProductField.isPending}
+                      title={p.featured ? 'Featured' : 'Not featured'}
+                    >
+                      ⭐
+                    </button>
+                    <button
+                      className="secondary"
+                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'isSeasonal', value: !p.isSeasonal })}
+                      disabled={toggleProductField.isPending}
+                      title={p.isSeasonal ? 'Seasonal' : 'Not seasonal'}
+                    >
+                      🌿
+                    </button>
                     <button className="secondary" onClick={() => startEditProduct(p)}>
                       Edit
                     </button>
-                    <button className="danger" onClick={() => deleteProduct(p.id)}>
+                    <button className="danger" onClick={() => deleteProduct(p.id)} disabled={deleteProductMutation.isPending}>
                       Delete
                     </button>
                   </div>
@@ -596,8 +642,8 @@ export default function ProductsPage() {
               <option value="false">Unavailable</option>
             </select>
           )}
-          <button className="primary" onClick={handleBatchExecute}>
-            Apply to {selectedProductIds.length} products
+          <button className="primary" onClick={handleBatchExecute} disabled={batchMutation.isPending}>
+            {batchMutation.isPending ? '⏳...' : `Apply to ${selectedProductIds.length} products`}
           </button>
         </div>
       )}

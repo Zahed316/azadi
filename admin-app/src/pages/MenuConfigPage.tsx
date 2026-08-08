@@ -9,7 +9,7 @@ import LoadingScreen from '../components/Spinner';
 type Section = 'drinks' | 'beans' | 'cakes' | 'extras';
 
 export default function MenuConfigPage() {
-  const { setError, confirm } = useAppContext();
+  const { setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
   const { data: menuConfigs = [], isLoading } = useQuery({
@@ -32,11 +32,23 @@ export default function MenuConfigPage() {
   const toggleVisibilityMutation = useMutation({
     mutationFn: (data: { id: number; body: any }) =>
       apiFetch(`/menu-config/${data.id}`, { method: 'PUT', body: data.body }),
-    onSuccess: () => {
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.menuConfigs });
+      const prev = queryClient.getQueryData(queryKeys.menuConfigs);
+      queryClient.setQueryData(queryKeys.menuConfigs, (old: any[] | undefined) =>
+        old?.map((c) => (c.id === data.id ? { ...c, isVisible: !c.isVisible } : c)),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.prev) queryClient.setQueryData(queryKeys.menuConfigs, context.prev);
+      showToast('Visibility update failed', 'error');
+    },
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
     },
-    onError: (err: Error) => {
-      setError(err.message);
+    onSuccess: () => {
+      showToast('Visibility updated', 'success');
     },
   });
 
@@ -45,6 +57,7 @@ export default function MenuConfigPage() {
       apiFetch('/menu-config/reorder', { method: 'POST', body: { items } }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      showToast('Menu reordered', 'success');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -55,6 +68,7 @@ export default function MenuConfigPage() {
     mutationFn: (id: number) => apiFetch(`/menu-config/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      showToast('Item removed from menu', 'success');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -65,6 +79,7 @@ export default function MenuConfigPage() {
     mutationFn: (body: any) => apiFetch('/menu-config', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      showToast('Item added to menu', 'success');
       setMenuAddCatId('');
     },
     onError: (err: Error) => {
@@ -77,6 +92,7 @@ export default function MenuConfigPage() {
       apiFetch(`/menu-config/${data.id}`, { method: 'PUT', body: data.body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+      showToast('Menu item updated', 'success');
       setEditingSpecialMsg(null);
     },
     onError: (err: Error) => {
@@ -177,7 +193,7 @@ export default function MenuConfigPage() {
                   )}
                 </div>
                 <div className="list-item-actions">
-                  <button className="secondary" onClick={() => handleToggleMenuVisibility(config)}>
+                  <button className="secondary" onClick={() => handleToggleMenuVisibility(config)} disabled={toggleVisibilityMutation.isPending}>
                     {config.isVisible ? 'Hide' : 'Show'}
                   </button>
                   {idx > 0 && (
@@ -214,7 +230,7 @@ export default function MenuConfigPage() {
                   >
                     Label
                   </button>
-                  <button className="danger" onClick={() => handleDeleteMenuConfig(config.id)}>
+                  <button className="danger" onClick={() => handleDeleteMenuConfig(config.id)} disabled={deleteMenuConfigMutation.isPending}>
                     Delete
                   </button>
                 </div>
@@ -228,7 +244,7 @@ export default function MenuConfigPage() {
                         rows={3}
                       />
                     </Field>
-                    <button className="primary" onClick={() => handleSaveSpecialMessage(config.id)}>
+                    <button className="primary" onClick={() => handleSaveSpecialMessage(config.id)} disabled={saveSpecialMessageMutation.isPending}>
                       Save
                     </button>
                     <button className="secondary" onClick={() => setEditingSpecialMsg(null)}>
@@ -246,7 +262,7 @@ export default function MenuConfigPage() {
                         dir="auto"
                       />
                     </Field>
-                    <button className="primary" onClick={() => handleSaveButtonLabel(config.id)}>
+                    <button className="primary" onClick={() => handleSaveButtonLabel(config.id)} disabled={saveSpecialMessageMutation.isPending}>
                       Save
                     </button>
                     <button className="secondary" onClick={() => setEditingButtonLabel(null)}>
@@ -272,8 +288,8 @@ export default function MenuConfigPage() {
             ))}
           </select>
         </Field>
-        <button className="primary" onClick={handleAddToSection}>
-          Add
+        <button className="primary" onClick={handleAddToSection} disabled={addToSectionMutation.isPending}>
+          {addToSectionMutation.isPending ? '⏳...' : 'Add'}
         </button>
       </div>
     </>

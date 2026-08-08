@@ -2,9 +2,10 @@ import { Bot, session } from 'grammy';
 import { conversations } from '@grammyjs/conversations';
 import { D1Database } from '@cloudflare/workers-types';
 import { mainMenu } from './menus/mainMenu';
+import { discoverMenu } from './menus/discoverMenu';
+import { infoMenu } from './menus/infoMenu';
 import { beansMenu, cakesMenu } from './menus/productsMenu';
 import { drinksNavMenu } from './menus/drinksNavMenu';
-import { branchesMenu } from './menus/branchesMenu';
 
 import { setupAdminCommands } from './commands/admin';
 import { setupMessageHandlers } from './handlers/message';
@@ -104,9 +105,10 @@ export function createBot(env: Env): Bot<MyContext> {
   }
 
   // Register Menus
+  mainMenu.register(discoverMenu);
+  mainMenu.register(infoMenu);
   mainMenu.register(drinksNavMenu);
   mainMenu.register(beansMenu);
-  mainMenu.register(branchesMenu);
   mainMenu.register(cakesMenu);
 
   bot.use(mainMenu);

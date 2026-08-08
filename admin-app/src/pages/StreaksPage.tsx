@@ -117,7 +117,7 @@ export default function StreaksPage() {
       <div className="card">
         <h2>Users</h2>
         {users.length === 0 ? (
-          <EmptyState message="0 کاربر ثبت نشده است — برای فعال‌سازی STREAK_MESSAGES=true را تنظیم کنید" />
+          <EmptyState message="User visit streaks will appear here once tracking is enabled." />
         ) : (
           <ul className="list">
             {sortedUsers.map((u) => (
