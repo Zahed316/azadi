@@ -32,12 +32,23 @@ export default function MenuConfigPage() {
   const toggleVisibilityMutation = useMutation({
     mutationFn: (data: { id: number; body: any }) =>
       apiFetch(`/menu-config/${data.id}`, { method: 'PUT', body: data.body }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
-      showToast('Visibility updated', 'success');
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.menuConfigs });
+      const prev = queryClient.getQueryData(queryKeys.menuConfigs);
+      queryClient.setQueryData(queryKeys.menuConfigs, (old: any[] | undefined) =>
+        old?.map((c) => (c.id === data.id ? { ...c, isVisible: !c.isVisible } : c)),
+      );
+      return { prev };
     },
-    onError: (err: Error) => {
-      setError(err.message);
+    onError: (_err, _vars, context) => {
+      if (context?.prev) queryClient.setQueryData(queryKeys.menuConfigs, context.prev);
+      showToast('Visibility update failed', 'error');
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
+    },
+    onSuccess: () => {
+      showToast('Visibility updated', 'success');
     },
   });
 

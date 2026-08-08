@@ -159,6 +159,28 @@ export default function ProductsPage() {
     },
   });
 
+  const toggleProductField = useMutation({
+    mutationFn: ({ id, field, value }: { id: number; field: string; value: boolean }) =>
+      field === 'available'
+        ? apiFetch(`/products/${id}/toggle`, { method: 'PUT', body: { available: value } })
+        : apiFetch(`/products/${id}`, { method: 'PUT', body: { [field]: value } }),
+    onMutate: async ({ id, field, value }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.products });
+      const prev = queryClient.getQueryData(queryKeys.products);
+      queryClient.setQueryData(queryKeys.products, (old: any[] | undefined) =>
+        old?.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.prev) queryClient.setQueryData(queryKeys.products, context.prev);
+      showToast('Toggle failed', 'error');
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+    },
+  });
+
   if (isLoading) return <LoadingScreen />;
 
   const toggleProductSelect = (id: number) => {
@@ -559,6 +581,30 @@ export default function ProductsPage() {
                 </div>
                 {(isSuperAdmin || allowedCatId) && (
                   <div className="list-item-actions">
+                    <button
+                      className="secondary"
+                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'available', value: !p.available })}
+                      disabled={toggleProductField.isPending}
+                      title={p.available ? 'Available' : 'Unavailable'}
+                    >
+                      {p.available ? '✓' : '✗'}
+                    </button>
+                    <button
+                      className="secondary"
+                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'featured', value: !p.featured })}
+                      disabled={toggleProductField.isPending}
+                      title={p.featured ? 'Featured' : 'Not featured'}
+                    >
+                      ⭐
+                    </button>
+                    <button
+                      className="secondary"
+                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'isSeasonal', value: !p.isSeasonal })}
+                      disabled={toggleProductField.isPending}
+                      title={p.isSeasonal ? 'Seasonal' : 'Not seasonal'}
+                    >
+                      🌿
+                    </button>
                     <button className="secondary" onClick={() => startEditProduct(p)}>
                       Edit
                     </button>
