@@ -469,12 +469,25 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     await ctx.answerCallbackQuery();
   });
 
-  // Rating skip callback
+  // Rating skip callback — also handles "skip name" from the initial prompt
   bot.callbackQuery('rate:skip', async (ctx) => {
     if (!ctx.session?.messageFlow) return;
-    ctx.session.messageFlow.rating = undefined;
-    ctx.session.messageFlow.step = 'confirm';
     const flow = ctx.session.messageFlow;
+
+    // If we're on the name step, skip means "send anonymously"
+    if (flow.step === 'name') {
+      flow.isAnonymous = true;
+      flow.step = 'content';
+      await ctx.editMessageText('پیام خود را بنویسید:', {
+        reply_markup: new InlineKeyboard().text('❌ انصراف', 'msg:cancel'),
+      });
+      await ctx.answerCallbackQuery();
+      return;
+    }
+
+    // Otherwise (rating step), skip means "no rating"
+    flow.rating = undefined;
+    flow.step = 'confirm';
     const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
     await ctx.editMessageText(
       `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ بدون امتیاز\n\n📝 ${flow.content}`,

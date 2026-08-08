@@ -223,7 +223,11 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         return;
       }
       ctx.session.messageFlow = { step: 'name' };
-      await ctx.reply('نام شما چیست؟\n(برای ارسال ناشناس، /skip بزنید)\nبرای لغو، /cancel بزنید.');
+      await ctx.reply('نام شما چیست؟', {
+        reply_markup: new InlineKeyboard()
+          .text('⏭ ناشناس ارسال کن', 'rate:skip')
+          .text('❌ انصراف', 'msg:cancel'),
+      });
     } catch (e) {
       console.error(e);
       await ctx.reply('خطا در ارتباط با سرور.');
