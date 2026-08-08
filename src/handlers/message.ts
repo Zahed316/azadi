@@ -54,7 +54,7 @@ export async function runAiQuery(
   return aiService.processQuery(query, userId, [], []);
 }
 
-export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env) {
+export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
   bot.on('message:text', async (ctx) => {
     // Handle multi-step message flow (feedback/contact/anonymous)
     if (ctx.session?.messageFlow) {

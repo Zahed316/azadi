@@ -22,11 +22,15 @@ export class ProductRepository {
     this.db = getDb(d1Binding);
   }
 
-  async getAllProducts() {
+  async getAllProducts(): Promise<typeof products.$inferSelect[]> {
     return await this.db.select().from(products);
   }
 
-  async getAllProductsWithDetails() {
+  async getAllProductsWithDetails(): Promise<Array<{
+    products: typeof products.$inferSelect;
+    coffee_details: typeof coffeeDetails.$inferSelect | null;
+    categories: typeof categories.$inferSelect | null;
+  }>> {
     return await this.db
       .select()
       .from(products)
@@ -34,16 +38,16 @@ export class ProductRepository {
       .leftJoin(categories, eq(products.categoryId, categories.id));
   }
 
-  async getProductById(id: number) {
+  async getProductById(id: number): Promise<typeof products.$inferSelect | undefined> {
     const result = await this.db.select().from(products).where(eq(products.id, id));
     return result[0];
   }
 
-  async addProduct(product: typeof products.$inferInsert) {
+  async addProduct(product: typeof products.$inferInsert): Promise<typeof products.$inferSelect[]> {
     return await this.db.insert(products).values(product).returning();
   }
 
-  async updateProduct(id: number, data: Partial<typeof products.$inferInsert>) {
+  async updateProduct(id: number, data: Partial<typeof products.$inferInsert>): Promise<typeof products.$inferSelect[]> {
     return await this.db
       .update(products)
       .set({ ...data, updatedAt: new Date() })
@@ -51,11 +55,11 @@ export class ProductRepository {
       .returning();
   }
 
-  async deleteProduct(id: number) {
+  async deleteProduct(id: number): Promise<typeof products.$inferSelect[]> {
     return await this.db.delete(products).where(eq(products.id, id)).returning();
   }
 
-  async updateStock(id: number, newStock: number) {
+  async updateStock(id: number, newStock: number): Promise<typeof products.$inferSelect[]> {
     return await this.db
       .update(products)
       .set({ stock: newStock, updatedAt: new Date() })
@@ -63,7 +67,7 @@ export class ProductRepository {
       .returning();
   }
 
-  async getProductsByCategory(categoryId: number) {
+  async getProductsByCategory(categoryId: number): Promise<typeof products.$inferSelect[]> {
     return await this.db
       .select()
       .from(products)
@@ -78,7 +82,7 @@ export class ProductRepository {
    * the only flags exposed in the public menu (others like `priceOnRequest`
    * are per-product pricing concerns, not catalogue surface flags).
    */
-  async getByFlag(flag: 'featured' | 'isSeasonal') {
+  async getByFlag(flag: 'featured' | 'isSeasonal'): Promise<typeof products.$inferSelect[]> {
     const column = flag === 'featured' ? products.featured : products.isSeasonal;
     return await this.db
       .select()
@@ -92,7 +96,10 @@ export class ProductRepository {
    * surface. Joins coffee_details so the caller can read origin/farm/etc. in
    * one query instead of N+1.
    */
-  async getBeansWithCoffeeDetails() {
+  async getBeansWithCoffeeDetails(): Promise<Array<{
+    product: typeof products.$inferSelect;
+    details: typeof coffeeDetails.$inferSelect;
+  }>> {
     return await this.db
       .select({
         product: products,
@@ -103,7 +110,7 @@ export class ProductRepository {
       .where(eq(products.available, true));
   }
 
-  async toggleAvailability(id: number, available: boolean) {
+  async toggleAvailability(id: number, available: boolean): Promise<typeof products.$inferSelect[]> {
     return await this.db
       .update(products)
       .set({ available, updatedAt: new Date() })
@@ -126,7 +133,7 @@ export class ProductRepository {
       body?: string | null;
       brewGuide?: string | null;
     } | null,
-  ) {
+  ): Promise<void> {
     // Delete existing details first
     await this.db.delete(coffeeDetails).where(eq(coffeeDetails.productId, productId));
     // Insert new details if provided
@@ -135,7 +142,7 @@ export class ProductRepository {
     }
   }
 
-  async getCoffeeDetails(productId: number) {
+  async getCoffeeDetails(productId: number): Promise<typeof coffeeDetails.$inferSelect | null> {
     const result = await this.db
       .select()
       .from(coffeeDetails)
@@ -147,7 +154,11 @@ export class ProductRepository {
    * Return the most-favorited products across all users, with category name
    * and favorited count. Used by the AI context to surface popular items.
    */
-  async getPopularProducts(limit: number = 5) {
+  async getPopularProducts(limit: number = 5): Promise<Array<{
+    name: string;
+    category: string;
+    favoritedCount: number;
+  }>> {
     return await this.db
       .select({
         name: products.name,
@@ -170,24 +181,24 @@ export class CategoryRepository {
     this.db = getDb(d1Binding);
   }
 
-  async getAllCategories() {
+  async getAllCategories(): Promise<typeof categories.$inferSelect[]> {
     return await this.db.select().from(categories).orderBy(categories.sortOrder);
   }
 
-  async getCategoryById(id: number) {
+  async getCategoryById(id: number): Promise<typeof categories.$inferSelect | undefined> {
     const result = await this.db.select().from(categories).where(eq(categories.id, id));
     return result[0];
   }
 
-  async addCategory(data: typeof categories.$inferInsert) {
+  async addCategory(data: typeof categories.$inferInsert): Promise<typeof categories.$inferSelect[]> {
     return await this.db.insert(categories).values(data).returning();
   }
 
-  async updateCategory(id: number, data: Partial<typeof categories.$inferInsert>) {
+  async updateCategory(id: number, data: Partial<typeof categories.$inferInsert>): Promise<typeof categories.$inferSelect[]> {
     return await this.db.update(categories).set(data).where(eq(categories.id, id)).returning();
   }
 
-  async deleteCategory(id: number) {
+  async deleteCategory(id: number): Promise<typeof categories.$inferSelect[]> {
     return await this.db.delete(categories).where(eq(categories.id, id)).returning();
   }
 }
@@ -199,28 +210,28 @@ export class BranchRepository {
     this.db = getDb(d1Binding);
   }
 
-  async getAllBranches() {
+  async getAllBranches(): Promise<typeof branches.$inferSelect[]> {
     return await this.db.select().from(branches);
   }
 
-  async getActiveBranches() {
+  async getActiveBranches(): Promise<typeof branches.$inferSelect[]> {
     return await this.db.select().from(branches).where(eq(branches.isActive, true));
   }
 
-  async getBranchById(id: number) {
+  async getBranchById(id: number): Promise<typeof branches.$inferSelect | undefined> {
     const result = await this.db.select().from(branches).where(eq(branches.id, id));
     return result[0];
   }
 
-  async addBranch(data: typeof branches.$inferInsert) {
+  async addBranch(data: typeof branches.$inferInsert): Promise<typeof branches.$inferSelect[]> {
     return await this.db.insert(branches).values(data).returning();
   }
 
-  async updateBranch(id: number, data: Partial<typeof branches.$inferInsert>) {
+  async updateBranch(id: number, data: Partial<typeof branches.$inferInsert>): Promise<typeof branches.$inferSelect[]> {
     return await this.db.update(branches).set(data).where(eq(branches.id, id)).returning();
   }
 
-  async deleteBranch(id: number) {
+  async deleteBranch(id: number): Promise<typeof branches.$inferSelect[]> {
     return await this.db.delete(branches).where(eq(branches.id, id)).returning();
   }
 }
@@ -232,24 +243,24 @@ export class FaqRepository {
     this.db = getDb(d1Binding);
   }
 
-  async getAll() {
+  async getAll(): Promise<typeof faq.$inferSelect[]> {
     return await this.db.select().from(faq);
   }
 
-  async getById(id: number) {
+  async getById(id: number): Promise<typeof faq.$inferSelect | undefined> {
     const result = await this.db.select().from(faq).where(eq(faq.id, id));
     return result[0];
   }
 
-  async add(question: string, answer: string) {
+  async add(question: string, answer: string): Promise<typeof faq.$inferSelect[]> {
     return await this.db.insert(faq).values({ question, answer }).returning();
   }
 
-  async delete(id: number) {
+  async delete(id: number): Promise<typeof faq.$inferSelect[]> {
     return await this.db.delete(faq).where(eq(faq.id, id)).returning();
   }
 
-  async update(id: number, question: string, answer: string) {
+  async update(id: number, question: string, answer: string): Promise<typeof faq.$inferSelect[]> {
     return await this.db.update(faq).set({ question, answer }).where(eq(faq.id, id)).returning();
   }
 }
@@ -261,7 +272,7 @@ export class SettingsRepository {
     this.db = getDb(d1Binding);
   }
 
-  async getAllSettings() {
+  async getAllSettings(): Promise<typeof settings.$inferSelect[]> {
     return await this.db.select().from(settings);
   }
 
@@ -270,7 +281,7 @@ export class SettingsRepository {
     return result[0]?.value || null;
   }
 
-  async setValue(key: string, value: string) {
+  async setValue(key: string, value: string): Promise<typeof settings.$inferSelect[]> {
     return await this.db
       .insert(settings)
       .values({ key, value })
@@ -278,7 +289,7 @@ export class SettingsRepository {
       .returning();
   }
 
-  async deleteSetting(key: string) {
+  async deleteSetting(key: string): Promise<typeof settings.$inferSelect[]> {
     return await this.db.delete(settings).where(eq(settings.key, key)).returning();
   }
 }
@@ -290,7 +301,7 @@ export class AiLogRepository {
     this.db = getDb(d1Binding);
   }
 
-  async logConversation(userId: string, question: string, response: string) {
+  async logConversation(userId: string, question: string, response: string): Promise<typeof aiConversationLogs.$inferSelect[]> {
     return await this.db
       .insert(aiConversationLogs)
       .values({
@@ -302,7 +313,7 @@ export class AiLogRepository {
       .returning();
   }
 
-  async getRecentLogs(userId: string, limit: number = 5) {
+  async getRecentLogs(userId: string, limit: number = 5): Promise<typeof aiConversationLogs.$inferSelect[]> {
     return await this.db
       .select()
       .from(aiConversationLogs)
@@ -311,7 +322,7 @@ export class AiLogRepository {
       .limit(limit);
   }
 
-  async getAllLogs(limit: number = 50, offset: number = 0) {
+  async getAllLogs(limit: number = 50, offset: number = 0): Promise<typeof aiConversationLogs.$inferSelect[]> {
     return await this.db
       .select()
       .from(aiConversationLogs)
@@ -320,7 +331,7 @@ export class AiLogRepository {
       .offset(offset);
   }
 
-  async getLogsByUser(userId: string, limit: number = 50) {
+  async getLogsByUser(userId: string, limit: number = 50): Promise<typeof aiConversationLogs.$inferSelect[]> {
     return await this.db
       .select()
       .from(aiConversationLogs)
@@ -338,7 +349,17 @@ export class MenuConfigRepository {
   }
 
   /** Get all visible entries for a section with joined category data */
-  async getBySection(section: string) {
+  async getBySection(section: string): Promise<Array<{
+    id: number;
+    categoryId: number;
+    menuSection: string;
+    displayOrder: number;
+    isVisible: boolean;
+    buttonLabel: string | null;
+    specialMessage: string | null;
+    categoryName: string | null;
+    categoryEmoji: string | null;
+  }>> {
     return await this.db
       .select({
         id: menuConfig.id,
@@ -358,7 +379,17 @@ export class MenuConfigRepository {
   }
 
   /** Get all entries (admin UI — includes hidden) */
-  async getAll() {
+  async getAll(): Promise<Array<{
+    id: number;
+    categoryId: number;
+    menuSection: string;
+    displayOrder: number;
+    isVisible: boolean;
+    buttonLabel: string | null;
+    specialMessage: string | null;
+    categoryName: string | null;
+    categoryEmoji: string | null;
+  }>> {
     return await this.db
       .select({
         id: menuConfig.id,
@@ -376,11 +407,11 @@ export class MenuConfigRepository {
       .orderBy(menuConfig.menuSection, menuConfig.displayOrder);
   }
 
-  async add(data: typeof menuConfig.$inferInsert) {
+  async add(data: typeof menuConfig.$inferInsert): Promise<typeof menuConfig.$inferSelect[]> {
     return await this.db.insert(menuConfig).values(data).returning();
   }
 
-  async update(id: number, data: Partial<typeof menuConfig.$inferInsert>) {
+  async update(id: number, data: Partial<typeof menuConfig.$inferInsert>): Promise<typeof menuConfig.$inferSelect[]> {
     return await this.db
       .update(menuConfig)
       .set({ ...data, updatedAt: new Date() })
@@ -388,11 +419,11 @@ export class MenuConfigRepository {
       .returning();
   }
 
-  async delete(id: number) {
+  async delete(id: number): Promise<typeof menuConfig.$inferSelect[]> {
     return await this.db.delete(menuConfig).where(eq(menuConfig.id, id)).returning();
   }
 
-  async reorder(items: { id: number; displayOrder: number }[]) {
+  async reorder(items: { id: number; displayOrder: number }[]): Promise<void> {
     await Promise.allSettled(
       items.map((item) =>
         this.db
@@ -441,7 +472,7 @@ export class UserStateRepository {
     this.db = getDb(d1Binding);
   }
 
-  async getByTelegramId(telegramId: string) {
+  async getByTelegramId(telegramId: string): Promise<typeof userState.$inferSelect | null> {
     const rows = await this.db.select().from(userState).where(eq(userState.telegramId, telegramId));
     return rows[0] ?? null;
   }
@@ -451,7 +482,7 @@ export class UserStateRepository {
    * most-recent activity. No WHERE clause — the admin surface sees every
    * tracked user. No pagination (the table is small in practice).
    */
-  async listAll() {
+  async listAll(): Promise<typeof userState.$inferSelect[]> {
     return await this.db
       .select()
       .from(userState)
@@ -628,7 +659,12 @@ export class FavoritesRepository {
    * Returns a flat list; the client groups by telegramId or productId
    * depending on the page's "groupBy" toggle.
    */
-  async listAllGrouped() {
+  async listAllGrouped(): Promise<Array<{
+    telegramId: string;
+    productId: number;
+    productName: string | null;
+    favoritedAt: Date;
+  }>> {
     return await this.db
       .select({
         telegramId: favorites.telegramId,
@@ -671,7 +707,7 @@ export class MessageRepository {
     content: string;
     rating?: number | null;
     isAnonymous?: boolean;
-  }) {
+  }): Promise<typeof messages.$inferSelect[]> {
     return await this.db.insert(messages).values({
       telegramId: data.telegramId,
       senderName: data.senderName ?? null,
@@ -683,21 +719,21 @@ export class MessageRepository {
     }).returning();
   }
 
-  async getAll(limit = 50, offset = 0) {
+  async getAll(limit = 50, offset = 0): Promise<typeof messages.$inferSelect[]> {
     return await this.db.select().from(messages).orderBy(desc(messages.createdAt)).limit(limit).offset(offset);
   }
 
-  async getById(id: number) {
+  async getById(id: number): Promise<typeof messages.$inferSelect | null> {
     const result = await this.db.select().from(messages).where(eq(messages.id, id));
     return result[0] || null;
   }
 
-  async markRead(id: number) {
-    return await this.db.update(messages).set({ isRead: true }).where(eq(messages.id, id));
+  async markRead(id: number): Promise<void> {
+    await this.db.update(messages).set({ isRead: true }).where(eq(messages.id, id));
   }
 
-  async markReplied(id: number, replyText: string) {
-    return await this.db.update(messages).set({
+  async markReplied(id: number, replyText: string): Promise<void> {
+    await this.db.update(messages).set({
       replied: true,
       replyText,
       repliedAt: new Date(),
@@ -705,7 +741,7 @@ export class MessageRepository {
     }).where(eq(messages.id, id));
   }
 
-  async getUnreadCount() {
+  async getUnreadCount(): Promise<number> {
     const result = await this.db.select({ count: sql<number>`count(*)` }).from(messages).where(eq(messages.replied, false));
     return result[0]?.count ?? 0;
   }

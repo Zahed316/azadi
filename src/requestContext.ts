@@ -16,10 +16,10 @@ import { Env } from './bot';
 let _execCtx: ExecutionContext | undefined;
 let _env: Env | undefined;
 
-export const setRequestContext = (env: Env, ctx: ExecutionContext) => {
+export const setRequestContext = (env: Env, ctx: ExecutionContext): void => {
   _env = env;
   _execCtx = ctx;
 };
 
-export const getExecCtx = () => _execCtx;
-export const getEnv = () => _env;
+export const getExecCtx = (): ExecutionContext | undefined => _execCtx;
+export const getEnv = (): Env | undefined => _env;

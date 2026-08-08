@@ -1,0 +1,13 @@
+export { handleAdmins } from './admins';
+export { handleSettings } from './settings';
+export { handleCategories } from './categories';
+export { handleProducts } from './products';
+export { handleFaqs } from './faqs';
+export { handleBranches } from './branches';
+export { handleMenuConfig } from './menu-config';
+export { handleMessages } from './messages';
+export { handleFavorites } from './favorites';
+export { handleAiLogs } from './ai-logs';
+export { handleAiTest } from './ai-test';
+export { handleStreaks } from './streaks';
+export type { ResourceHandler, ResourceCtx } from './types';

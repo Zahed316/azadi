@@ -16,7 +16,7 @@ import { MyContext } from '../types/context';
 
 const backKeyboard = () => new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
 
-export function setupCallbackHandlers(bot: Bot<MyContext>) {
+export function setupCallbackHandlers(bot: Bot<MyContext>): void {
   bot.callbackQuery('back:main', async (ctx) => {
     try {
       await ctx.answerCallbackQuery();

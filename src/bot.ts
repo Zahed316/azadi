@@ -28,7 +28,7 @@ export interface Env {
   STREAK_CRON_ENABLED?: string;
 }
 
-export function createBot(env: Env) {
+export function createBot(env: Env): Bot<MyContext> {
   const bot = new Bot<MyContext>(env.TELEGRAM_BOT_TOKEN);
 
   bot.use(async (ctx, next) => {
