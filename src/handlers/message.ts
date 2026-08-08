@@ -82,11 +82,15 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         if (text === '/skip') {
           flow.isAnonymous = true;
           flow.step = 'content';
-          await ctx.reply('پیام خود را بنویسید:');
+          await ctx.reply('پیام خود را بنویسید:', {
+            reply_markup: new InlineKeyboard().text('❌ انصراف', 'msg:cancel'),
+          });
         } else {
           flow.name = text;
           flow.step = 'content';
-          await ctx.reply(`متشکرم ${text}! حالا پیام خود را بنویسید:`);
+          await ctx.reply(`متشکرم ${text}! حالا پیام خود را بنویسید:`, {
+            reply_markup: new InlineKeyboard().text('❌ انصراف', 'msg:cancel'),
+          });
         }
         return;
       }
@@ -94,7 +98,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
       if (flow.step === 'content') {
         flow.content = text;
         flow.step = 'rating';
-        await ctx.reply('آیا می‌خواهید امتیاز بدهید؟\n(عدد ۱ تا ۵ وارد کنید یا /skip برای رد کردن)', {
+        await ctx.reply('آیا می‌خواهید امتیاز بدهید؟', {
           reply_markup: new InlineKeyboard()
             .text('۱ ⭐', 'rate:1')
             .text('۲ ⭐', 'rate:2')
@@ -115,7 +119,17 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         } else if (num >= 1 && num <= 5) {
           flow.rating = num;
         } else {
-          await ctx.reply('لطفاً عددی بین ۱ تا ۵ وارد کنید یا /skip بزنید.');
+          await ctx.reply('لطفاً عددی بین ۱ تا ۵ وارد کنید یا دکمه رد کردن را بزنید.', {
+            reply_markup: new InlineKeyboard()
+              .text('۱ ⭐', 'rate:1')
+              .text('۲ ⭐', 'rate:2')
+              .text('۳ ⭐', 'rate:3')
+              .row()
+              .text('۴ ⭐', 'rate:4')
+              .text('۵ ⭐', 'rate:5')
+              .row()
+              .text('⏭ رد کردن', 'rate:skip'),
+          });
           return;
         }
         flow.step = 'confirm';
