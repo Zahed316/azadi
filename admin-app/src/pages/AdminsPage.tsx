@@ -24,7 +24,7 @@ export default function AdminsPage() {
     mutationFn: (body: any) => apiFetch('/admins', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admins });
-      showToast('Admin added', 'success');
+      showToast('ادمین اضافه شد', 'success');
       setAdminId('');
       setAdminCatId('');
     },
@@ -37,7 +37,7 @@ export default function AdminsPage() {
     mutationFn: (id: number) => apiFetch(`/admins/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admins });
-      showToast('Admin removed', 'success');
+      showToast('ادمین حذف شد', 'success');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -52,39 +52,39 @@ export default function AdminsPage() {
   };
 
   const deleteAdmin = async (id: number) => {
-    if (!(await confirm('Remove admin?'))) return;
+    if (!(await confirm('ادمین حذف شود؟'))) return;
     deleteAdminMutation.mutate(id);
   };
 
   return (
     <>
       <div className="card">
-        <h2>Add Admin</h2>
+        <h2>افزودن ادمین</h2>
         <form onSubmit={handleSaveAdmin}>
-          <Field label="Telegram ID">
+          <Field label="آیدی تلگرام">
             <input value={adminId} onChange={(e) => setAdminId(e.target.value)} required />
           </Field>
-          <Field label="Role">
+          <Field label="نقش">
             <select value={adminRole} onChange={(e) => setAdminRole(e.target.value)}>
-              <option value="category_admin">Category Admin</option>
-              <option value="super_admin">Super Admin</option>
+              <option value="category_admin">ادمین دسته‌بندی</option>
+              <option value="super_admin">ادمین کل</option>
             </select>
           </Field>
           {adminRole === 'category_admin' && (
-            <Field label="Category ID">
+            <Field label="آیدی دسته‌بندی">
               <input value={adminCatId} onChange={(e) => setAdminCatId(e.target.value)} />
             </Field>
           )}
           <button type="submit" className="primary" disabled={addAdminMutation.isPending}>
-            {addAdminMutation.isPending ? '⏳...' : 'Add Admin'}
+            {addAdminMutation.isPending ? '⏳...' : 'افزودن ادمین'}
           </button>
         </form>
       </div>
 
       <div className="card">
-        <h2>Admins</h2>
+        <h2>ادمین‌ها</h2>
         {admins.length === 0 ? (
-          <EmptyState message="No admins yet. Add a Telegram ID to grant admin access." />
+          <EmptyState message="هنوز ادمینی وجود ندارد. برای اعطای دسترسی ادمین، آیدی تلگرام را اضافه کنید." />
         ) : (
           <ul className="list">
             {admins.map((a) => (
@@ -95,7 +95,7 @@ export default function AdminsPage() {
                 </div>
                 <div className="list-item-actions">
                   <button className="danger" onClick={() => deleteAdmin(a.id)} disabled={deleteAdminMutation.isPending}>
-                    Remove
+                    حذف
                   </button>
                 </div>
               </li>

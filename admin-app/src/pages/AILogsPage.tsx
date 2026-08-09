@@ -40,18 +40,18 @@ export default function AILogsPage() {
   return (
     <>
       <div className="card">
-        <h2>AI Conversation Logs</h2>
-        <Field label="Filter by User ID">
+        <h2>گزارش‌های مکالمه هوش مصنوعی</h2>
+        <Field label="فیلتر بر اساس آیدی کاربر">
           <input
             value={userFilter}
             onChange={(e) => setUserFilter(e.target.value)}
-            placeholder="Telegram user ID (optional)"
+            placeholder="آیدی تلگرام کاربر (اختیاری)"
           />
         </Field>
       </div>
       <div className="card">
         {logs.length === 0 ? (
-          <EmptyState message="AI conversation logs will appear as users interact with the bot." />
+          <EmptyState message="گزارش‌های مکالمه هوش مصنوعی با تعامل کاربران با ربات نمایش داده می‌شود." />
         ) : (
           <ul className="list">
             {logs.map((log) => (
@@ -66,10 +66,10 @@ export default function AILogsPage() {
                 </div>
                 <div style={{ width: '100%' }}>
                   <div style={{ fontSize: '0.85em', color: '#888' }}>
-                    Q: <span dir="auto">{log.question}</span>
+                    س: <span dir="auto">{log.question}</span>
                   </div>
                   <div style={{ fontSize: '0.85em', marginTop: 4 }}>
-                    A: <span dir="auto">{log.response}</span>
+                    ج: <span dir="auto">{log.response}</span>
                   </div>
                 </div>
               </li>

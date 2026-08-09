@@ -8,6 +8,7 @@ export const DEFAULT_PRICE_UNIT = 'تومان';
 const unitMap: Record<string, string> = {
   cup: 'فنجان',
   kg: 'کیلوگرم',
+  g: 'گرم',
   piece: 'عدد',
   slice: 'برش',
   item: 'عدد',

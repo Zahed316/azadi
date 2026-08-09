@@ -28,12 +28,12 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return this.props.fallback || (
         <div className="card" style={{ textAlign: 'center', padding: 32 }}>
-          <h2>⚠️ Something went wrong</h2>
+          <h2>⚠️ خطایی رخ داد</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>
-            {this.state.error?.message || 'An unexpected error occurred'}
+            {this.state.error?.message || 'خطای غیرمنتظره‌ای رخ داد'}
           </p>
           <button className="primary" onClick={() => this.setState({ hasError: false, error: null })}>
-            Try Again
+            تلاش مجدد
           </button>
         </div>
       );

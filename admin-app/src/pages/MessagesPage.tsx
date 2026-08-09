@@ -146,7 +146,7 @@ export function MessagesPage() {
 
       {filteredMessages.length === 0 ? (
         <div className="empty-state">
-          <p>User messages and feedback will appear here.</p>
+          <p>پیام‌ها و بازخورد کاربران اینجا نمایش داده می‌شود.</p>
         </div>
       ) : (
         <div className="messages-list">

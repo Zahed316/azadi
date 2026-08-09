@@ -76,10 +76,10 @@ export function useConfirm() {
             className="confirm-btn confirm-btn-cancel"
             onClick={handleCancel}
           >
-            Cancel
+            انصراف
           </button>
           <button type="button" className="confirm-btn confirm-btn-ok" onClick={handleConfirm}>
-            Confirm
+            تایید
           </button>
         </div>
       </div>

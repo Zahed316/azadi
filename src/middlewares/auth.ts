@@ -20,6 +20,6 @@ export async function adminAuth(ctx: MyContext, next: NextFunction): Promise<voi
   if (ctx.from && (await isAdmin(ctx.from.id, ctx.env.DB))) {
     await next();
   } else {
-    await ctx.reply('Unauthorized: You do not have admin permissions.');
+    await ctx.reply('⛔ دسترسی غیرمجاز: شما مجوز ادمین ندارید.');
   }
 }

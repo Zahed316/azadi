@@ -22,26 +22,26 @@ const MENU_VISIBILITY_KEYS = [
 ] as const;
 
 const MENU_VISIBILITY_LABELS: Record<string, string> = {
-  menu_visible_featured: '⭐ Featured (پیشنهاد ویژه)',
-  menu_visible_seasonal: '🌿 Seasonal (مخصوص فصل)',
-  menu_visible_passport: '📖 Coffee Passport (پاسپورت قهوه)',
-  menu_visible_search: '🔍 Search (جستجو)',
-  menu_visible_favorites: '⭐ My Menus (منوهای من)',
-  menu_visible_about: '🏠 About Us (درباره ما)',
-  menu_visible_drinks: '☕ Drinks (نوشیدنی‌ها)',
-  menu_visible_beans: '🌱 Beans (دانه‌های قهوه)',
-  menu_visible_cakes: '🍰 Cakes (کیک و کوکی)',
-  menu_visible_branches: '📍 Branches (شعب)',
-  menu_visible_faq: '❓ FAQ (سوالات متداول)',
+  menu_visible_featured: '⭐ پیشنهاد ویژه',
+  menu_visible_seasonal: '🌿 مخصوص فصل',
+  menu_visible_passport: '📖 پاسپورت قهوه',
+  menu_visible_search: '🔍 جستجو',
+  menu_visible_favorites: '⭐ منوهای من',
+  menu_visible_about: '🏠 درباره ما',
+  menu_visible_drinks: '☕ نوشیدنی‌ها',
+  menu_visible_beans: '🌱 دانه‌های قهوه',
+  menu_visible_cakes: '🍰 کیک و کوکی',
+  menu_visible_branches: '📍 شعب',
+  menu_visible_faq: '❓ سوالات متداول',
 };
 
 const BUILTIN_KEYS = ['instagram', 'phone', 'price_unit', 'ai_greeting', 'about'];
 const BUILTIN_LABELS: Record<string, string> = {
-  instagram: 'Instagram URL',
-  phone: 'Contact Phone',
-  price_unit: 'Price Unit',
-  ai_greeting: 'AI Greeting',
-  about: 'About Text (shown in "درباره ما" and AI context)',
+  instagram: 'آدرس اینستاگرام',
+  phone: 'تلفن تماس',
+  price_unit: 'واحد قیمت',
+  ai_greeting: 'پیام خوش‌آمدگویی هوش مصنوعی',
+  about: 'متن درباره ما (نمایش در «درباره ما» و متن هوش مصنوعی)',
 };
 
 export default function SettingsPage() {
@@ -67,7 +67,7 @@ export default function SettingsPage() {
     mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
-      showToast('Saved ✓');
+      showToast('ذخیره شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -79,7 +79,7 @@ export default function SettingsPage() {
       apiFetch(`/settings/${encodeURIComponent(key)}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
-      showToast('Setting deleted', 'success');
+      showToast('تنظیمات حذف شد', 'success');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -98,7 +98,7 @@ export default function SettingsPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
-      showToast('Saved ✓');
+      showToast('ذخیره شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -157,7 +157,7 @@ export default function SettingsPage() {
   };
 
   const handleDeleteSetting = async (key: string) => {
-    if (!(await confirm(`Delete setting ${key}?`))) return;
+    if (!(await confirm(`تنظیمات ${key} حذف شود؟`))) return;
     setLocalSettings((prev) => prev.filter((s: any) => s.key !== key));
     deleteSettingMutation.mutate(key);
   };
@@ -165,9 +165,9 @@ export default function SettingsPage() {
   return (
     <>
       <div className="card">
-        <h2>🔘 Menu Visibility</h2>
+        <h2>🔘 نمایش منو</h2>
         <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
-          Show or hide top-level bot menu sections. Hidden sections show an "unavailable" message to users.
+          نمایش یا مخفی‌سازی بخش‌های منوی اصلی ربات. بخش‌های مخفی‌شده پیام «در دسترس نیست» را به کاربران نشان می‌دهند.
         </p>
         <ul className="list">
           {MENU_VISIBILITY_KEYS.map((key) => (
@@ -175,7 +175,7 @@ export default function SettingsPage() {
               <div className="list-item-info">
                 <span>{MENU_VISIBILITY_LABELS[key]}</span>
                 <span className="list-item-meta">
-                  {menuVis[key] ? '✅ Visible' : '❌ Hidden'}
+                  {menuVis[key] ? '✅ قابل نمایش' : '❌ مخفی'}
                 </span>
               </div>
               <div className="list-item-actions">
@@ -184,7 +184,7 @@ export default function SettingsPage() {
                   onClick={() => handleToggleMenuVis(key, !menuVis[key])}
                   disabled={saveMenuVisMutation.isPending}
                 >
-                  {saveMenuVisMutation.isPending ? '...' : (menuVis[key] ? 'Hide' : 'Show')}
+                  {saveMenuVisMutation.isPending ? '...' : (menuVis[key] ? 'مخفی کردن' : 'نمایش')}
                 </button>
               </div>
             </li>
@@ -193,7 +193,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="card">
-        <h2>Bot Settings</h2>
+        <h2>تنظیمات ربات</h2>
         <form onSubmit={handleSaveSettings}>
           {BUILTIN_KEYS.map((key) => (
             <Field key={key} label={BUILTIN_LABELS[key] || key}>
@@ -214,15 +214,15 @@ export default function SettingsPage() {
             </Field>
           ))}
           <button type="submit" className="primary" disabled={saveSettingsMutation.isPending}>
-            {saveSettingsMutation.isPending ? '⏳...' : 'Save Settings'}
+            {saveSettingsMutation.isPending ? '⏳...' : 'ذخیره تنظیمات'}
           </button>
         </form>
       </div>
 
       <div className="card">
-        <h2>Custom Settings</h2>
+        <h2>تنظیمات سفارشی</h2>
         {localSettings.filter((s: any) => !BUILTIN_KEYS.includes(s.key)).length === 0 ? (
-          <EmptyState message="No custom settings." />
+          <EmptyState message="تنظیمات سفارشی وجود ندارد." />
         ) : (
           <ul className="list">
             {localSettings
@@ -237,7 +237,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="list-item-actions">
                     <button className="danger" onClick={() => handleDeleteSetting(s.key)} disabled={deleteSettingMutation.isPending}>
-                      Delete
+                      حذف
                     </button>
                   </div>
                 </li>
@@ -247,95 +247,95 @@ export default function SettingsPage() {
       </div>
 
       <div className="card">
-        <h2>Add Custom Setting</h2>
+        <h2>افزودن تنظیمات سفارشی</h2>
         <form onSubmit={handleAddSetting}>
-          <Field label="Key">
+          <Field label="کلید">
             <input
               value={newSettingKey}
               onChange={(e) => setNewSettingKey(e.target.value)}
               required
             />
           </Field>
-          <Field label="Value">
+          <Field label="مقدار">
             <input value={newSettingValue} onChange={(e) => setNewSettingValue(e.target.value)} />
           </Field>
           <button type="submit" className="primary">
-            Add Setting
+            افزودن تنظیمات
           </button>
         </form>
       </div>
 
       <div className="card">
-        <h2>System Health</h2>
+        <h2>سلامت سیستم</h2>
         <ul className="list">
           <li className="list-item">
             <div className="list-item-info">
-              <span>API Status</span>
-              <span className="list-item-meta">{health?.status === 'ok' ? '✅ Healthy' : '⚠️ ' + (health?.status ?? 'Unknown')}</span>
+              <span>وضعیت API</span>
+              <span className="list-item-meta">{health?.status === 'ok' ? '✅ سالم' : '⚠️ ' + (health?.status ?? 'ناشناخته')}</span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
-              <span>Database</span>
-              <span className="list-item-meta">{health?.db ? '✅ Connected' : '❌ Unreachable'}</span>
+              <span>پایگاه داده</span>
+              <span className="list-item-meta">{health?.db ? '✅ متصل' : '❌ در دسترس نیست'}</span>
             </div>
           </li>
         </ul>
       </div>
 
       <div className="card">
-        <h2>Feature Flags (read-only)</h2>
+        <h2>پرچم‌های ویژگی (فقط خواندنی)</h2>
         <ul className="list">
           <li className="list-item">
             <div className="list-item-info">
               <span>STREAK_MESSAGES</span>
-              <span className="list-item-meta">{streakConfig?.streakMessages ? '✅ ON' : '❌ OFF'}</span>
+              <span className="list-item-meta">{streakConfig?.streakMessages ? '✅ روشن' : '❌ خاموش'}</span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
               <span>STREAK_CRON_ENABLED</span>
-              <span className="list-item-meta">{streakConfig?.streakCronEnabled ? '✅ ON' : '❌ OFF'}</span>
+              <span className="list-item-meta">{streakConfig?.streakCronEnabled ? '✅ روشن' : '❌ خاموش'}</span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
               <span>USE_CONVERSATIONS</span>
-              <span className="list-item-meta" style={{ color: '#999' }}>🔒 Requires code changes</span>
+              <span className="list-item-meta" style={{ color: '#999' }}>🔒 نیاز به تغییر کد</span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
               <span>PERF_LOG</span>
-              <span className="list-item-meta" style={{ color: '#999' }}>🔒 Set via wrangler secret</span>
+              <span className="list-item-meta" style={{ color: '#999' }}>🔒 تنظیم از طریق wrangler secret</span>
             </div>
           </li>
         </ul>
       </div>
 
       <div className="card">
-        <h2>🤖 AI Assistant</h2>
+        <h2>🤖 دستیار هوش مصنوعی</h2>
         <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
-          The AI assistant's personality and behavior are configured in the bot's source code (<code>AiService</code>).
-          The settings below affect the context the AI uses:
+          شخصیت و رفتار دستیار هوش مصنوعی در کد منبع ربات (<code>AiService</code>) پیکربندی شده است.
+          تنظیمات زیر روی متنی که هوش مصنوعی استفاده می‌کند اثر می‌گذارد:
         </p>
         <ul className="list">
           <li className="list-item">
             <div className="list-item-info">
-              <span><b>about</b> — Shop description in AI context</span>
-              <span className="list-item-meta">↑ Set above</span>
+              <span><b>about</b> — توضیحات فروشگاه در متن هوش مصنوعی</span>
+              <span className="list-item-meta">↑ در بالا تنظیم شده</span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
-              <span><b>ai_greeting</b> — Initial greeting message</span>
-              <span className="list-item-meta">↑ Set above</span>
+              <span><b>ai_greeting</b> — پیام خوش‌آمدگویی اولیه</span>
+              <span className="list-item-meta">↑ در بالا تنظیم شده</span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
-              <span><b>Products / FAQs / Branches</b> — All managed data feeds the AI</span>
-              <span className="list-item-meta">↑ Managed in their pages</span>
+              <span><b>Products / FAQs / Branches</b> — همه داده‌های مدیریت‌شده به هوش مصنوعی داده می‌شود</span>
+              <span className="list-item-meta">↑ در صفحاتشان مدیریت می‌شود</span>
             </div>
           </li>
         </ul>

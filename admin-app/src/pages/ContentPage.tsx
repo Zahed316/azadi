@@ -29,7 +29,7 @@ export default function ContentPage() {
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.faqs });
       resetFaqForm();
-      showToast(variables.id ? 'FAQ updated ✓' : 'FAQ added ✓');
+      showToast(variables.id ? 'سوال متداول به‌روزرسانی شد ✓' : 'سوال متداول اضافه شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -41,7 +41,7 @@ export default function ContentPage() {
     mutationFn: (id: number) => apiFetch(`/faqs/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.faqs });
-      showToast('FAQ deleted ✓');
+      showToast('سوال متداول حذف شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -61,7 +61,7 @@ export default function ContentPage() {
   };
 
   const deleteFaq = async (id: number) => {
-    if (!(await confirm('Delete this FAQ?'))) return;
+    if (!(await confirm('این سوال متداول حذف شود؟'))) return;
     deleteFaqMutation.mutate(id);
   };
 
@@ -80,9 +80,9 @@ export default function ContentPage() {
   return (
     <>
       <div className="card">
-        <h2>{editingFaq ? 'Edit FAQ' : 'Add FAQ'}</h2>
+        <h2>{editingFaq ? 'ویرایش سوال متداول' : 'افزودن سوال متداول'}</h2>
         <form onSubmit={handleSaveFaq}>
-          <Field label="Question">
+          <Field label="سوال">
             <input
               value={faqQuestion}
               onChange={(e) => setFaqQuestion(e.target.value)}
@@ -90,7 +90,7 @@ export default function ContentPage() {
               required
             />
           </Field>
-          <Field label="Answer">
+          <Field label="پاسخ">
             <textarea
               value={faqAnswer}
               onChange={(e) => setFaqAnswer(e.target.value)}
@@ -99,20 +99,20 @@ export default function ContentPage() {
             />
           </Field>
           <button type="submit" className="primary" disabled={saveFaqMutation.isPending}>
-            {saveFaqMutation.isPending ? '⏳...' : (editingFaq ? 'Update' : 'Add') + ' FAQ'}
+            {saveFaqMutation.isPending ? '⏳...' : (editingFaq ? 'به‌روزرسانی' : 'افزودن') + ' سوال متداول'}
           </button>
           {editingFaq && (
             <button type="button" className="secondary" onClick={resetFaqForm}>
-              Cancel
+              انصراف
             </button>
           )}
         </form>
       </div>
 
       <div className="card">
-        <h2>FAQs</h2>
+        <h2>سوالات متداول</h2>
         {faqs.length === 0 ? (
-          <EmptyState message="No FAQs yet." />
+          <EmptyState message="هنوز سوال متداولی وجود ندارد." />
         ) : (
           <ul className="list">
             {faqs.map((f) => (
@@ -122,10 +122,10 @@ export default function ContentPage() {
                 </div>
                 <div className="list-item-actions">
                   <button className="secondary" onClick={() => startEditFaq(f)}>
-                    Edit
+                    ویرایش
                   </button>
                   <button className="danger" onClick={() => deleteFaq(f.id)} disabled={deleteFaqMutation.isPending}>
-                    Delete
+                    حذف
                   </button>
                 </div>
               </li>

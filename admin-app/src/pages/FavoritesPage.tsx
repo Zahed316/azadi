@@ -48,7 +48,7 @@ export default function FavoritesPage() {
         by: currentUser?.telegramId,
         at: new Date().toISOString(),
       });
-      showToast('Favorite removed ✓');
+      showToast('مورد محبوب حذف شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -90,7 +90,7 @@ export default function FavoritesPage() {
   }, [data, groupBy]);
 
   const handleRemove = async (telegramId: string, productId: number) => {
-    if (!(await confirm('Remove this favorite?'))) return;
+    if (!(await confirm('این مورد محبوب حذف شود؟'))) return;
     removeMutation.mutate({ telegramId, productId });
   };
 
@@ -108,32 +108,32 @@ export default function FavoritesPage() {
     <>
       <div className="card">
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <StatTile label="Total favorites" value={totalFavorites} />
-          <StatTile label="Unique users" value={uniqueUsers} />
-          <StatTile label="Unique products" value={uniqueProducts} />
+          <StatTile label="کل موارد محبوب" value={totalFavorites} />
+          <StatTile label="کاربران یکتا" value={uniqueUsers} />
+          <StatTile label="محصولات یکتا" value={uniqueProducts} />
         </div>
       </div>
 
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-          <strong>Group by:</strong>
+          <strong>گروه‌بندی بر اساس:</strong>
           <button
             type="button"
             className={groupBy === 'user' ? 'primary' : 'secondary'}
             onClick={() => setGroupBy('user')}
           >
-            User
+            کاربر
           </button>
           <button
             type="button"
             className={groupBy === 'product' ? 'primary' : 'secondary'}
             onClick={() => setGroupBy('product')}
           >
-            Product
+            محصول
           </button>
         </div>
         {favorites.length === 0 ? (
-          <EmptyState message="Users' favorited products will appear here." />
+          <EmptyState message="محصولات محبوب کاربران اینجا نمایش داده می‌شود." />
         ) : groupBy === 'user' ? (
           <ul className="list">
             {(grouped as Array<{ telegramId: string; count: number; lastFavorited: number }>).map(
@@ -142,7 +142,7 @@ export default function FavoritesPage() {
                   <div className="list-item-info">
                     <span>{g.telegramId}</span>
                     <span className="list-item-meta">
-                      {g.count} favorite{g.count === 1 ? '' : 's'} · last{' '}
+                      {g.count} مورد محبوب · آخرین{' '}
                       {new Date(g.lastFavorited).toLocaleDateString()}
                     </span>
                   </div>
@@ -158,7 +158,7 @@ export default function FavoritesPage() {
               .map((f) => (
                 <li key={`${f.telegramId}-${f.productId}`} className="list-item">
                   <div className="list-item-info">
-                    <span dir="auto">{f.productName ?? `(deleted #${f.productId})`}</span>
+                    <span dir="auto">{f.productName ?? `(حذف‌شده #${f.productId})`}</span>
                     <span className="list-item-meta">
                       {f.telegramId} · {new Date(toMillis(f.favoritedAt)).toLocaleDateString()}
                     </span>
@@ -170,7 +170,7 @@ export default function FavoritesPage() {
                       disabled={removeMutation.isPending}
                       onClick={() => handleRemove(f.telegramId, f.productId)}
                     >
-                      Remove
+                      حذف
                     </button>
                   </div>
                 </li>

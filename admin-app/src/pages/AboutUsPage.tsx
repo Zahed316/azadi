@@ -31,7 +31,7 @@ export default function AboutUsPage() {
     mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
-      showToast('About text saved ✓');
+      showToast('متن درباره ما ذخیره شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -62,7 +62,7 @@ export default function AboutUsPage() {
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.branches });
       resetBranchForm();
-      showToast(variables.id ? 'Location updated ✓' : 'Location added ✓');
+      showToast(variables.id ? 'مکان به‌روزرسانی شد ✓' : 'مکان اضافه شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -74,7 +74,7 @@ export default function AboutUsPage() {
     mutationFn: (id: number) => apiFetch(`/branches/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.branches });
-      showToast('Location deleted ✓');
+      showToast('مکان حذف شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -111,7 +111,7 @@ export default function AboutUsPage() {
   };
 
   const deleteBranch = async (id: number) => {
-    if (!(await confirm('Delete this location?'))) return;
+    if (!(await confirm('این مکان حذف شود؟'))) return;
     deleteBranchMutation.mutate(id);
   };
 
@@ -138,28 +138,28 @@ export default function AboutUsPage() {
   return (
     <>
       <div className="card">
-        <h2>About Us</h2>
-        <Field label="About Text">
+        <h2>درباره ما</h2>
+        <Field label="متن درباره ما">
           <textarea
             value={aboutText}
             onChange={(e) => setAboutText(e.target.value)}
             rows={6}
             dir="auto"
-            placeholder="About text shown in the bot..."
+            placeholder="متنی که در ربات نمایش داده می‌شود..."
           />
         </Field>
         <button className="primary" onClick={handleSaveAbout} disabled={saveAboutMutation.isPending}>
-          {saveAboutMutation.isPending ? '⏳...' : 'Save About Text'}
+          {saveAboutMutation.isPending ? '⏳...' : 'ذخیره متن درباره ما'}
         </button>
       </div>
 
       <div className="card">
-        <h2>{editingBranch ? 'Edit Location' : 'Add Location'}</h2>
+        <h2>{editingBranch ? 'ویرایش مکان' : 'افزودن مکان'}</h2>
         <form onSubmit={handleSaveBranch}>
-          <Field label="Name">
+          <Field label="نام">
             <input value={branchName} onChange={(e) => setBranchName(e.target.value)} required />
           </Field>
-          <Field label="Address">
+          <Field label="آدرس">
             <input
               value={branchAddress}
               onChange={(e) => setBranchAddress(e.target.value)}
@@ -167,20 +167,20 @@ export default function AboutUsPage() {
               required
             />
           </Field>
-          <Field label="Phone">
+          <Field label="تلفن">
             <input value={branchPhone} onChange={(e) => setBranchPhone(e.target.value)} />
           </Field>
-          <Field label="Location (URL)">
+          <Field label="مکان (لینک)">
             <input value={branchLocation} onChange={(e) => setBranchLocation(e.target.value)} />
           </Field>
-          <Field label="Opening Hours">
+          <Field label="ساعت کاری">
             <input
               value={branchHours}
               onChange={(e) => setBranchHours(e.target.value)}
               dir="auto"
             />
           </Field>
-          <Field label="Active">
+          <Field label="فعال">
             <input
               type="checkbox"
               checked={branchActive}
@@ -188,20 +188,20 @@ export default function AboutUsPage() {
             />
           </Field>
           <button type="submit" className="primary" disabled={saveBranchMutation.isPending}>
-            {saveBranchMutation.isPending ? '⏳...' : (editingBranch ? 'Update' : 'Add') + ' Location'}
+            {saveBranchMutation.isPending ? '⏳...' : (editingBranch ? 'به‌روزرسانی' : 'افزودن') + ' مکان'}
           </button>
           {editingBranch && (
             <button type="button" className="secondary" onClick={resetBranchForm}>
-              Cancel
+              انصراف
             </button>
           )}
         </form>
       </div>
 
       <div className="card">
-        <h2>Locations</h2>
+        <h2>شعب</h2>
         {branches.length === 0 ? (
-          <EmptyState message="No locations yet." />
+          <EmptyState message="هنوز شعبی وجود ندارد." />
         ) : (
           <ul className="list">
             {branches.map((b) => (
@@ -214,10 +214,10 @@ export default function AboutUsPage() {
                 </div>
                 <div className="list-item-actions">
                   <button className="secondary" onClick={() => startEditBranch(b)}>
-                    Edit
+                    ویرایش
                   </button>
                   <button className="danger" onClick={() => deleteBranch(b.id)} disabled={deleteBranchMutation.isPending}>
-                    Delete
+                    حذف
                   </button>
                 </div>
               </li>

@@ -93,6 +93,17 @@ test('formatProduct formats physical goods with stock', () => {
   const result = formatProduct(product);
   expect(result).toContain('۲ کیلوگرم');
 });
+
+test('formatProduct localizes gram unit', () => {
+  const product = makeProduct({
+    name: 'Ground Coffee',
+    price: 150000,
+    stock: 300,
+    unit: 'g',
+  });
+  const result = formatProduct(product);
+  expect(result).toContain('۳۰۰ گرم');
+});
 test('formatBranch formats correctly', () => {
   const branch = makeBranch({
     name: 'Main Branch',

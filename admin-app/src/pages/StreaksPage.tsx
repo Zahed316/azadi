@@ -78,7 +78,7 @@ export default function StreaksPage() {
   return (
     <>
       <div className="card">
-        <h2>Streak Configuration</h2>
+        <h2>تنظیمات استریک</h2>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <input
@@ -90,7 +90,7 @@ export default function StreaksPage() {
                   .catch((err) => setError(err.message));
               }}
             />
-            Streak Messages
+            پیام‌های استریک
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <input
@@ -102,22 +102,22 @@ export default function StreaksPage() {
                   .catch((err) => setError(err.message));
               }}
             />
-            Streak Sweep Cron
+            کرون بروزرسانی استریک
           </label>
         </div>
       </div>
       <div className="card">
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <StatTile label="Users tracked" value={users.length} hint="all-time" />
-          <StatTile label="Active today" value={activeToday} hint="UTC" />
-          <StatTile label="Top streak" value={topStreak} hint="days" />
-          <StatTile label="Median visits" value={med} hint="per user" />
+          <StatTile label="کاربران ردیابی‌شده" value={users.length} hint="کل زمان" />
+          <StatTile label="فعال امروز" value={activeToday} hint="UTC" />
+          <StatTile label="بیشترین استریک" value={topStreak} hint="روز" />
+          <StatTile label="میانه بازدید" value={med} hint="به ازای هر کاربر" />
         </div>
       </div>
       <div className="card">
-        <h2>Users</h2>
+        <h2>کاربران</h2>
         {users.length === 0 ? (
-          <EmptyState message="User visit streaks will appear here once tracking is enabled." />
+          <EmptyState message="استریک بازدید کاربران پس از فعال‌سازی ردیابی اینجا نمایش داده می‌شود." />
         ) : (
           <ul className="list">
             {sortedUsers.map((u) => (
@@ -125,7 +125,7 @@ export default function StreaksPage() {
                 <div className="list-item-info">
                   <span>{u.telegramId}</span>
                   <span className="list-item-meta">
-                    visits {u.visitsTotal} · last {new Date(toMillis(u.lastSeenAt)).toLocaleDateString()}
+                    بازدید {u.visitsTotal} · آخرین {new Date(toMillis(u.lastSeenAt)).toLocaleDateString()}
                   </span>
                 </div>
                 <div className="list-item-actions">
@@ -134,18 +134,18 @@ export default function StreaksPage() {
                     className="secondary"
                     onClick={() => toggleSort('streakDays')}
                   >
-                    🔥 {u.streakDays}d
+                    🔥 {u.streakDays} روز
                   </button>
                   <button
                     type="button"
                     className="secondary"
                     onClick={async () => {
-                      if (!(await confirm(`Reset streak for ${u.telegramId}?`))) return;
+                      if (!(await confirm(`استریک کاربر ${u.telegramId} بازنشانی شود؟`))) return;
                       await apiFetch('/streaks/reset', { method: 'POST', body: { telegramId: u.telegramId } });
                       void queryClient.invalidateQueries({ queryKey: queryKeys.streaks });
                     }}
                   >
-                    ↺ Reset
+                    ↺ بازنشانی
                   </button>
                   <button
                     type="button"

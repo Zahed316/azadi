@@ -9,7 +9,7 @@ export function setupAdminCommands(bot: Bot<MyContext>, _env: Env): void {
     // This should be the deployed URL of the React admin app.
     const webAppUrl = 'https://azadi-admin.pages.dev';
 
-    const keyboard = new InlineKeyboard().webApp('⚙️ Open Admin Panel', webAppUrl);
+    const keyboard = new InlineKeyboard().webApp('⚙️ پنل مدیریت', webAppUrl);
 
     await ctx.reply(
       'پنل مدیریت رستری قهوه آزادی:\nبرای مدیریت محصولات، موجودی و شعب، روی دکمه زیر کلیک کنید.',

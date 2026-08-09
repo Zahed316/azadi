@@ -6,15 +6,15 @@ export default function InfoPage() {
   return (
     <>
       <div className="card">
-        <h2>🏠 About Us</h2>
+        <h2>🏠 درباره ما</h2>
         <AboutUsPage />
       </div>
       <div className="card">
-        <h2>📝 Content (FAQ)</h2>
+        <h2>📝 محتوا (سوالات متداول)</h2>
         <ContentPage />
       </div>
       <div className="card">
-        <h2>✉️ Messages</h2>
+        <h2>✉️ پیام‌ها</h2>
         <MessagesPage />
       </div>
     </>

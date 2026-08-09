@@ -42,13 +42,13 @@ export default function MenuConfigPage() {
     },
     onError: (_err, _vars, context) => {
       if (context?.prev) queryClient.setQueryData(queryKeys.menuConfigs, context.prev);
-      showToast('Visibility update failed', 'error');
+      showToast('خطا در به‌روزرسانی نمایش', 'error');
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
     },
     onSuccess: () => {
-      showToast('Visibility updated', 'success');
+      showToast('نمایش به‌روزرسانی شد', 'success');
     },
   });
 
@@ -57,7 +57,7 @@ export default function MenuConfigPage() {
       apiFetch('/menu-config/reorder', { method: 'POST', body: { items } }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
-      showToast('Menu reordered', 'success');
+      showToast('ترتیب منو تغییر کرد', 'success');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -68,7 +68,7 @@ export default function MenuConfigPage() {
     mutationFn: (id: number) => apiFetch(`/menu-config/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
-      showToast('Item removed from menu', 'success');
+      showToast('آیتم از منو حذف شد', 'success');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -79,7 +79,7 @@ export default function MenuConfigPage() {
     mutationFn: (body: any) => apiFetch('/menu-config', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
-      showToast('Item added to menu', 'success');
+      showToast('آیتم به منو اضافه شد', 'success');
       setMenuAddCatId('');
     },
     onError: (err: Error) => {
@@ -92,7 +92,7 @@ export default function MenuConfigPage() {
       apiFetch(`/menu-config/${data.id}`, { method: 'PUT', body: data.body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
-      showToast('Menu item updated', 'success');
+      showToast('آیتم منو به‌روزرسانی شد', 'success');
       setEditingSpecialMsg(null);
     },
     onError: (err: Error) => {
@@ -125,7 +125,7 @@ export default function MenuConfigPage() {
   };
 
   const handleDeleteMenuConfig = async (id: number) => {
-    if (!(await confirm('Remove from menu?'))) return;
+    if (!(await confirm('از منو حذف شود؟'))) return;
     deleteMenuConfigMutation.mutate(id);
   };
 
@@ -159,9 +159,9 @@ export default function MenuConfigPage() {
   return (
     <>
       <div className="card">
-        <h2>Menu Configuration</h2>
+        <h2>تنظیمات منو</h2>
         <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 12 }}>
-          Menu order here controls the bot's inline keyboard layout. Sections: ☕ Drinks, 🌱 Beans, 🍰 Cakes, 📍 Branches. Use the bot's <code>/start</code> command to preview the result.
+          ترتیب منو در اینجا چیدمان دکمه‌های ربات را کنترل می‌کند. بخش‌ها: ☕ نوشیدنی‌ها، 🌱 دانه‌های قهوه، 🍰 کیک و کوکی، 📍 شعب. برای پیش‌نمایش نتیجه از دستور <code>/start</code> ربات استفاده کنید.
         </p>
         <div className="section-tabs">
           {(['drinks', 'beans', 'cakes', 'extras'] as Section[]).map((sec) => (
@@ -170,22 +170,22 @@ export default function MenuConfigPage() {
               className={`tab ${menuActiveSection === sec ? 'active' : ''}`}
               onClick={() => setMenuActiveSection(sec)}
             >
-              {sec.charAt(0).toUpperCase() + sec.slice(1)}
+              {({ drinks: 'نوشیدنی‌ها', beans: 'دانه‌های قهوه', cakes: 'کیک و کوکی', extras: 'سایر' } as Record<Section, string>)[sec]}
             </button>
           ))}
         </div>
 
         {sectionItems.length === 0 ? (
-          <div className="empty-state">No items in this section.</div>
+          <div className="empty-state">آیتمی در این بخش وجود ندارد.</div>
         ) : (
           <ul className="list">
             {sectionItems.map((config: any, idx: number) => (
               <li key={config.id} className="list-item">
                 <div className="list-item-info">
                   <span dir="auto">
-                    {categories.find((c: any) => c.id === config.categoryId)?.name || 'Unknown'}
+                    {categories.find((c: any) => c.id === config.categoryId)?.name || 'ناشناخته'}
                   </span>
-                  <span className="list-item-meta">{config.isVisible ? 'Visible' : 'Hidden'}</span>
+                  <span className="list-item-meta">{config.isVisible ? 'نمایش' : 'مخفی'}</span>
                   {config.buttonLabel && (
                     <span className="list-item-meta" style={{ fontSize: '0.8em', opacity: 0.7 }}>
                       "{config.buttonLabel}"
@@ -194,7 +194,7 @@ export default function MenuConfigPage() {
                 </div>
                 <div className="list-item-actions">
                   <button className="secondary" onClick={() => handleToggleMenuVisibility(config)} disabled={toggleVisibilityMutation.isPending}>
-                    {config.isVisible ? 'Hide' : 'Show'}
+                    {config.isVisible ? 'مخفی کردن' : 'نمایش'}
                   </button>
                   {idx > 0 && (
                     <button
@@ -219,7 +219,7 @@ export default function MenuConfigPage() {
                       setSpecialMsgValue(config.specialMessage || '');
                     }}
                   >
-                    Msg
+                    پیام
                   </button>
                   <button
                     className="secondary"
@@ -228,15 +228,15 @@ export default function MenuConfigPage() {
                       setButtonLabelValue(config.buttonLabel || '');
                     }}
                   >
-                    Label
+                    برچسب
                   </button>
                   <button className="danger" onClick={() => handleDeleteMenuConfig(config.id)} disabled={deleteMenuConfigMutation.isPending}>
-                    Delete
+                    حذف
                   </button>
                 </div>
                 {editingSpecialMsg === config.id && (
                   <div className="special-msg-form">
-                    <Field label="Special Message">
+                    <Field label="پیام ویژه">
                       <textarea
                         value={specialMsgValue}
                         onChange={(e) => setSpecialMsgValue(e.target.value)}
@@ -245,28 +245,28 @@ export default function MenuConfigPage() {
                       />
                     </Field>
                     <button className="primary" onClick={() => handleSaveSpecialMessage(config.id)} disabled={saveSpecialMessageMutation.isPending}>
-                      Save
+                      ذخیره
                     </button>
                     <button className="secondary" onClick={() => setEditingSpecialMsg(null)}>
-                      Cancel
+                      انصراف
                     </button>
                   </div>
                 )}
                 {editingButtonLabel === config.id && (
                   <div className="special-msg-form">
-                    <Field label="Button Label (overrides default)">
+                    <Field label="برچسب دکمه (جایگزین پیش‌فرض)">
                       <input
                         value={buttonLabelValue}
                         onChange={(e) => setButtonLabelValue(e.target.value)}
-                        placeholder="Custom label for bot button"
+                        placeholder="برچسب سفارشی برای دکمه ربات"
                         dir="auto"
                       />
                     </Field>
                     <button className="primary" onClick={() => handleSaveButtonLabel(config.id)} disabled={saveSpecialMessageMutation.isPending}>
-                      Save
+                      ذخیره
                     </button>
                     <button className="secondary" onClick={() => setEditingButtonLabel(null)}>
-                      Cancel
+                      انصراف
                     </button>
                   </div>
                 )}
@@ -277,10 +277,10 @@ export default function MenuConfigPage() {
       </div>
 
       <div className="card">
-        <h2>Add to {menuActiveSection}</h2>
-        <Field label="Category">
+        <h2>افزودن به {({ drinks: 'نوشیدنی‌ها', beans: 'دانه‌های قهوه', cakes: 'کیک و کوکی', extras: 'سایر' } as Record<Section, string>)[menuActiveSection]}</h2>
+        <Field label="دسته‌بندی">
           <select value={menuAddCatId} onChange={(e) => setMenuAddCatId(e.target.value)}>
-            <option value="">Select category...</option>
+            <option value="">انتخاب دسته‌بندی...</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -289,7 +289,7 @@ export default function MenuConfigPage() {
           </select>
         </Field>
         <button className="primary" onClick={handleAddToSection} disabled={addToSectionMutation.isPending}>
-          {addToSectionMutation.isPending ? '⏳...' : 'Add'}
+          {addToSectionMutation.isPending ? '⏳...' : 'افزودن'}
         </button>
       </div>
     </>

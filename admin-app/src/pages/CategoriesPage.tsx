@@ -31,7 +31,7 @@ export default function CategoriesPage() {
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.categories });
       resetCategoryForm();
-      showToast(variables.id ? 'Category updated ✓' : 'Category added ✓');
+      showToast(variables.id ? 'دسته‌بندی به‌روزرسانی شد ✓' : 'دسته‌بندی اضافه شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -43,7 +43,7 @@ export default function CategoriesPage() {
     mutationFn: (id: number) => apiFetch(`/categories/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.categories });
-      showToast('Category deleted ✓');
+      showToast('دسته‌بندی حذف شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -63,7 +63,7 @@ export default function CategoriesPage() {
   };
 
   const deleteCategory = async (id: number) => {
-    if (!(await confirm('Are you sure?'))) return;
+    if (!(await confirm('مطمئن هستید؟'))) return;
     deleteCategoryMutation.mutate(id);
   };
 
@@ -88,26 +88,26 @@ export default function CategoriesPage() {
     <>
       {isSuperAdmin && (
         <div className="card">
-          <h2>{editingCategory ? 'Edit Category' : 'Add Category'}</h2>
+          <h2>{editingCategory ? 'ویرایش دسته‌بندی' : 'افزودن دسته‌بندی'}</h2>
           <form onSubmit={handleSaveCategory}>
-            <Field label="Name">
+            <Field label="نام">
               <input value={catName} onChange={(e) => setCatName(e.target.value)} required />
             </Field>
-            <Field label="Emoji">
+            <Field label="ایموجی">
               <input value={catEmoji} onChange={(e) => setCatEmoji(e.target.value)} />
             </Field>
-            <Field label="Description">
+            <Field label="توضیحات">
               <textarea value={catDesc} onChange={(e) => setCatDesc(e.target.value)} />
             </Field>
-            <Field label="Sort Order">
+            <Field label="ترتیب نمایش">
               <input type="number" value={catSort} onChange={(e) => setCatSort(e.target.value)} />
             </Field>
             <button type="submit" className="primary" disabled={saveCategoryMutation.isPending}>
-              {saveCategoryMutation.isPending ? '⏳...' : (editingCategory ? 'Update' : 'Add') + ' Category'}
+              {saveCategoryMutation.isPending ? '⏳...' : (editingCategory ? 'به‌روزرسانی' : 'افزودن') + ' دسته‌بندی'}
             </button>
             {editingCategory && (
               <button type="button" className="secondary" onClick={resetCategoryForm}>
-                Cancel
+                انصراف
               </button>
             )}
           </form>
@@ -115,9 +115,9 @@ export default function CategoriesPage() {
       )}
 
       <div className="card">
-        <h2>Categories</h2>
+        <h2>دسته‌بندی‌ها</h2>
         {categories.length === 0 ? (
-          <EmptyState message="Categories help organize your menu. Add one to start." />
+          <EmptyState message="دسته‌بندی‌ها به مرتب‌سازی منو کمک می‌کنند. برای شروع یکی اضافه کنید." />
         ) : (
           <ul className="list">
             {categories.map((c) => (
@@ -130,10 +130,10 @@ export default function CategoriesPage() {
                 {isSuperAdmin && (
                   <div className="list-item-actions">
                     <button className="secondary" onClick={() => startEditCategory(c)}>
-                      Edit
+                      ویرایش
                     </button>
                     <button className="danger" onClick={() => deleteCategory(c.id)} disabled={deleteCategoryMutation.isPending}>
-                      Delete
+                      حذف
                     </button>
                   </div>
                 )}

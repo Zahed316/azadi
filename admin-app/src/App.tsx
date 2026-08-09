@@ -78,20 +78,20 @@ function AppInner() {
             </Routes>
           </ErrorBoundary>
           </main>
-          <nav className="bottom-nav" aria-label="Main navigation">
+          <nav className="bottom-nav" aria-label="ناوبری اصلی">
             <NavLink
               to="/products"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
               onClick={scrollToTop}
             >
-              <span className="nav-icon">📦</span>Products
+              <span className="nav-icon">📦</span>محصولات
             </NavLink>
             <NavLink
               to="/categories"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
               onClick={scrollToTop}
             >
-              <span className="nav-icon">🏷️</span>Categories
+              <span className="nav-icon">🏷️</span>دسته‌بندی‌ها
             </NavLink>
             {isSuperAdmin && (
               <>
@@ -100,21 +100,21 @@ function AppInner() {
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   onClick={scrollToTop}
                 >
-                  <span className="nav-icon">📊</span>Insights
+                  <span className="nav-icon">📊</span>آمار و گزارش
                 </NavLink>
                 <NavLink
                   to="/configure"
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   onClick={scrollToTop}
                 >
-                  <span className="nav-icon">⚙️</span>Configure
+                  <span className="nav-icon">⚙️</span>تنظیمات
                 </NavLink>
                 <NavLink
                   to="/info"
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   onClick={scrollToTop}
                 >
-                  <span className="nav-icon">ℹ️</span>Info
+                  <span className="nav-icon">ℹ️</span>اطلاعات
                 </NavLink>
               </>
             )}

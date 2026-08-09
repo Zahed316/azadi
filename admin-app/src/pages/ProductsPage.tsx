@@ -92,7 +92,7 @@ export default function ProductsPage() {
     try {
       await apiFetch(`/products/${productId}/image`, { method: 'DELETE' });
       setProdImageUrl('');
-      showToast('Image removed');
+      showToast('تصویر حذف شد');
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
     } catch (err: any) {
       setError(err.message);
@@ -107,7 +107,7 @@ export default function ProductsPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
       setSelectedProductIds([]);
       setBatchAction('');
-      showToast('Batch action completed ✓');
+      showToast('عملیات گروهی انجام شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -139,7 +139,7 @@ export default function ProductsPage() {
     onSuccess: async (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
       resetProductForm();
-      showToast(variables.id ? 'Product updated ✓' : 'Product added ✓');
+      showToast(variables.id ? 'محصول به‌روزرسانی شد ✓' : 'محصول اضافه شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -151,7 +151,7 @@ export default function ProductsPage() {
     mutationFn: (id: number) => apiFetch(`/products/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
-      showToast('Product deleted ✓');
+      showToast('محصول حذف شد ✓');
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -174,7 +174,7 @@ export default function ProductsPage() {
     },
     onError: (_err, _vars, context) => {
       if (context?.prev) queryClient.setQueryData(queryKeys.products, context.prev);
-      showToast('Toggle failed', 'error');
+      showToast('خطا در تغییر وضعیت', 'error');
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
@@ -191,7 +191,7 @@ export default function ProductsPage() {
 
   const handleBatchExecute = async () => {
     if (!batchAction || selectedProductIds.length === 0) return;
-    if (!(await confirm(`Apply action to ${selectedProductIds.length} products?`))) return;
+    if (!(await confirm(`عملیات روی ${selectedProductIds.length} محصول اعمال شود؟`))) return;
     let updateData = undefined;
     if (batchAction === 'move') updateData = { categoryId: parseInt(batchTargetCatId) };
     if (batchAction === 'toggle') updateData = { available: batchToggleValue === 'true' };
@@ -231,7 +231,7 @@ export default function ProductsPage() {
   };
 
   const deleteProduct = async (id: number) => {
-    if (!(await confirm('Are you sure you want to delete this product?'))) return;
+    if (!(await confirm('مطمئن هستید این محصول حذف شود؟'))) return;
     deleteProductMutation.mutate(id);
   };
 
@@ -304,12 +304,12 @@ export default function ProductsPage() {
     <>
       {(isSuperAdmin || allowedCatId) && (
         <div className="card">
-          <h2>{editingProduct ? 'Edit Product' : 'Add Product'}</h2>
+          <h2>{editingProduct ? 'ویرایش محصول' : 'افزودن محصول'}</h2>
           <form onSubmit={handleSaveProduct}>
-            <Field label="Name">
+            <Field label="نام">
               <input value={prodName} onChange={(e) => setProdName(e.target.value)} required />
             </Field>
-            <Field label="Price">
+            <Field label="قیمت">
               <input
                 type="number"
                 value={prodPrice}
@@ -317,7 +317,7 @@ export default function ProductsPage() {
                 required
               />
             </Field>
-            <Field label="Stock">
+            <Field label="موجودی">
               <input
                 type="number"
                 value={prodStock}
@@ -325,7 +325,7 @@ export default function ProductsPage() {
                 required
               />
             </Field>
-            <Field label="Category">
+            <Field label="دسته‌بندی">
               <select value={prodCatId} onChange={(e) => setProdCatId(e.target.value)}>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -334,65 +334,65 @@ export default function ProductsPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Description">
+            <Field label="توضیحات">
               <textarea value={prodDesc} onChange={(e) => setProdDesc(e.target.value)} />
             </Field>
-            <Field label="Available">
+            <Field label="موجود است">
               <input
                 type="checkbox"
                 checked={prodAvailable}
                 onChange={(e) => setProdAvailable(e.target.checked)}
               />
             </Field>
-            <Field label="⭐ Featured">
+            <Field label="⭐ پیشنهاد ویژه">
               <input
                 type="checkbox"
                 checked={prodFeatured}
                 onChange={(e) => setProdFeatured(e.target.checked)}
               />
             </Field>
-            <Field label="🌿 Seasonal">
+            <Field label="🌿 مخصوص فصل">
               <input
                 type="checkbox"
                 checked={prodSeasonal}
                 onChange={(e) => setProdSeasonal(e.target.checked)}
               />
             </Field>
-            <Field label="💲 Price on Request">
+            <Field label="💲 قیمت درخواستی">
               <input
                 type="checkbox"
                 checked={prodPriceOnRequest}
                 onChange={(e) => setProdPriceOnRequest(e.target.checked)}
               />
             </Field>
-            <Field label="Unit">
+            <Field label="واحد">
               <select value={prodUnit} onChange={(e) => setProdUnit(e.target.value)}>
-                <option value="item">Item</option>
-                <option value="cup">Cup</option>
-                <option value="kg">Kilogram</option>
-                <option value="g">Gram</option>
-                <option value="slice">Slice</option>
-                <option value="piece">Piece</option>
+                <option value="item">عدد</option>
+                <option value="cup">فنجان</option>
+                <option value="kg">کیلوگرم</option>
+                <option value="g">گرم</option>
+                <option value="slice">برش</option>
+                <option value="piece">عدد</option>
               </select>
             </Field>
-            <Field label="Size Options (JSON array)">
+            <Field label="گزینه‌های سایز (آرایه JSON)">
               <input
                 value={prodSizeOptions}
                 onChange={(e) => setProdSizeOptions(e.target.value)}
-                placeholder='["Small", "Medium", "Large"]'
+                placeholder='["کوچک", "متوسط", "بزرگ"]'
                 dir="auto"
               />
             </Field>
-            <Field label="Syrup Options (JSON array)">
+            <Field label="گزینه‌های سیروپ (آرایه JSON)">
               <input
                 value={prodSyrupOptions}
                 onChange={(e) => setProdSyrupOptions(e.target.value)}
-                placeholder='["Vanilla", "Caramel"]'
+                placeholder='["وانیل", "کارامل"]'
                 dir="auto"
               />
             </Field>
 
-            <div className="section-divider">Product Image</div>
+            <div className="section-divider">تصویر محصول</div>
             {editingProduct?.imageUrl && !prodImageUrl && (
               <div style={{ marginBottom: '8px' }}>
                 <img
@@ -406,7 +406,7 @@ export default function ProductsPage() {
                   style={{ marginLeft: '8px' }}
                   onClick={() => removeImage(editingProduct.id)}
                 >
-                  Remove
+                  حذف
                 </button>
               </div>
             )}
@@ -420,7 +420,7 @@ export default function ProductsPage() {
                 />
               </div>
             )}
-            <Field label="Image URL">
+            <Field label="آدرس تصویر">
               <input
                 value={prodImageUrl}
                 onChange={(e) => setProdImageUrl(e.target.value)}
@@ -436,39 +436,39 @@ export default function ProductsPage() {
                   rel="noopener noreferrer"
                   style={{ fontSize: '0.85em', color: '#4a90d9' }}
                 >
-                  🔗 Preview image in new tab
+                  🔗 پیش‌نمایش تصویر در تب جدید
                 </a>
               </div>
             )}
 
-            <div className="section-divider">Nutritional Information</div>
-            <Field label="Calories (kcal)">
+            <div className="section-divider">اطلاعات تغذیه‌ای</div>
+            <Field label="کالری (کیلوکالری)">
               <input
                 type="number"
                 value={prodCalories}
                 onChange={(e) => setProdCalories(e.target.value)}
-                placeholder="e.g. 120"
+                placeholder="مثلاً ۱۲۰"
               />
             </Field>
-            <Field label="Caffeine (mg)">
+            <Field label="کافئین (میلی‌گرم)">
               <input
                 type="number"
                 value={prodCaffeine}
                 onChange={(e) => setProdCaffeine(e.target.value)}
-                placeholder="e.g. 63"
+                placeholder="مثلاً ۶۳"
               />
             </Field>
-            <Field label="Allergens">
+            <Field label="آلرژن‌ها">
               <input
                 value={prodAllergens}
                 onChange={(e) => setProdAllergens(e.target.value)}
-                placeholder="e.g. milk, gluten"
+                placeholder="مثلاً شیر، گلوتن"
                 dir="auto"
               />
             </Field>
 
-            <div className="section-divider">Coffee Details (optional)</div>
-            <Field label="Is Coffee Bean?">
+            <div className="section-divider">جزئیات قهوه (اختیاری)</div>
+            <Field label="دانه قهوه است؟">
               <input
                 type="checkbox"
                 checked={isCoffeeBean}
@@ -477,67 +477,67 @@ export default function ProductsPage() {
             </Field>
             {isCoffeeBean && (
               <>
-                <Field label="Origin">
+                <Field label="خاستگاه">
                   <input value={coffeeOrigin} onChange={(e) => setCoffeeOrigin(e.target.value)} />
                 </Field>
-                <Field label="Farm">
+                <Field label="مزرعه">
                   <input value={coffeeFarm} onChange={(e) => setCoffeeFarm(e.target.value)} />
                 </Field>
-                <Field label="Altitude">
+                <Field label="ارتفاع">
                   <input
                     value={coffeeAltitude}
                     onChange={(e) => setCoffeeAltitude(e.target.value)}
                   />
                 </Field>
-                <Field label="Processing">
+                <Field label="فرآوری">
                   <input
                     value={coffeeProcessing}
                     onChange={(e) => setCoffeeProcessing(e.target.value)}
                   />
                 </Field>
-                <Field label="Variety">
+                <Field label="رقم">
                   <input value={coffeeVariety} onChange={(e) => setCoffeeVariety(e.target.value)} />
                 </Field>
-                <Field label="Roast Level">
+                <Field label="درجه رست">
                   <input
                     value={coffeeRoastLevel}
                     onChange={(e) => setCoffeeRoastLevel(e.target.value)}
                   />
                 </Field>
-                <Field label="Flavor Notes">
+                <Field label="نت‌های طعمی">
                   <input
                     value={coffeeFlavorNotes}
                     onChange={(e) => setCoffeeFlavorNotes(e.target.value)}
                   />
                 </Field>
-                <Field label="Recommended Brew">
+                <Field label="دم‌آوری پیشنهادی">
                   <input
                     value={coffeeRecommendedBrew}
                     onChange={(e) => setCoffeeRecommendedBrew(e.target.value)}
                   />
                 </Field>
-                <Field label="Acidity">
+                <Field label="اسیدیته">
                   <input value={coffeeAcidity} onChange={(e) => setCoffeeAcidity(e.target.value)} />
                 </Field>
-                <Field label="Body">
+                <Field label="بدنه">
                   <input value={coffeeBody} onChange={(e) => setCoffeeBody(e.target.value)} />
                 </Field>
-                <Field label="Brew Guide">
+                <Field label="راهنمای دم‌آوری">
                   <textarea
                     value={coffeeBrewGuide}
                     onChange={(e) => setCoffeeBrewGuide(e.target.value)}
-                    placeholder="Brewing instructions in Persian"
+                    placeholder="دستورالعمل دم‌آوری را به فارسی بنویسید"
                     dir="auto"
                   />
                 </Field>
               </>
             )}
             <button type="submit" className="primary" disabled={saveProductMutation.isPending}>
-              {saveProductMutation.isPending ? '⏳...' : (editingProduct ? 'Update' : 'Add') + ' Product'}
+              {saveProductMutation.isPending ? '⏳...' : (editingProduct ? 'به‌روزرسانی' : 'افزودن') + ' محصول'}
             </button>
             {editingProduct && (
               <button type="button" className="secondary" onClick={resetProductForm}>
-                Cancel
+                انصراف
               </button>
             )}
           </form>
@@ -545,9 +545,9 @@ export default function ProductsPage() {
       )}
 
       <div className="card">
-        <h2>Products</h2>
+        <h2>محصولات</h2>
         {products.length === 0 ? (
-          <EmptyState message="No products yet. Add your first product to get started." />
+          <EmptyState message="هنوز محصولی وجود ندارد. برای شروع اولین محصول را اضافه کنید." />
         ) : (
           <ul className="list">
             {products.map((p) => (
@@ -561,8 +561,8 @@ export default function ProductsPage() {
                     />
                   )}
                   <span dir="auto">{p.name}</span>
-                  {p.featured && <span title="Featured">⭐</span>}
-                  {p.isSeasonal && <span title="Seasonal">🌿</span>}
+                  {p.featured && <span title="پیشنهاد ویژه">⭐</span>}
+                  {p.isSeasonal && <span title="مخصوص فصل">🌿</span>}
                   <span className="list-item-meta">
                     {p.price}
                     {p.unit && p.unit !== 'item' && (
@@ -573,9 +573,9 @@ export default function ProductsPage() {
                   </span>
                   {(p.calories || p.caffeineMg) && (
                     <span className="list-item-meta" style={{ fontSize: '0.8em' }}>
-                      {p.calories ? `${p.calories} kcal` : ''}
+                      {p.calories ? `${p.calories} کیلوکالری` : ''}
                       {p.calories && p.caffeineMg ? ' · ' : ''}
-                      {p.caffeineMg ? `${p.caffeineMg}mg caf` : ''}
+                      {p.caffeineMg ? `${p.caffeineMg} میلی‌گرم کافئین` : ''}
                     </span>
                   )}
                 </div>
@@ -585,7 +585,7 @@ export default function ProductsPage() {
                       className="secondary"
                       onClick={() => toggleProductField.mutate({ id: p.id, field: 'available', value: !p.available })}
                       disabled={toggleProductField.isPending}
-                      title={p.available ? 'Available' : 'Unavailable'}
+                      title={p.available ? 'موجود' : 'ناموجود'}
                     >
                       {p.available ? '✓' : '✗'}
                     </button>
@@ -593,7 +593,7 @@ export default function ProductsPage() {
                       className="secondary"
                       onClick={() => toggleProductField.mutate({ id: p.id, field: 'featured', value: !p.featured })}
                       disabled={toggleProductField.isPending}
-                      title={p.featured ? 'Featured' : 'Not featured'}
+                      title={p.featured ? 'پیشنهاد ویژه' : 'پیشنهاد ویژه نیست'}
                     >
                       ⭐
                     </button>
@@ -601,15 +601,15 @@ export default function ProductsPage() {
                       className="secondary"
                       onClick={() => toggleProductField.mutate({ id: p.id, field: 'isSeasonal', value: !p.isSeasonal })}
                       disabled={toggleProductField.isPending}
-                      title={p.isSeasonal ? 'Seasonal' : 'Not seasonal'}
+                      title={p.isSeasonal ? 'مخصوص فصل' : 'مخصوص فصل نیست'}
                     >
                       🌿
                     </button>
                     <button className="secondary" onClick={() => startEditProduct(p)}>
-                      Edit
+                      ویرایش
                     </button>
                     <button className="danger" onClick={() => deleteProduct(p.id)} disabled={deleteProductMutation.isPending}>
-                      Delete
+                      حذف
                     </button>
                   </div>
                 )}
@@ -622,10 +622,10 @@ export default function ProductsPage() {
       {selectedProductIds.length > 0 && (
         <div className="batch-bar">
           <select value={batchAction} onChange={(e) => setBatchAction(e.target.value as any)}>
-            <option value="">Select action...</option>
-            <option value="move">Move to Category</option>
-            <option value="toggle">Toggle Availability</option>
-            <option value="delete">Delete</option>
+            <option value="">انتخاب عملیات...</option>
+            <option value="move">انتقال به دسته‌بندی</option>
+            <option value="toggle">تغییر وضعیت موجودی</option>
+            <option value="delete">حذف</option>
           </select>
           {batchAction === 'move' && (
             <select value={batchTargetCatId} onChange={(e) => setBatchTargetCatId(e.target.value)}>
@@ -638,12 +638,12 @@ export default function ProductsPage() {
           )}
           {batchAction === 'toggle' && (
             <select value={batchToggleValue} onChange={(e) => setBatchToggleValue(e.target.value)}>
-              <option value="true">Available</option>
-              <option value="false">Unavailable</option>
+              <option value="true">موجود</option>
+              <option value="false">ناموجود</option>
             </select>
           )}
           <button className="primary" onClick={handleBatchExecute} disabled={batchMutation.isPending}>
-            {batchMutation.isPending ? '⏳...' : `Apply to ${selectedProductIds.length} products`}
+            {batchMutation.isPending ? '⏳...' : `اعمال روی ${selectedProductIds.length} محصول`}
           </button>
         </div>
       )}

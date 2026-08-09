@@ -7,19 +7,19 @@ export default function InsightsPage() {
   return (
     <>
       <div className="card">
-        <h2>🔥 Streaks</h2>
+        <h2>🔥 استریک‌ها</h2>
         <StreaksPage />
       </div>
       <div className="card">
-        <h2>⭐ Favorites</h2>
+        <h2>⭐ موارد محبوب</h2>
         <FavoritesPage />
       </div>
       <div className="card">
-        <h2>🤖 AI Logs</h2>
+        <h2>🤖 گزارش‌های هوش مصنوعی</h2>
         <AILogsPage />
       </div>
       <div className="card">
-        <h2>🧪 AI Test</h2>
+        <h2>🧪 تست هوش مصنوعی</h2>
         <AITestPage />
       </div>
     </>
