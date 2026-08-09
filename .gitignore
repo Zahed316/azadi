@@ -7,4 +7,6 @@ dist/
 .claude/
 .superpowers/
 wrangler-dry/
+screenshot-analysis.jpg
+.commandcode/
 
