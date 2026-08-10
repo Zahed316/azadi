@@ -555,3 +555,117 @@ body {
   font-weight: 700;
   font-size: 18px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Luxury redesign — ProductRow (tasting-menu style)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.product-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--hairline);
+  text-decoration: none;
+  color: var(--ink);
+  transition: opacity 0.2s;
+}
+
+.product-row:hover {
+  opacity: 0.8;
+}
+
+.product-row--unavailable {
+  opacity: 0.45;
+}
+
+.product-row-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.product-row-thumb img,
+.product-row-thumb [aria-hidden] {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-row-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.product-row-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.product-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+}
+
+.product-badge--featured {
+  background: rgba(201, 162, 107, 0.15);
+  color: var(--brass-dim);
+}
+
+.product-badge--seasonal {
+  background: rgba(107, 142, 82, 0.12);
+  color: #6b8e52;
+}
+
+/* Dot leader — CSS-only dotted line between name and price */
+.product-row-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-top: 2px;
+}
+
+.product-row-dots {
+  flex: 1;
+  border-bottom: 1px dotted var(--hairline);
+  min-width: 24px;
+}
+
+.product-row-price {
+  font-size: 14px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Page header — editorial title + hairline */
+.page-header {
+  margin-bottom: var(--space-lg);
+}
+
+.page-header-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--ink);
+  margin-bottom: var(--space-xs);
+}
+
+.page-header-sub {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
