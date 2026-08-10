@@ -17,7 +17,7 @@ interface Product {
 export default function FeaturedPage() {
   const { data: products, isLoading } = useQuery({
     queryKey: queryKeys.featured,
-    queryFn: () => apiFetch<Product[]>('/products/featured'),
+    queryFn: () => apiFetch<Product[]>('/products/featured', 'products'),
   });
 
   if (isLoading) return <Spinner />;

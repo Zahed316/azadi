@@ -103,9 +103,16 @@ export async function handlePublicApiRequest(
 
     // --- GET /api/public/products ---
     if (path === 'products') {
+      const categoryIdParam = url.searchParams.get('categoryId');
+      const categoryId = categoryIdParam ? parseInt(categoryIdParam, 10) : undefined;
+
       const all = await dataService.getAllProductsWithDetails();
       const available = all
-        .filter((p) => p.products.available)
+        .filter((p) => {
+          if (!p.products.available) return false;
+          if (categoryId !== undefined && p.products.categoryId !== categoryId) return false;
+          return true;
+        })
         .map((p) => ({
           ...p.products,
           coffee_details: p.coffee_details,

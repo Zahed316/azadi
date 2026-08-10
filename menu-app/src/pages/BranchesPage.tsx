@@ -15,7 +15,7 @@ interface Branch {
 export default function BranchesPage() {
   const { data: branches, isLoading } = useQuery({
     queryKey: queryKeys.branches,
-    queryFn: () => apiFetch<Branch[]>('/branches'),
+    queryFn: () => apiFetch<Branch[]>('/branches', 'branches'),
   });
 
   if (isLoading) return <Spinner />;

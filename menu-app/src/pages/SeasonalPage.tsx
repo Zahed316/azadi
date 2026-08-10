@@ -17,7 +17,7 @@ interface Product {
 export default function SeasonalPage() {
   const { data: products, isLoading } = useQuery({
     queryKey: queryKeys.seasonal,
-    queryFn: () => apiFetch<Product[]>('/products/seasonal'),
+    queryFn: () => apiFetch<Product[]>('/products/seasonal', 'products'),
   });
 
   if (isLoading) return <Spinner />;

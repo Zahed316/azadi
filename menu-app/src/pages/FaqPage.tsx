@@ -13,7 +13,7 @@ interface FaqItem {
 export default function FaqPage() {
   const { data: faqs, isLoading } = useQuery({
     queryKey: queryKeys.faq,
-    queryFn: () => apiFetch<FaqItem[]>('/faq'),
+    queryFn: () => apiFetch<FaqItem[]>('/faq', 'faqs'),
   });
 
   if (isLoading) return <Spinner />;

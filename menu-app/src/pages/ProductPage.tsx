@@ -27,7 +27,7 @@ export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const { data: product, isLoading } = useQuery({
     queryKey: queryKeys.product(Number(id)),
-    queryFn: () => apiFetch<Product>(`/products/${id}`),
+    queryFn: () => apiFetch<Product>(`/products/${id}`, 'product'),
   });
 
   if (isLoading) return <Spinner />;

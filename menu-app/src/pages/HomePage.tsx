@@ -13,7 +13,7 @@ interface Category {
 export default function HomePage() {
   const { data: categories, isLoading } = useQuery({
     queryKey: queryKeys.categories,
-    queryFn: () => apiFetch<Category[]>('/categories'),
+    queryFn: () => apiFetch<Category[]>('/categories', 'categories'),
   });
 
   if (isLoading) return <Spinner />;

@@ -20,7 +20,7 @@ export default function CategoryPage() {
   const { id } = useParams<{ id: string }>();
   const { data: products, isLoading } = useQuery({
     queryKey: [...queryKeys.products, 'category', id],
-    queryFn: () => apiFetch<Product[]>(`/products?categoryId=${id}`),
+    queryFn: () => apiFetch<Product[]>(`/products?categoryId=${id}`, 'products'),
   });
 
   if (isLoading) return <Spinner />;
