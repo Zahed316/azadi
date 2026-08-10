@@ -3,8 +3,10 @@ import { createBot, Env } from './bot';
 import { setRequestContext } from './requestContext';
 import { handleApiRequest } from './api/router';
 import { sweepStreaks } from './scripts/streaks';
+import { ServiceContainer } from './services/container';
 
 let botInstance: ReturnType<typeof createBot> | null = null;
+let serviceContainer: ServiceContainer | null = null;
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -12,6 +14,11 @@ export default {
     const url = new URL(request.url);
     const method = request.method;
     const path = url.pathname;
+
+    // Initialize service container (cached across requests in same isolate)
+    if (!serviceContainer) {
+      serviceContainer = new ServiceContainer(env);
+    }
 
     try {
       if (path.startsWith('/api/')) {
