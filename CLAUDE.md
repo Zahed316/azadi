@@ -18,10 +18,11 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 
 A Telegram bot + admin Web App for **Azadi Coffee Roastery** (Iranshahr, Iran). Cloudflare Workers backend, grammY bot, D1 (SQLite) via Drizzle ORM, OpenCode API (`mimo-v2.5`) for chat fallback. All bot UI text is **Persian (Farsi)** with HTML parse mode.
 
-Two deployable units:
+Three deployable units:
 
-- `src/` — the Worker (bot webhook + REST API). Deployed via `wrangler deploy` to `azadi-coffee-bot` worker.
-- `admin-app/` — a Telegram Mini App (React + Vite). Deployed separately to Cloudflare Pages at `azadi-admin.pages.dev`. **The Worker does not serve it.**
+- `src/` — the Worker (bot webhook + REST API + public API). Deployed via `wrangler deploy` to `azadi-coffee-bot` worker.
+- `admin-app/` — a Telegram Mini App (React + Vite). Deployed to Cloudflare Pages at `azadi-admin.pages.dev`. **The Worker does not serve it.**
+- `menu-app/` — a public menu website (React + Vite). Deployed to Cloudflare Pages at `azadi-menu.pages.dev`. **The Worker does not serve it.**
 
 ## Commands
 
@@ -55,9 +56,22 @@ npm run format:check                # prettier --check
 npm run check                       # typecheck + lint + format:check (all-in-one)
 ```
 
-CI (`.github/workflows/deploy.yml`): `npm ci` → vitest → `lint` (non-blocking) → `tsc --noEmit` → `wrangler deploy` (push to main only), plus a separate `deploy-admin-app` job that builds `admin-app/`, runs `lint` (non-blocking), and runs `wrangler pages deploy admin-app/dist --project-name=azadi-admin`.
+# Menu Website (Second Mini App)
+cd menu-app
+npm install
+npm run dev                         # vite dev server
+npm run build                       # tsc + vite build (also what CI runs)
+npm run typecheck                   # tsc --noEmit
+npm run lint                        # eslint (menu-app config: menu-app/eslint.config.mjs)
+npm run check                       # typecheck + lint + format:check (all-in-one)
+```
 
-**CI is the ONLY auto-deployment path** — push to `main` deploys both Worker and Pages. Local `deploy.sh` is for pre-flight validation only (see [[ci-is-single-deploy-mechanism]]).
+CI (`.github/workflows/deploy.yml`): three parallel jobs:
+1. `test-and-deploy` — Worker tests + `wrangler deploy`
+2. `deploy-admin-app` — admin-app build + `wrangler pages deploy admin-app/dist --project-name=azadi-admin`
+3. `deploy-menu-app` — menu-app build + `wrangler pages deploy menu-app/dist --project-name=azadi-menu`
+
+**CI is the ONLY auto-deployment path** — push to `main` deploys all three. Local `deploy.sh` is for pre-flight validation only (see [[ci-is-single-deploy-mechanism]]).
 
 ## Architecture
 
@@ -65,7 +79,8 @@ CI (`.github/workflows/deploy.yml`): `npm ci` → vitest → `lint` (non-blockin
 
 Worker `fetch` routes:
 
-- `/api/*` → `handleApiRequest()` in `src/api/router.ts` (admin REST API)
+- `/api/public/*` → `handlePublicApiRequest()` in `src/api/public.ts` (no auth, menu website)
+- `/api/*` → `handleApiRequest()` in `src/api/router.ts` (admin REST API, auth required)
 - `/webhook` → grammY `webhookCallback("cloudflare-mod")` after validating `X-Telegram-Bot-Api-Secret-Token`
 - Anything else → 404
 
@@ -122,6 +137,25 @@ React + Vite + `@telegram-apps/sdk` (v2). The Mini App is loaded inside Telegram
   - The Mini App URL (opened by the bot's "Open Admin" button) is hardcoded in `src/commands/admin.ts` as `https://azadi-admin.pages.dev`.
   - The API base URL is hardcoded in `admin-app/src/App.tsx` as `https://azadi-coffee-bot.zahedrastgar316.workers.dev/api` — this is the **same** Worker that serves the bot, just at `/api/*`.
 - Communication is exclusively via the REST API in `src/api/router.ts`. The Mini App **does not** call the bot.
+
+### Menu Website (`menu-app/`)
+
+React 18 + Vite 6 + HashRouter + TanStack Query v5. Public-facing, read-only menu site — no Telegram SDK, no auth:
+
+- API base: `https://azadi-coffee-bot.zahedrastgar316.workers.dev/api/public` (hardcoded in `menu-app/src/api/client.ts`). No auth header.
+- Routes: `/` (home), `/category/:id`, `/product/:id`, `/featured`, `/seasonal`, `/branches`, `/faq`.
+- React Query `staleTime: 60_000` (1 minute). `gcTime: 5 * 60_000` (5 minutes).
+- **RTL layout** (`dir="rtl"` on `<html>`). All UI text in Persian.
+- Deployed to `azadi-menu.pages.dev` via CI.
+
+### Public API (`src/api/public.ts`)
+
+No-auth endpoints at `/api/public/*` for the menu website. CORS wildcard. Filtering rules:
+- Products: `available = true` only. Stock hidden for `cup` units.
+- Menu config: `isVisible = true` only, ordered by `displayOrder`.
+- Branches: `isActive = true` only.
+- Settings: only whitelisted keys (`about`, `price_unit`, `instagram`).
+- Route order matters: `/featured` and `/seasonal` must be registered before `/:id` to avoid capturing those paths.
 
 ## Conventions
 
