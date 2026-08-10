@@ -669,3 +669,171 @@ body {
   color: var(--ink-2);
   line-height: 1.6;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Luxury redesign — ProductPage (editorial detail)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.product-hero {
+  margin: 0 calc(-1 * var(--space-md));
+  overflow: hidden;
+}
+
+.product-hero-img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Fallback monogram tile inside hero */
+.product-hero [aria-hidden] {
+  width: 100%;
+  height: 280px;
+  font-size: 64px;
+  border-radius: 0;
+}
+
+.product-title-block {
+  padding: var(--space-lg) 0 var(--space-sm);
+}
+
+.product-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: var(--space-sm);
+}
+
+.product-badges {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+/* Price row */
+.product-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-md) 0;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: var(--space-lg);
+}
+
+.product-price-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Description */
+.product-description {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink-2);
+  margin-bottom: var(--space-lg);
+}
+
+/* Spec sheet — definition list */
+.spec-sheet {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-lg);
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--hairline);
+  gap: var(--space-md);
+}
+
+.spec-label {
+  font-size: 13px;
+  color: var(--ink-2);
+  flex-shrink: 0;
+}
+
+.spec-value {
+  font-size: 14px;
+  color: var(--ink);
+  text-align: left;
+  font-weight: 500;
+}
+
+/* Flavor notes tags */
+.flavor-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.flavor-tag {
+  font-size: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 20px;
+  color: var(--ink-2);
+  background: transparent;
+}
+
+/* Nutrition row */
+.nutrition-row {
+  display: flex;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  padding: var(--space-md) 0;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: var(--space-lg);
+}
+
+.nutrition-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nutrition-label {
+  font-size: 11px;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+
+.nutrition-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Brew guide inset */
+.brew-guide {
+  padding: var(--space-md);
+  border-right: 3px solid var(--brass);
+  background: rgba(201, 162, 107, 0.06);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: var(--space-lg);
+}
+
+.brew-guide-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--brass-dim);
+  margin-bottom: var(--space-xs);
+}
+
+.brew-guide-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink-2);
+}
