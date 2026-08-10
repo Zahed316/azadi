@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Spinner from './components/Spinner';
+import { useReveal } from './hooks/useReveal';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
@@ -25,11 +26,13 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
+  const revealRef = useReveal();
+
   return (
     <QueryClientProvider client={queryClient}>
       <HashRouter>
         <Header />
-        <main className="container">
+        <main className="container" ref={revealRef}>
           <Suspense fallback={<Spinner />}>
             <Routes>
               <Route path="/" element={<HomePage />} />
