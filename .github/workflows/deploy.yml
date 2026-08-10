@@ -91,3 +91,45 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           command: pages deploy admin-app/dist --project-name=azadi-admin
+
+  deploy-menu-app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: ${{ github.workflow }}-menu-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: menu-app/package-lock.json
+
+      - name: Install menu-app dependencies
+        working-directory: menu-app
+        run: npm ci
+
+      - name: Typecheck menu-app
+        working-directory: menu-app
+        run: npm run typecheck
+
+      - name: Lint menu-app (non-blocking, first iteration)
+        working-directory: menu-app
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Build menu-app
+        working-directory: menu-app
+        run: npm run build
+
+      - name: Deploy menu-app to Cloudflare Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
+        env:
+          NPM_CONFIG_LEGACY_PEER_DEPS: 'true'
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          command: pages deploy menu-app/dist --project-name=azadi-menu

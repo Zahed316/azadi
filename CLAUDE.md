@@ -35,19 +35,24 @@ npm run typecheck                   # tsc --noEmit
 npm run lint                        # eslint (root config: eslint.config.mjs)
 npm run format:check                # prettier --check (no writes)
 npm run format                      # prettier --write (auto-fixes)
+npm run check                       # typecheck + lint + format:check + test (all-in-one)
 npm run deploy                      # wraps `npm exec -- wrangler deploy`
 npm run deploy:dry                  # wraps `wrangler deploy --dry-run --outdir ./wrangler-dry`
 npm run setup:webhook               # reads TELEGRAM_BOT_TOKEN and SECRET_TOKEN from ~/.env
 ./deploy.sh --dry-run               # pre-flight: test → typecheck → lint → build (no deploy)
 
+> **Test timeout**: `vitest.config.ts` sets a 30-second timeout for the router harness's dynamic imports. Tests that import the harness may need this headroom.
+
 # Admin Mini App
 cd admin-app
 npm install
 npm run dev                         # vite dev server (proxies not configured — see below)
+npm run preview                     # vite preview (serve built output locally)
 npm run build                       # tsc + vite build (also what CI runs)
 npm run typecheck                   # tsc --noEmit
 npm run lint                        # eslint (admin-app config: admin-app/eslint.config.mjs)
 npm run format:check                # prettier --check
+npm run check                       # typecheck + lint + format:check (all-in-one)
 ```
 
 CI (`.github/workflows/deploy.yml`): `npm ci` → vitest → `lint` (non-blocking) → `tsc --noEmit` → `wrangler deploy` (push to main only), plus a separate `deploy-admin-app` job that builds `admin-app/`, runs `lint` (non-blocking), and runs `wrangler pages deploy admin-app/dist --project-name=azadi-admin`.
@@ -65,6 +70,8 @@ Worker `fetch` routes:
 - Anything else → 404
 
 `setRequestContext(env, ctx)` is called per-request and stores them in module globals (`src/requestContext.ts`). Works because Workers isolate each request, but **breaks in tests** — mock `env` directly.
+
+Worker `scheduled` handler: runs `sweepStreaks(env)` on the daily cron (`0 21 * * *` in `wrangler.toml`). Gated by `env.STREAK_CRON_ENABLED` — inert if not set.
 
 ### Bot (`src/bot.ts`, `src/types/context.ts`)
 
@@ -85,8 +92,9 @@ Worker `fetch` routes:
 - Drizzle schema in `src/database/schema.ts` (snake_case columns, explicit `text('name')` strings). Migrations in `drizzle/`.
 - **D1 migrations**: `npx drizzle-kit generate` creates SQL in `drizzle/`. Apply with `wrangler d1 execute azadi-db --remote --file=drizzle/XXXX_name.sql`. **Never use `drizzle-kit push`** — D1 doesn't have a URL. See [[d1-migrations-use-wrangler]].
 - `getDb(d1Binding)` (`src/database/client.ts`) is the only Drizzle factory. Repositories call it in their constructor.
-- **Repository pattern**: one class per table group (`ProductRepository`, `CategoryRepository`, `BranchRepository`, `FaqRepository`, `SettingsRepository`, `AiLogRepository`, `MenuConfigRepository`, `UserStateRepository`, `FavoritesRepository`). All take `d1Binding: any` in the constructor. Add new data access as a new repository class.
+- **Repository pattern**: one class per table group (`ProductRepository`, `CategoryRepository`, `BranchRepository`, `FaqRepository`, `SettingsRepository`, `AiLogRepository`, `MenuConfigRepository`, `UserStateRepository`, `FavoritesRepository`, `MessageRepository`). All take `d1Binding: any` in the constructor. Add new data access as a new repository class.
 - `D1SessionStorage` (`src/database/sessionStorage.ts`) is a grammY `StorageAdapter` that reads/writes the `sessions` table (key/value JSON).
+- **Schema tables** (13): `branches`, `categories`, `products`, `coffee_details`, `faq`, `settings`, `ai_conversation_logs`, `sessions`, `admins`, `menu_config`, `user_state`, `favorites`, `messages`.
 
 ### Admin REST API (`src/api/router.ts`)
 
@@ -122,7 +130,7 @@ React + Vite + `@telegram-apps/sdk` (v2). The Mini App is loaded inside Telegram
 - **Registered bot commands**: only `/start` and `/admin` (plus `/setup_bot` for the bot owner to push them). Do not add more without updating `setMyCommands` in `src/commands/admin.ts`.
 - **Menu navigation**: lists use `editMessageText(...).catch(() => ctx.reply(...))` to edit in place with fresh-reply fallback. Detail replies carry a `back:main` inline button handled in `src/handlers/callbackQuery.ts`.
 - **Mini App UX**: toast notifications via `showToast()` (never `alert()`), form fields wrapped in `<Field label>` (placeholder is a hint, not a label), every list renders an `.empty-state` block when empty, Persian data elements get `dir="auto"` while chrome stays English.
-- **Tests**: `src/tests/*.test.ts`, vitest (`import { expect, test } from 'vitest'`). No vitest config — uses defaults. The Worker API tests in `src/tests/router-*.test.ts` share a harness at `src/tests/_helpers/routerHarness.ts` that mocks Drizzle, `validateInitData`, and `getAdminRole` to exercise `handleApiRequest` end-to-end. **Caveat**: the harness's `extractEq()` parser only matches Drizzle's `eq()` shape; any other predicate (`and`/`or`/`gt`/etc.) silently no-ops, so tests pass without actually filtering — see the global memory `permissive-where-parsers-mask-sql-bugs`.
+- **Tests**: `src/tests/*.test.ts`, vitest (`import { expect, test } from 'vitest'`). `vitest.config.ts` at root sets a 30s timeout for dynamic imports. The Worker API tests in `src/tests/router-*.test.ts` share a harness at `src/tests/_helpers/routerHarness.ts` that mocks Drizzle, `validateInitData`, and `getAdminRole` to exercise `handleApiRequest` end-to-end. **Caveat**: the harness's `extractEq()` parser only matches Drizzle's `eq()` shape; any other predicate (`and`/`or`/`gt`/etc.) silently no-ops, so tests pass without actually filtering — see the global memory `permissive-where-parsers-mask-sql-bugs`.
 - **Errors**: catch blocks log to `console.error`, reply with Persian error messages to users.
 - **Delete ordering**: when deleting resources with cross-store references (D1 + external), update D1 first then the external store. A dangling URL is less harmful than a missing resource with a live reference. See [[db-first-delete-ordering]].
 
@@ -141,6 +149,9 @@ React + Vite + `@telegram-apps/sdk` (v2). The Mini App is loaded inside Telegram
 - **`STREAK_MESSAGES` is a per-request env flag** that gates the streak middleware (`src/bot.ts:44-61`). Off by default. Set with `echo "true" | wrangler secret put STREAK_MESSAGES` to enable consecutive-day tracking and the `🔥 N روز متوالی` reply. **Phase 5 verified end-to-end 2026-08-06**: with the flag set, `user_state` rows are created on first non-`/` message and `visits_total` increments per message; without the flag the middleware is inert (the empty-table behavior the prior session observed is *expected*, not a bug).
 - **Favorites (Phase 5.2)** — callback handlers `fav:add:${id}` and `fav:remove:${id}` are in `src/handlers/callbackQuery.ts` (~lines 313 and 332). **Phase 5 verified end-to-end 2026-08-06**: 3 rows appeared in `favorites` after the user tapped the toggle on three product detail pages in a single smoke-test session, confirming the toggle works through the cached reply_markup. If a future smoke test sees an empty `favorites` table, the most likely causes are (a) the user never navigated to a product detail page, or (b) a stale keyboard from a pre-Phase-5 build is still cached in their Telegram client (fix: close and reopen the chat).
 - **ESLint/Prettier is non-blocking in CI as of Phase 4** (commit pending). Both jobs run `npm run lint` with `continue-on-error: true`; the existing warning baseline (~137 root + ~294 admin) is being whittled down file-by-file. **Do not flip to a hard gate without first checking the current warning count.** Lint config: `eslint.config.mjs` (root, governs `src/`) and `admin-app/eslint.config.mjs` (React + Vite). Prettier config: `.prettierrc.json` (root) + `.prettierignore`. Both packages use `node ./node_modules/...` shebang-free script invocations to avoid the Termux `/usr/bin/env` gap (see [[android-arm64-platform-binary-gaps]]).
+- **Stale files** (tracked in git but unused): `test-drizzle.ts` (root), `src/scripts/measure-latency.sh`, `src/scripts/test-webhook.sh` — all reference non-existent commands or are dead test stubs. Safe to delete in a cleanup PR.
+- **Unused npm dependencies**: `@grammyjs/auto-retry`, `@grammyjs/parse-mode`, `@grammyjs/router`, `tsx` are installed but never imported. Safe to remove in a cleanup PR.
+- **Stack trace leakage**: `src/index.ts` error handler previously included `err.stack` in 500 JSON responses — information disclosure. Current code sanitizes this but be aware if modifying error handling.
 
 ## Memory (project-scoped only — global rules live in `~/.claude/CLAUDE.md` and are loaded automatically)
 
