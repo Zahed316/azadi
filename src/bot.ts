@@ -1,6 +1,6 @@
 import { Bot, session } from 'grammy';
 import { conversations } from '@grammyjs/conversations';
-import { D1Database } from '@cloudflare/workers-types';
+import { D1Database, KVNamespace } from '@cloudflare/workers-types';
 import { mainMenu, MAIN_MENU_TEXT } from './menus/mainMenu';
 import { discoverMenu } from './menus/discoverMenu';
 import { infoMenu } from './menus/infoMenu';
@@ -21,6 +21,8 @@ export interface Env {
   SECRET_TOKEN: string;
   DB: D1Database;
   OPENCODE_API_KEY: string;
+  // Optional KV binding — may not be bound yet in all environments.
+  CACHE?: KVNamespace;
   // Optional runtime flags — kept loose so workers can be deployed without
   // them being present in wrangler.toml/[vars]. Set via `wrangler secret put`.
   USE_CONVERSATIONS?: string;
