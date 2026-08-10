@@ -125,15 +125,11 @@ export function createBot(env: Env): Bot<MyContext> {
       { command: 'menu', description: '📋 مشاهده منوی کافه' },
       { command: 'admin', description: 'پنل مدیریت (فقط ادمین)' },
     ]).catch(() => {});
-    // Set the chat menu button to open the menu website.
-    // This ensures the "/" button at the bottom of the chat always points
-    // to the menu app, even after Telegram clears the setting.
+    // Set the chat menu button to show the bot command list.
+    // The "/" button at the bottom of the chat opens a menu with all
+    // registered commands (/start, /menu, /admin) instead of a Web App.
     await ctx.api.setChatMenuButton({
-      menu_button: {
-        type: 'web_app',
-        text: '📋 منوی ازادی',
-        web_app: { url: 'https://azadi-menu.pages.dev' },
-      },
+      menu_button: { type: 'commands' },
     }).catch(() => {});
     // `ctx.conversation` is only populated when the conversations() middleware
     // is registered (see USE_CONVERSATIONS gate above). Guard so /start works

@@ -44,14 +44,11 @@ export function setupAdminCommands(bot: Bot<MyContext>, _env: Env): void {
         { command: 'admin', description: 'پنل مدیریت (فقط ادمین)' },
       ]);
 
-      // Set the chat menu button to open the menu website.
-      // This makes the "/" button at the bottom of the chat open the menu app.
+      // Set the chat menu button to show the bot command list.
+      // The "/" button at the bottom of the chat opens a menu with all
+      // registered commands (/start, /menu, /admin).
       await ctx.api.setChatMenuButton({
-        menu_button: {
-          type: 'web_app',
-          text: '📋 منوی ازادی',
-          web_app: { url: MENU_WEB_APP_URL },
-        },
+        menu_button: { type: 'commands' },
       });
 
       await ctx.reply(
