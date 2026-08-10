@@ -19,6 +19,7 @@
 }
 
 :root {
+  /* ── Legacy tokens (kept for backward compat; removed in Step 13) ── */
   --bg: #faf9f6;
   --card-bg: #ffffff;
   --text: #1a1a1a;
@@ -28,16 +29,45 @@
   --border: #e5e7eb;
   --radius: 12px;
   --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+  /* ── Luxury redesign tokens ── */
+  --espresso: #171310;
+  --cream: #f6f1ea;
+  --cream-2: #efe9e0;
+  --ink: #221c17;
+  --ink-2: #7a7067;
+  --brass: #c9a26b;
+  --brass-dim: #b8956a;
+  --hairline: rgba(34, 28, 23, 0.12);
+  --hairline-dark: rgba(246, 241, 234, 0.14);
+
+  /* Typography stacks */
+  --font-display: 'Estedad', 'Vazirmatn', sans-serif;
+  --font-body: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-latin: 'Fraunces', Georgia, serif;
+
+  /* Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+
+  /* Layout */
+  --container: 680px;
+  --header-h: 56px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .container {
