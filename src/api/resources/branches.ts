@@ -34,6 +34,9 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
       openingHours: body.openingHours || null,
       isActive: body.isActive ?? true,
     });
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:branches:');
+    }
     return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
@@ -61,6 +64,9 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
       openingHours: body.openingHours || null,
       isActive: body.isActive ?? true,
     });
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:branches:');
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 
@@ -74,6 +80,9 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
     const id = parseInt(path.split('/')[1]);
     const repo = new BranchRepository(db);
     await repo.deleteBranch(id);
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:branches:');
+    }
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 

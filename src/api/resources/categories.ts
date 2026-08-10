@@ -28,6 +28,10 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       emoji: body.emoji || null,
       sortOrder: body.sortOrder || 0,
     });
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:menu:');
+      await ctx.cache.deleteByPrefix('cache:visible-categories');
+    }
     return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
@@ -47,6 +51,10 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       emoji: body.emoji || null,
       sortOrder: body.sortOrder || 0,
     });
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:menu:');
+      await ctx.cache.deleteByPrefix('cache:visible-categories');
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 
@@ -60,6 +68,10 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
     const id = parseInt(path.split('/')[1]);
     const repo = new CategoryRepository(db);
     await repo.deleteCategory(id);
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:menu:');
+      await ctx.cache.deleteByPrefix('cache:visible-categories');
+    }
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 

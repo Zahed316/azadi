@@ -3,6 +3,7 @@ import { validateInitData } from './auth';
 import { getAdminRole } from '../middlewares/auth';
 import { getDb } from '../database/client';
 import { settings } from '../database/schema';
+import { CacheService } from '../services/cache';
 import {
   handleAdmins,
   handleSettings,
@@ -130,6 +131,7 @@ export async function handleApiRequest(
       corsHeaders,
       url,
       env,
+      cache: env.CACHE ? new CacheService(env.CACHE) : undefined,
     };
 
     for (const handler of resourceHandlers) {

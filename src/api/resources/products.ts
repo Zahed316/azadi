@@ -46,6 +46,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
     if (body.coffeeDetails && result[0]?.id) {
       await repo.setCoffeeDetails(result[0].id, body.coffeeDetails);
     }
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:products:');
+    }
     return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
@@ -96,6 +99,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
       }),
     );
 
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:products:');
+    }
     return new Response(JSON.stringify({ success: true, results }), { headers: corsHeaders });
   }
 
@@ -135,6 +141,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
         });
       }
       await repo.updateProduct(id, { imageUrl: body.imageUrl });
+      if (ctx.cache) {
+        await ctx.cache.deleteByPrefix('cache:products:');
+      }
       return new Response(JSON.stringify({ success: true, imageUrl: body.imageUrl }), { headers: corsHeaders });
     } catch (e) {
       console.error(e);
@@ -165,6 +174,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
 
     try {
       await repo.updateProduct(id, { imageUrl: null });
+      if (ctx.cache) {
+        await ctx.cache.deleteByPrefix('cache:products:');
+      }
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     } catch (e) {
       console.error(e);
@@ -198,9 +210,15 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
     const body: any = await request.json();
     if (action === 'stock') {
       await repo.updateStock(id, body.stock);
+      if (ctx.cache) {
+        await ctx.cache.deleteByPrefix('cache:products:');
+      }
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     } else if (action === 'toggle') {
       await repo.toggleAvailability(id, body.available);
+      if (ctx.cache) {
+        await ctx.cache.deleteByPrefix('cache:products:');
+      }
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     }
   }
@@ -257,6 +275,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
     if (body.coffeeDetails !== undefined) {
       await repo.setCoffeeDetails(id, body.coffeeDetails);
     }
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:products:');
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 
@@ -279,6 +300,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
     }
 
     await repo.deleteProduct(id);
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:products:');
+    }
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 

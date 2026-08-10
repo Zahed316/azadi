@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import type { Env } from '../../bot';
+import type { ICacheService } from '../../services/types';
 
 /**
  * Shared context passed to every resource handler.
@@ -13,6 +14,7 @@ export interface ResourceCtx {
   corsHeaders: Record<string, string>;
   url: URL;
   env: Env;
+  cache?: ICacheService;
 }
 
 /**
