@@ -37,7 +37,7 @@ export abstract class BaseRepository<T extends Record<string, unknown>> {
     const table = this.getTable();
     const result = (await (this.db
       .update(table)
-      .set({ ...data, updatedAt: new Date() } as any)
+      .set(data as any)
       .where(eq(table.id, id))
       .returning() as any)) as T[];
     return result[0];
