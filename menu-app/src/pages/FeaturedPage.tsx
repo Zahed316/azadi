@@ -2,18 +2,9 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
-import { formatPersianPrice } from '../utils/numbers';
 import Spinner from '../components/Spinner';
-import ProductImage from '../components/ProductImage';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  unit: string;
-  imageUrl?: string;
-  description?: string;
-}
+import ProductRow from '../components/ProductRow';
+import type { Product, Settings } from '../api/types';
 
 export default function FeaturedPage() {
   const { data: products, isLoading } = useQuery({
@@ -21,22 +12,28 @@ export default function FeaturedPage() {
     queryFn: () => apiFetch<Product[]>('/products/featured', 'products'),
   });
 
+  const { data: settings } = useQuery({
+    queryKey: queryKeys.settings,
+    queryFn: () => apiFetch<Settings>('/settings', 'settings'),
+  });
+
+  const priceUnit = settings?.price_unit ?? 'تومان';
+
   if (isLoading) return <Spinner />;
 
   return (
     <>
       <Link to="/" className="back-link">بازگشت</Link>
-      <h2 className="section-title">محصولات ویژه</h2>
-      <div className="grid">
-        {products?.map((p) => (
-          <Link key={p.id} to={`/product/${p.id}`} className="grid-item">
-            <ProductImage src={p.imageUrl} alt={p.name} className="card-image" />
-            <div className="card-title">{p.name}</div>
-            <div className="card-price">{formatPersianPrice(p.price, p.unit)}</div>
-          </Link>
-        ))}
+      <div className="page-header">
+        <h2 className="page-header-title">محصولات ویژه</h2>
       </div>
-      {!products?.length && <div className="empty-state">محصول ویژه‌ای یافت نشد</div>}
+      {products?.length ? (
+        products.map((p) => (
+          <ProductRow key={p.id} product={p} priceUnit={priceUnit} />
+        ))
+      ) : (
+        <div className="empty-state">محصول ویژه‌ای یافت نشد</div>
+      )}
     </>
   );
 }
