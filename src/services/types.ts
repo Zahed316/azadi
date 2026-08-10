@@ -8,7 +8,16 @@
  */
 
 import type { MyContext } from '../types/context';
-import type { Env } from '../bot';
+import {
+  products,
+  coffeeDetails,
+  categories,
+  branches,
+  faq,
+  userState,
+  messages,
+} from '../database/schema';
+export type { Env } from '../bot';
 
 // Re-export schema types for convenience — consumers can import from here
 // instead of reaching into the database layer directly.
@@ -29,14 +38,14 @@ export interface AIContext {
   userId: string;
   /** Products with coffee details and category info (joined data) */
   productsWithDetails: Array<{
-    products: any;
-    coffee_details: any | null;
-    categories: any | null;
+    products: typeof products.$inferSelect;
+    coffee_details: typeof coffeeDetails.$inferSelect | null;
+    categories: typeof categories.$inferSelect | null;
   }>;
   /** Active branches */
-  branches: any[];
+  branches: typeof branches.$inferSelect[];
   /** FAQ entries */
-  faqs: any[];
+  faqs: typeof faq.$inferSelect[];
   /** Set of category IDs visible in bot menus */
   visibleCategoryIds: Set<number>;
   /** Shop identity and settings */
@@ -175,6 +184,26 @@ export interface ICacheService {
 }
 
 // ---------------------------------------------------------------------------
+// Menu Config (section query result)
+// ---------------------------------------------------------------------------
+
+/**
+ * Shape returned by `IDataService.getBySection()` — a menu-config row
+ * joined with the category name and emoji.
+ */
+export interface MenuSectionEntry {
+  id: number;
+  categoryId: number;
+  menuSection: string;
+  displayOrder: number;
+  isVisible: boolean;
+  buttonLabel: string | null;
+  specialMessage: string | null;
+  categoryName: string | null;
+  categoryEmoji: string | null;
+}
+
+// ---------------------------------------------------------------------------
 // Data Service
 // ---------------------------------------------------------------------------
 
@@ -187,35 +216,61 @@ export interface ICacheService {
  */
 export interface IDataService {
   // -- Products --
-  getAllProducts(): Promise<any[]>;
+  getAllProducts(): Promise<typeof products.$inferSelect[]>;
   getAllProductsWithDetails(): Promise<Array<{
-    products: any;
-    coffee_details: any | null;
-    categories: any | null;
+    products: typeof products.$inferSelect;
+    coffee_details: typeof coffeeDetails.$inferSelect | null;
+    categories: typeof categories.$inferSelect | null;
   }>>;
-  getProductById(id: number): Promise<any | undefined>;
-  getProductsByCategory(categoryId: number): Promise<any[]>;
+  getProductById(id: number): Promise<typeof products.$inferSelect | undefined>;
+  getProductsByCategory(categoryId: number): Promise<typeof products.$inferSelect[]>;
   getPopularProducts(limit?: number): Promise<Array<{
     name: string;
     category: string;
     favoritedCount: number;
   }>>;
 
+  /**
+   * Get all available products with a given boolean flag set to true.
+   * Used by the bot's "featured" and "seasonal" menu surfaces.
+   * @param flag - The boolean column to filter on
+   */
+  getByFlag(flag: 'featured' | 'isSeasonal'): Promise<typeof products.$inferSelect[]>;
+
+  /**
+   * Get all available beans with their coffee details joined.
+   * Used by the "coffee passport" menu surface.
+   */
+  getBeansWithCoffeeDetails(): Promise<Array<{
+    product: typeof products.$inferSelect;
+    details: typeof coffeeDetails.$inferSelect;
+  }>>;
+
+  // -- Coffee Details --
+  getCoffeeDetails(productId: number): Promise<typeof coffeeDetails.$inferSelect | null>;
+
   // -- Categories --
-  getAllCategories(): Promise<any[]>;
+  getAllCategories(): Promise<typeof categories.$inferSelect[]>;
 
   // -- Branches --
-  getActiveBranches(): Promise<any[]>;
+  getActiveBranches(): Promise<typeof branches.$inferSelect[]>;
 
   // -- FAQs --
-  getAllFaqs(): Promise<any[]>;
+  getAllFaqs(): Promise<typeof faq.$inferSelect[]>;
+
+  // -- Menu Config --
+  getVisibleCategoryIds(): Promise<Set<number>>;
+
+  /**
+   * Get all visible menu-config entries for a section, joined with category
+   * data. Used by the bot to render menu buttons per section.
+   * @param section - Menu section key (e.g. 'drinks', 'beans', 'cakes', 'extras')
+   */
+  getBySection(section: string): Promise<MenuSectionEntry[]>;
 
   // -- Settings --
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
-
-  // -- Menu Config --
-  getVisibleCategoryIds(): Promise<Set<number>>;
 
   // -- AI Logs --
   getRecentLogs(userId: string, limit?: number): Promise<Array<{
@@ -228,8 +283,20 @@ export interface IDataService {
   getUserFavorites(telegramId: string): Promise<string[]>;
   toggleFavorite(telegramId: string, productId: number): Promise<boolean>;
 
+  /**
+   * Check whether a single product is favorited by the user.
+   * Used to render the right toggle button on the product-detail page.
+   */
+  isFavorited(telegramId: string, productId: number): Promise<boolean>;
+
+  /**
+   * List all products the user has favorited, ordered newest first.
+   * Returns the full product shape plus a `favoritedAt` timestamp.
+   */
+  list(telegramId: string): Promise<Array<typeof products.$inferSelect & { favoritedAt: Date }>>;
+
   // -- User State --
-  getUserState(telegramId: string): Promise<any | null>;
+  getUserState(telegramId: string): Promise<typeof userState.$inferSelect | null>;
   upsertVisit(telegramId: string): Promise<{
     streakDays: number;
     isNewStreak: boolean;
@@ -242,5 +309,5 @@ export interface IDataService {
     senderName?: string;
     rating?: number;
     isAnonymous?: boolean;
-  }): Promise<any>;
+  }): Promise<typeof messages.$inferSelect[]>;
 }
