@@ -150,8 +150,12 @@ React 18 + Vite 6 + HashRouter + TanStack Query v5. Public-facing, read-only men
 
 ### Public API (`src/api/public.ts`)
 
-No-auth endpoints at `/api/public/*` for the menu website. CORS wildcard. Filtering rules:
-- Products: `available = true` only. Stock hidden for `cup` units.
+No-auth endpoints at `/api/public/*` for the menu website. CORS wildcard. **All responses use an envelope** — `{key: [...]}` — where the key matches the resource name. The menu-app's `apiFetch<T>(path, envelopeKey)` unwraps this; pass the envelope key as the second arg.
+
+Envelope keys: `categories`, `products`, `product`, `branches`, `faqs`, `sections`, `settings`.
+
+Filtering rules:
+- Products: `available = true` only. Supports `?categoryId=N` query param for server-side filtering. Stock hidden for `cup` units.
 - Menu config: `isVisible = true` only, ordered by `displayOrder`.
 - Branches: `isActive = true` only.
 - Settings: only whitelisted keys (`about`, `price_unit`, `instagram`).
@@ -186,6 +190,7 @@ No-auth endpoints at `/api/public/*` for the menu website. CORS wildcard. Filter
 - **Stale files** (tracked in git but unused): `test-drizzle.ts` (root), `src/scripts/measure-latency.sh`, `src/scripts/test-webhook.sh` — all reference non-existent commands or are dead test stubs. Safe to delete in a cleanup PR.
 - **Unused npm dependencies**: `@grammyjs/auto-retry`, `@grammyjs/parse-mode`, `@grammyjs/router`, `tsx` are installed but never imported. Safe to remove in a cleanup PR.
 - **Stack trace leakage**: `src/index.ts` error handler previously included `err.stack` in 500 JSON responses — information disclosure. Current code sanitizes this but be aware if modifying error handling.
+- **Menu-app API envelope**: Every public API endpoint wraps its response in `{key: [...]}`. Forgetting to pass the `envelopeKey` to `apiFetch` means the page gets the wrapper object instead of the data array, causing `.map()` to silently produce nothing (empty page) or crash (white page). When adding new pages, always check `src/api/public.ts` for the envelope key.
 
 ## Memory (project-scoped only — global rules live in `~/.claude/CLAUDE.md` and are loaded automatically)
 
