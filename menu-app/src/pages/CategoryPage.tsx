@@ -4,6 +4,7 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import { formatPersianPrice } from '../utils/numbers';
 import Spinner from '../components/Spinner';
+import ProductImage from '../components/ProductImage';
 
 interface Product {
   id: number;
@@ -32,7 +33,7 @@ export default function CategoryPage() {
       <div className="grid">
         {products?.map((p) => (
           <Link key={p.id} to={`/product/${p.id}`} className="grid-item">
-            {p.imageUrl && <img src={p.imageUrl} alt={p.name} className="card-image" />}
+            <ProductImage src={p.imageUrl} alt={p.name} className="card-image" />
             <div className="card-title">{p.name}</div>
             <div className="card-price">{formatPersianPrice(p.price, p.unit)}</div>
             {p.isFeatured && <span className="badge badge-featured">ویژه</span>}
