@@ -1,3 +1,23 @@
+/*
+ * Estedad — Persian display typeface (SIL OFL 1.1)
+ * Source: https://github.com/aminabedi68/Estedad
+ * License: SIL Open Font License 1.1 (see NOTICES.md)
+ */
+@font-face {
+  font-family: 'Estedad';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/estedad/Estedad-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Estedad';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('./assets/fonts/estedad/Estedad-ExtraBold.woff2') format('woff2');
+}
+
 :root {
   --bg: #faf9f6;
   --card-bg: #ffffff;
