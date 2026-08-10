@@ -5,7 +5,7 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
-import LoadingScreen from '../components/Spinner';
+import { ProductSkeleton } from '../components/SkeletonLoader';
 
 export default function ProductsPage() {
   const { isSuperAdmin, allowedCatId, setError, showToast, confirm } = useAppContext();
@@ -181,7 +181,7 @@ export default function ProductsPage() {
     },
   });
 
-  if (isLoading) return <LoadingScreen />;
+  if (isLoading) return <ProductSkeleton />;
 
   const toggleProductSelect = (id: number) => {
     setSelectedProductIds((prev) =>

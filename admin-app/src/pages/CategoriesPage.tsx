@@ -5,7 +5,7 @@ import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
-import LoadingScreen from '../components/Spinner';
+import { CategorySkeleton } from '../components/SkeletonLoader';
 
 export default function CategoriesPage() {
   const { isSuperAdmin, setError, showToast, confirm } = useAppContext();
@@ -51,7 +51,7 @@ export default function CategoriesPage() {
     },
   });
 
-  if (isLoading) return <LoadingScreen />;
+  if (isLoading) return <CategorySkeleton />;
 
   const handleSaveCategory = (e: React.FormEvent) => {
     e.preventDefault();
