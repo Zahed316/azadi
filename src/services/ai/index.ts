@@ -11,6 +11,7 @@
 import { IDataService, IAIService, AIContext } from '../types';
 import { AiService } from '../../services/aiService';
 import { buildMinimalContext } from '../../utils/menuContext';
+import { DataService } from '../data';
 
 export class AIService implements IAIService {
   constructor(
@@ -46,25 +47,17 @@ export class AIService implements IAIService {
   }
 
   private async buildContext(userId: string): Promise<string> {
-    const [products, branches, faqs, visibleCategoryIds, about, userFavorites, popularProducts] =
-      await Promise.all([
-        this.data.getAllProductsWithDetails(),
-        this.data.getActiveBranches(),
-        this.data.getAllFaqs(),
-        this.data.getVisibleCategoryIds(),
-        this.data.getSetting('about'),
-        this.data.getUserFavorites(userId),
-        this.data.getPopularProducts(5),
-      ]);
+    // Use D1 batch API to fetch all context data in a single round-trip
+    const batchData = await (this.data as DataService).buildAIContextBatch(userId);
 
     return buildMinimalContext({
       query: '',
-      productsWithDetails: products,
-      branches,
-      faqs,
-      visibleCategoryIds,
-      settings: about ? { about } : undefined,
-      popularProducts,
+      productsWithDetails: batchData.products,
+      branches: batchData.branches,
+      faqs: batchData.faqs,
+      visibleCategoryIds: new Set(batchData.menuConfig.map((m: any) => m.categoryId)),
+      settings: batchData.about ? { about: batchData.about } : undefined,
+      popularProducts: batchData.popularProducts,
     });
   }
 }

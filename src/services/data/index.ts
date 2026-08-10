@@ -19,31 +19,46 @@ import {
   FavoritesRepository,
   MessageRepository,
 } from '../../repositories';
+import { getDb } from '../../database/client';
+import { eq, desc, sql } from 'drizzle-orm';
+import {
+  products,
+  coffeeDetails,
+  categories,
+  branches,
+  faq,
+  menuConfig,
+  settings,
+  aiConversationLogs,
+  favorites,
+} from '../../database/schema';
 import type { ICacheService, IDataService, MenuSectionEntry } from '../types';
 import { CACHE_KEYS, DEFAULT_TTL } from '../cache/keys';
 
 export class DataService implements IDataService {
   private products: ProductRepository;
   private categories: CategoryRepository;
-  private branches: BranchRepository;
+  private branchesRepo: BranchRepository;
   private faq: FaqRepository;
-  private settings: SettingsRepository;
+  private settingsRepo: SettingsRepository;
   private aiLogs: AiLogRepository;
-  private menuConfig: MenuConfigRepository;
+  private menuConfigRepo: MenuConfigRepository;
   private userState: UserStateRepository;
-  private favorites: FavoritesRepository;
+  private favoritesRepo: FavoritesRepository;
   private messages: MessageRepository;
+  private db: ReturnType<typeof getDb>;
 
   constructor(d1Binding: any, private cache?: ICacheService) {
+    this.db = getDb(d1Binding);
     this.products = new ProductRepository(d1Binding);
     this.categories = new CategoryRepository(d1Binding);
-    this.branches = new BranchRepository(d1Binding);
+    this.branchesRepo = new BranchRepository(d1Binding);
     this.faq = new FaqRepository(d1Binding);
-    this.settings = new SettingsRepository(d1Binding);
+    this.settingsRepo = new SettingsRepository(d1Binding);
     this.aiLogs = new AiLogRepository(d1Binding);
-    this.menuConfig = new MenuConfigRepository(d1Binding);
+    this.menuConfigRepo = new MenuConfigRepository(d1Binding);
     this.userState = new UserStateRepository(d1Binding);
-    this.favorites = new FavoritesRepository(d1Binding);
+    this.favoritesRepo = new FavoritesRepository(d1Binding);
     this.messages = new MessageRepository(d1Binding);
   }
 
@@ -135,7 +150,7 @@ export class DataService implements IDataService {
 
   async getActiveBranches() {
     return this.cached(CACHE_KEYS.branches.active, () =>
-      this.branches.getActiveBranches(),
+      this.branchesRepo.getActiveBranches(),
     );
   }
 
@@ -153,13 +168,13 @@ export class DataService implements IDataService {
 
   async getVisibleCategoryIds() {
     return this.cached(CACHE_KEYS.visibleCategories, () =>
-      this.menuConfig.getVisibleCategoryIds(),
+      this.menuConfigRepo.getVisibleCategoryIds(),
     );
   }
 
   async getBySection(section: string): Promise<MenuSectionEntry[]> {
     return this.cached(CACHE_KEYS.menu.bySection(section), () =>
-      this.menuConfig.getBySection(section),
+      this.menuConfigRepo.getBySection(section),
     );
   }
 
@@ -171,11 +186,11 @@ export class DataService implements IDataService {
     // Individual setting lookups are cheap; skip per-key caching to avoid
     // stale reads when the admin edits a setting. The menu-config and
     // visible-categories caches cover the hot paths.
-    return this.settings.getValue(key);
+    return this.settingsRepo.getValue(key);
   }
 
   async setSetting(key: string, value: string): Promise<void> {
-    await this.settings.setValue(key, value);
+    await this.settingsRepo.setValue(key, value);
     // Invalidate the settings namespace so any bulk-cached reads pick up
     // the new value on next access.
     if (this.cache) {
@@ -206,16 +221,16 @@ export class DataService implements IDataService {
    * context personalization section.
    */
   async getUserFavorites(telegramId: string): Promise<string[]> {
-    const list = await this.favorites.list(telegramId);
+    const list = await this.favoritesRepo.list(telegramId);
     return list.map((f) => f.name);
   }
 
   async toggleFavorite(telegramId: string, productId: number): Promise<boolean> {
-    const isFav = await this.favorites.isFavorited(telegramId, productId);
+    const isFav = await this.favoritesRepo.isFavorited(telegramId, productId);
     if (isFav) {
-      await this.favorites.remove(telegramId, productId);
+      await this.favoritesRepo.remove(telegramId, productId);
     } else {
-      await this.favorites.add(telegramId, productId);
+      await this.favoritesRepo.add(telegramId, productId);
     }
     // Bust the user's favorites cache
     if (this.cache) {
@@ -225,11 +240,11 @@ export class DataService implements IDataService {
   }
 
   async isFavorited(telegramId: string, productId: number): Promise<boolean> {
-    return this.favorites.isFavorited(telegramId, productId);
+    return this.favoritesRepo.isFavorited(telegramId, productId);
   }
 
   async list(telegramId: string) {
-    return this.favorites.list(telegramId);
+    return this.favoritesRepo.list(telegramId);
   }
 
   // ---------------------------------------------------------------------------
@@ -260,6 +275,82 @@ export class DataService implements IDataService {
     isAnonymous?: boolean;
   }) {
     return this.messages.create(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Batch operations (D1 batch API — single round-trip)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Fetch all data needed for AI context building in a single D1 batch
+   * round-trip instead of 7 parallel queries. Returns raw batch results
+   * that need light transformation before passing to `buildMinimalContext`.
+   */
+  async buildAIContextBatch(userId: string) {
+    const batch = await this.db.batch([
+      // [0] Products with details (joined)
+      this.db
+        .select()
+        .from(products)
+        .leftJoin(coffeeDetails, eq(products.id, coffeeDetails.productId))
+        .leftJoin(categories, eq(products.categoryId, categories.id)),
+
+      // [1] Active branches
+      this.db.select().from(branches).where(eq(branches.isActive, true)),
+
+      // [2] FAQs
+      this.db.select().from(faq),
+
+      // [3] Visible menu config
+      this.db
+        .select()
+        .from(menuConfig)
+        .where(eq(menuConfig.isVisible, true)),
+
+      // [4] About setting
+      this.db.select().from(settings).where(eq(settings.key, 'about')),
+
+      // [5] Recent AI logs for this user
+      this.db
+        .select()
+        .from(aiConversationLogs)
+        .where(eq(aiConversationLogs.userId, userId))
+        .orderBy(desc(aiConversationLogs.timestamp))
+        .limit(5),
+
+      // [6] User favorites (joined with products to get names)
+      this.db
+        .select({ name: products.name })
+        .from(favorites)
+        .innerJoin(products, eq(favorites.productId, products.id))
+        .where(eq(favorites.telegramId, userId))
+        .orderBy(desc(favorites.createdAt)),
+
+      // [7] Popular products (most-favorited across all users)
+      this.db
+        .select({
+          name: products.name,
+          category: sql<string>`coalesce(${categories.name}, 'Uncategorized')`,
+          favoritedCount: sql<number>`cast(count(*) as int)`,
+        })
+        .from(favorites)
+        .innerJoin(products, eq(favorites.productId, products.id))
+        .leftJoin(categories, eq(products.categoryId, categories.id))
+        .groupBy(products.id, categories.name)
+        .orderBy(desc(sql`count(*)`))
+        .limit(5),
+    ]);
+
+    return {
+      products: batch[0],
+      branches: batch[1],
+      faqs: batch[2],
+      menuConfig: batch[3],
+      about: (batch[4] as any[])[0]?.value as string | undefined,
+      recentLogs: batch[5],
+      favorites: batch[6],
+      popularProducts: batch[7],
+    };
   }
 
   // ---------------------------------------------------------------------------
