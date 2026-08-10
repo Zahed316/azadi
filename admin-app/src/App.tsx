@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import LoadingScreen from './components/Spinner';
@@ -7,12 +7,13 @@ import { useConfirm } from './components/ConfirmDialog';
 import AppContext from './AppContext';
 import { apiFetch } from './api/client';
 import { queryKeys } from './api/keys';
-import ProductsPage from './pages/ProductsPage';
-import CategoriesPage from './pages/CategoriesPage';
-import InsightsPage from './pages/InsightsPage';
-import ConfigurePage from './pages/ConfigurePage';
-import InfoPage from './pages/InfoPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
+
+const ProductsPage = lazy(() => import('./pages/ProductsPage'));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
+const InsightsPage = lazy(() => import('./pages/InsightsPage'));
+const ConfigurePage = lazy(() => import('./pages/ConfigurePage'));
+const InfoPage = lazy(() => import('./pages/InfoPage'));
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ function AppInner() {
           <Toast toast={toast} />
           {ConfirmModal}
           <main>
+          <Suspense fallback={<LoadingScreen />}>
           <ErrorBoundary>
             <Routes>
               <Route path="/products" element={<ProductsPage />} />
@@ -77,6 +79,7 @@ function AppInner() {
               <Route path="*" element={<Navigate to="/products" replace />} />
             </Routes>
           </ErrorBoundary>
+          </Suspense>
           </main>
           <nav className="bottom-nav" aria-label="ناوبری اصلی">
             <NavLink
