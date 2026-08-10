@@ -9,7 +9,9 @@ interface Branch {
   name: string;
   address: string;
   phone: string;
-  hours: string;
+  openingHours: string;
+  location?: string | null;
+  isActive?: boolean;
 }
 
 export default function BranchesPage() {
@@ -29,7 +31,7 @@ export default function BranchesPage() {
           <div className="branch-name">{b.name}</div>
           <div className="branch-detail">آدرس: {b.address}</div>
           <div className="branch-detail">تلفن: {b.phone}</div>
-          <div className="branch-detail">ساعت: {b.hours}</div>
+          <div className="branch-detail">ساعت: {b.openingHours}</div>
         </div>
       ))}
       {!branches?.length && <div className="empty-state">شعبه‌ای یافت نشد</div>}
