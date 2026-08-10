@@ -2,6 +2,7 @@ import { webhookCallback } from 'grammy';
 import { createBot, Env } from './bot';
 import { setRequestContext } from './requestContext';
 import { handleApiRequest } from './api/router';
+import { handlePublicApiRequest } from './api/public';
 import { sweepStreaks } from './scripts/streaks';
 import { ServiceContainer } from './services/container';
 
@@ -21,6 +22,10 @@ export default {
     }
 
     try {
+      if (path.startsWith('/api/public/')) {
+        return handlePublicApiRequest(request, env, ctx);
+      }
+
       if (path.startsWith('/api/')) {
         const response = await handleApiRequest(request, env, ctx);
         console.log(JSON.stringify({

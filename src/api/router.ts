@@ -20,7 +20,11 @@ import {
 } from './resources';
 import type { ResourceCtx, ResourceHandler } from './resources';
 
-const ALLOWED_ORIGINS = ['https://azadi-admin.pages.dev', 'https://web.telegram.org'];
+const ALLOWED_ORIGINS = [
+  'https://azadi-admin.pages.dev',
+  'https://azadi-menu.pages.dev',
+  'https://web.telegram.org',
+];
 
 function getAllowedOrigin(origin: string | null): string {
   if (origin && ALLOWED_ORIGINS.includes(origin)) return origin;
