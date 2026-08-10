@@ -3,12 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import Spinner from '../components/Spinner';
-
-interface FaqItem {
-  id: number;
-  question: string;
-  answer: string;
-}
+import type { FaqItem } from '../api/types';
 
 export default function FaqPage() {
   const { data: faqs, isLoading } = useQuery({
@@ -21,14 +16,21 @@ export default function FaqPage() {
   return (
     <>
       <Link to="/" className="back-link">بازگشت</Link>
-      <h2 className="section-title">سوالات متداول</h2>
-      {faqs?.map((f) => (
-        <div key={f.id} className="faq-item">
-          <div className="faq-question">{f.question}</div>
-          <div className="faq-answer">{f.answer}</div>
-        </div>
-      ))}
-      {!faqs?.length && <div className="empty-state">سوالی یافت نشد</div>}
+      <div className="page-header">
+        <h2 className="page-header-title">سؤالات متداول</h2>
+      </div>
+      {faqs?.length ? (
+        <ol className="faq-list">
+          {faqs.map((f) => (
+            <li key={f.id} className="faq-row">
+              <div className="faq-row-q">{f.question}</div>
+              <div className="faq-row-a">{f.answer}</div>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div className="empty-state">سؤالی یافت نشد</div>
+      )}
     </>
   );
 }
