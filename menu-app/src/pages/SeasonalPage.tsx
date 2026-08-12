@@ -23,14 +23,14 @@ export default function SeasonalPage() {
 
   return (
     <>
-      <Link to="/" className="back-link">بازگشت</Link>
+      <Link to="/" className="back-link">
+        بازگشت
+      </Link>
       <div className="page-header">
         <h2 className="page-header-title">محصولات فصلی</h2>
       </div>
       {products?.length ? (
-        products.map((p) => (
-          <ProductRow key={p.id} product={p} priceUnit={priceUnit} />
-        ))
+        products.map((p) => <ProductRow key={p.id} product={p} priceUnit={priceUnit} />)
       ) : (
         <div className="empty-state">محصول فصلی یافت نشد</div>
       )}

@@ -27,7 +27,9 @@ export default function HomePage() {
     <>
       {/* ── Dark hero ── */}
       <section className="hero">
-        <p className="hero-eyebrow" dir="ltr">Coffee Roastery</p>
+        <p className="hero-eyebrow" dir="ltr">
+          Coffee Roastery
+        </p>
         <h1 className="hero-title">آزادی</h1>
         {settings?.about && <p className="hero-about">{settings.about}</p>}
         {settings?.instagram && (
@@ -44,10 +46,18 @@ export default function HomePage() {
 
       {/* ── Quick links ── */}
       <nav className="home-nav">
-        <Link to="/featured" className="home-nav-link">ویژه</Link>
-        <Link to="/seasonal" className="home-nav-link">فصلی</Link>
-        <Link to="/branches" className="home-nav-link">شعبه‌ها</Link>
-        <Link to="/faq" className="home-nav-link">سؤالات</Link>
+        <Link to="/featured" className="home-nav-link">
+          ویژه
+        </Link>
+        <Link to="/seasonal" className="home-nav-link">
+          فصلی
+        </Link>
+        <Link to="/branches" className="home-nav-link">
+          شعبه‌ها
+        </Link>
+        <Link to="/faq" className="home-nav-link">
+          سؤالات
+        </Link>
       </nav>
 
       {/* ── Numbered category index ── */}

@@ -17,11 +17,15 @@ export default function ProductImage({ src, alt, className }: ProductImageProps)
   const initial = alt.trim().charAt(0) || '?';
 
   if (src && !failed) {
+    const isHero = className?.includes('hero');
     return (
       <img
         src={src}
         alt={alt}
         className={className}
+        loading="lazy"
+        width={isHero ? undefined : 56}
+        height={isHero ? undefined : 56}
         onError={() => setFailed(true)}
       />
     );

@@ -15,7 +15,9 @@ export default function FaqPage() {
 
   return (
     <>
-      <Link to="/" className="back-link">بازگشت</Link>
+      <Link to="/" className="back-link">
+        بازگشت
+      </Link>
       <div className="page-header">
         <h2 className="page-header-title">سؤالات متداول</h2>
       </div>

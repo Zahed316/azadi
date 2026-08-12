@@ -32,17 +32,15 @@ export default function CategoryPage() {
 
   return (
     <>
-      <Link to="/" className="back-link">بازگشت</Link>
+      <Link to="/" className="back-link">
+        بازگشت
+      </Link>
       <div className="page-header">
         <h2 className="page-header-title">{category?.name ?? 'محصولات'}</h2>
-        {category?.description && (
-          <p className="page-header-sub">{category.description}</p>
-        )}
+        {category?.description && <p className="page-header-sub">{category.description}</p>}
       </div>
       {products?.length ? (
-        products.map((p) => (
-          <ProductRow key={p.id} product={p} priceUnit={priceUnit} />
-        ))
+        products.map((p) => <ProductRow key={p.id} product={p} priceUnit={priceUnit} />)
       ) : (
         <div className="empty-state">محصولی یافت نشد</div>
       )}

@@ -15,7 +15,9 @@ export default function BranchesPage() {
 
   return (
     <>
-      <Link to="/" className="back-link">بازگشت</Link>
+      <Link to="/" className="back-link">
+        بازگشت
+      </Link>
       <div className="page-header">
         <h2 className="page-header-title">شعب ما</h2>
       </div>
@@ -25,7 +27,9 @@ export default function BranchesPage() {
             <div key={b.id} className="branch-row">
               <h3 className="branch-row-name">{b.name}</h3>
               <div className="branch-row-detail">{b.address}</div>
-              <div className="branch-row-detail" dir="ltr" style={{ textAlign: 'left' }}>{b.phone}</div>
+              <div className="branch-row-detail" dir="ltr" style={{ textAlign: 'left' }}>
+                {b.phone}
+              </div>
               <div className="branch-row-detail">{b.openingHours}</div>
               {b.location && (
                 <a

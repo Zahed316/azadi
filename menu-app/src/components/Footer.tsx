@@ -22,19 +22,13 @@ export default function Footer() {
           <Link to="/branches">شعبه‌ها</Link>
           <Link to="/faq">سؤالات متداول</Link>
           {settings?.instagram && (
-            <a
-              href={settings.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={settings.instagram} target="_blank" rel="noopener noreferrer">
               اینستاگرام
             </a>
           )}
         </nav>
 
-        <p className="footer-copy">
-          © {new Date().getFullYear()} آزادی کافی رستری · ایرانشهر
-        </p>
+        <p className="footer-copy">© {new Date().getFullYear()} آزادی کافی رستری · ایرانشهر</p>
       </div>
     </footer>
   );

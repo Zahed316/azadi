@@ -28,14 +28,16 @@ export default function ProductRow({ product, priceUnit = 'تومان', classNam
         <div className="product-row-top">
           <span className="product-row-name">{product.name}</span>
           {product.featured && <span className="product-badge product-badge--featured">ویژه</span>}
-          {product.isSeasonal && <span className="product-badge product-badge--seasonal">فصلی</span>}
-          {product.priceOnRequest && <span className="product-badge product-badge--featured">هماهنگی</span>}
+          {product.isSeasonal && (
+            <span className="product-badge product-badge--seasonal">فصلی</span>
+          )}
+          {product.priceOnRequest && (
+            <span className="product-badge product-badge--featured">هماهنگی</span>
+          )}
         </div>
         <div className="product-row-price-row">
           <span className="product-row-dots" />
-          <span className="product-row-price">
-            {isUnavailable ? 'ناموجود' : priceText}
-          </span>
+          <span className="product-row-price">{isUnavailable ? 'ناموجود' : priceText}</span>
         </div>
       </div>
     </Link>

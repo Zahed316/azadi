@@ -25,14 +25,23 @@ export default function ProductPage() {
   if (!product) return <div className="empty-state">محصول یافت نشد</div>;
 
   const d = product.coffee_details;
-  const hasDetails = d && (
-    d.origin || d.farm || d.altitude || d.processing ||
-    d.variety || d.roastLevel || d.acidity || d.body
-  );
+  if (!d) return null;
+  const hasDetails =
+    d &&
+    (d.origin ||
+      d.farm ||
+      d.altitude ||
+      d.processing ||
+      d.variety ||
+      d.roastLevel ||
+      d.acidity ||
+      d.body);
 
   return (
     <>
-      <Link to="/" className="back-link">بازگشت</Link>
+      <Link to="/" className="back-link">
+        بازگشت
+      </Link>
 
       {/* ── Hero image ── */}
       <div className="product-hero">
@@ -44,8 +53,12 @@ export default function ProductPage() {
         <h1 className="product-title">{product.name}</h1>
         <div className="product-badges">
           {product.featured && <span className="product-badge product-badge--featured">ویژه</span>}
-          {product.isSeasonal && <span className="product-badge product-badge--seasonal">فصلی</span>}
-          {product.priceOnRequest && <span className="product-badge product-badge--featured">قیمت با هماهنگی</span>}
+          {product.isSeasonal && (
+            <span className="product-badge product-badge--seasonal">فصلی</span>
+          )}
+          {product.priceOnRequest && (
+            <span className="product-badge product-badge--featured">قیمت با هماهنگی</span>
+          )}
         </div>
       </div>
 
@@ -60,21 +73,19 @@ export default function ProductPage() {
       </div>
 
       {/* ── Description ── */}
-      {product.description && (
-        <p className="product-description">{product.description}</p>
-      )}
+      {product.description && <p className="product-description">{product.description}</p>}
 
       {/* ── Spec sheet: coffee details ── */}
       {hasDetails && (
         <dl className="spec-sheet">
-          {d!.origin && <SpecRow label="خاستگاه" value={d!.origin} />}
-          {d!.roastLevel && <SpecRow label="برشته‌کاری" value={d!.roastLevel} />}
-          {d!.farm && <SpecRow label="مزارع" value={d!.farm} />}
-          {d!.altitude && <SpecRow label="ارتفاع" value={d!.altitude} />}
-          {d!.processing && <SpecRow label="فرآوری" value={d!.processing} />}
-          {d!.variety && <SpecRow label="واریته" value={d!.variety} />}
-          {d!.acidity && <SpecRow label="اسیدیته" value={d!.acidity} />}
-          {d!.body && <SpecRow label="بدنه" value={d!.body} />}
+          {d.origin && <SpecRow label="خاستگاه" value={d.origin} />}
+          {d.roastLevel && <SpecRow label="برشته‌کاری" value={d.roastLevel} />}
+          {d.farm && <SpecRow label="مزارع" value={d.farm} />}
+          {d.altitude && <SpecRow label="ارتفاع" value={d.altitude} />}
+          {d.processing && <SpecRow label="فرآوری" value={d.processing} />}
+          {d.variety && <SpecRow label="واریته" value={d.variety} />}
+          {d.acidity && <SpecRow label="اسیدیته" value={d.acidity} />}
+          {d.body && <SpecRow label="بدنه" value={d.body} />}
         </dl>
       )}
 
@@ -82,7 +93,9 @@ export default function ProductPage() {
       {d?.flavorNotes && (
         <div className="flavor-tags">
           {d.flavorNotes.split(/[,،/]+/).map((note, i) => (
-            <span key={i} className="flavor-tag">{note.trim()}</span>
+            <span key={i} className="flavor-tag">
+              {note.trim()}
+            </span>
           ))}
         </div>
       )}
@@ -99,7 +112,9 @@ export default function ProductPage() {
           {product.caffeineMg && (
             <div className="nutrition-item">
               <span className="nutrition-label">کافئین</span>
-              <span className="nutrition-value">{toPersianDigits(product.caffeineMg)} میلی‌گرم</span>
+              <span className="nutrition-value">
+                {toPersianDigits(product.caffeineMg)} میلی‌گرم
+              </span>
             </div>
           )}
           {product.allergens && (
