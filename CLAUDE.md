@@ -22,7 +22,7 @@ Three deployable units:
 
 - `src/` — the Worker (bot webhook + REST API + public API). Deployed via `wrangler deploy` to `azadi-coffee-bot` worker.
 - `admin-app/` — a Telegram Mini App (React + Vite). Deployed to Cloudflare Pages at `azadi-admin.pages.dev`. **The Worker does not serve it.**
-- `menu-app/` — a public menu website (React + Vite). Deployed to Cloudflare Pages at `azadi-menu.pages.dev`. **The Worker does not serve it.**
+- `menu-app/` — a public menu website (React + Vite). Deployed to Cloudflare Pages at `www.azadiroastery.ir` (fallback: `azadi-menu.pages.dev`). **The Worker does not serve it.**
 
 ## Commands
 
@@ -146,7 +146,7 @@ React 18 + Vite 6 + HashRouter + TanStack Query v5. Public-facing, read-only men
 - Routes: `/` (home), `/category/:id`, `/product/:id`, `/featured`, `/seasonal`, `/branches`, `/faq`.
 - React Query `staleTime: 60_000` (1 minute). `gcTime: 5 * 60_000` (5 minutes).
 - **RTL layout** (`dir="rtl"` on `<html>`). All UI text in Persian.
-- Deployed to `azadi-menu.pages.dev` via CI.
+- Deployed to `www.azadiroastery.ir` via CI (fallback: `azadi-menu.pages.dev`).
 
 ### Public API (`src/api/public.ts`)
 
