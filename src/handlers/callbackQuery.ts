@@ -308,11 +308,22 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         }
         if (product.imageUrl) {
           // Photo — must create new message (can't edit text → photo)
-          await ctx.replyWithPhoto(product.imageUrl, {
+          const sent = await ctx.replyWithPhoto(product.imageUrl, {
             caption,
             parse_mode: 'HTML',
             reply_markup: kb,
           });
+          if (sent && 'message_id' in sent) {
+            const evicted = pushMessage(
+              ctx.session,
+              ctx.chat!.id,
+              (sent as { message_id: number }).message_id,
+              `product:${id}`,
+            );
+            if (evicted) {
+              await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+            }
+          }
         } else {
           // Text-only — try to edit active message first
           const active = getActiveMessage(ctx.session);
