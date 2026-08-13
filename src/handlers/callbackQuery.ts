@@ -19,7 +19,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
   bot.callbackQuery('back:main', async (ctx) => {
     try {
       await ctx.answerCallbackQuery();
-      const body = await getWelcomeText(ctx.env);
+      const body = await getWelcomeText(ctx.dataService);
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

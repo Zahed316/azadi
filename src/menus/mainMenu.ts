@@ -1,11 +1,10 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { FavoritesRepository, SettingsRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { toPersianDigits } from '../utils/numbers';
 import { escapeHtml } from '../utils/htmlEscape';
 import { MyContext } from '../types/context';
-import type { Env } from '../bot';
+import type { IDataService } from '../services/types';
 
 const DEFAULT_WELCOME_TEXT =
   'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
@@ -13,10 +12,9 @@ const DEFAULT_WELCOME_TEXT =
   '💬 <b>هر سوالی دارید همین‌جا بنویسید</b> — دستیار هوشمند قهوه درباره منو، قیمت‌ها، روش‌های دم‌آوری و هر چیز دیگری به شما پاسخ می‌دهد!';
 
 /** Read welcome text from settings, falling back to the hardcoded default. */
-export async function getWelcomeText(env: Env): Promise<string> {
+export async function getWelcomeText(dataService: IDataService): Promise<string> {
   try {
-    const repo = new SettingsRepository(env.DB);
-    const value = await repo.getValue('welcome_message');
+    const value = await dataService.getSetting('welcome_message');
     // Escape admin-supplied text so HTML tags in the message don't break parse_mode: 'HTML'.
     // The hardcoded default is trusted and does not need escaping.
     return value ? escapeHtml(value) : DEFAULT_WELCOME_TEXT;
@@ -25,7 +23,7 @@ export async function getWelcomeText(env: Env): Promise<string> {
   }
 }
 
-/** @deprecated Use getWelcomeText(env) instead. Kept for backward compatibility. */
+/** @deprecated Use getWelcomeText(dataService) instead. Kept for backward compatibility. */
 export const MAIN_MENU_TEXT = DEFAULT_WELCOME_TEXT;
 
 export const mainMenu = new Menu<MyContext>('main-menu')
@@ -39,7 +37,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         return;
       }
       if (!ctx.from?.id) return;
-      const items = await new FavoritesRepository(ctx.env.DB).list(String(ctx.from.id));
+      const items = await ctx.dataService.list(String(ctx.from.id));
       if (items.length === 0) {
         await ctx.reply('📭 هنوز محصولی به علاقمندی‌ها اضافه نکرده‌اید.', {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),

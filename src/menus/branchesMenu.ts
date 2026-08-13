@@ -11,7 +11,6 @@
  */
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { BranchRepository, SettingsRepository } from '../repositories';
 import { branches as branchesTable } from '../database/schema';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { escapeHtml } from '../utils/htmlEscape';
@@ -30,8 +29,8 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
 
       // Fetch about text and branches in parallel
       const [aboutText, branches] = await Promise.all([
-        new SettingsRepository(ctx.env.DB).getValue('about'),
-        new BranchRepository(ctx.env.DB).getAllBranches(),
+        ctx.dataService.getSetting('about'),
+        ctx.dataService.getAllBranches(),
       ]);
 
       // Build keyboard: branch buttons (if any) + back button
@@ -62,7 +61,7 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = await getWelcomeText(ctx.env);
+    const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

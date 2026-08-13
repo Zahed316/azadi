@@ -59,7 +59,7 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = await getWelcomeText(ctx.env);
+    const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
@@ -109,7 +109,7 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = await getWelcomeText(ctx.env);
+    const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

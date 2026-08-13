@@ -1,6 +1,5 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { ProductRepository, MenuConfigRepository, SettingsRepository } from '../repositories';
 import { products as productsTable } from '../database/schema';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { DEFAULT_VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
@@ -79,8 +78,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
         return;
       }
 
-      const menuRepo = new MenuConfigRepository(ctx.env.DB);
-      const configs = await menuRepo.getBySection('drinks');
+      const configs = await ctx.dataService.getBySection('drinks');
 
       for (const config of configs) {
         const label =
@@ -89,8 +87,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
         range
           .text(label, async (ctx) => {
             try {
-              const pRepo = new ProductRepository(ctx.env.DB);
-              const items = await pRepo.getProductsByCategory(config.categoryId);
+              const items = await ctx.dataService.getProductsByCategory(config.categoryId);
 
               if (items.length === 0) {
                 if (config.specialMessage) {
@@ -105,9 +102,9 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
               }
 
               const priceUnit =
-                (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) ||
+                (await ctx.dataService.getSetting('price_unit')) ||
                 DEFAULT_PRICE_UNIT;
-              const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+              const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
               const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
               await buildCategoryPage(ctx, config, items, 0, priceUnit, vatNote);
             } catch (e) {
@@ -126,7 +123,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   })
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = await getWelcomeText(ctx.env);
+    const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

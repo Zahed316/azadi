@@ -1,6 +1,5 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { BranchRepository, FaqRepository, SettingsRepository } from '../repositories';
 import { branches as branchesTable, faq as faqTable } from '../database/schema';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { formatFaq } from '../utils/formatters';
@@ -19,8 +18,8 @@ export const infoMenu = new Menu<MyContext>('info-menu')
         return;
       }
       const [aboutText, branches] = await Promise.all([
-        new SettingsRepository(ctx.env.DB).getValue('about'),
-        new BranchRepository(ctx.env.DB).getAllBranches(),
+        ctx.dataService.getSetting('about'),
+        ctx.dataService.getAllBranches(),
       ]);
       const kb = new InlineKeyboard();
       const activeBranches = branches.filter(
@@ -49,8 +48,7 @@ export const infoMenu = new Menu<MyContext>('info-menu')
         });
         return;
       }
-      const repo = new FaqRepository(ctx.env.DB);
-      const faqs = await repo.getAll();
+      const faqs = await ctx.dataService.getAllFaqs();
       if (faqs.length === 0) {
         await ctx.reply('📭 هنوز سوالی ثبت نشده است.', {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
@@ -73,7 +71,7 @@ export const infoMenu = new Menu<MyContext>('info-menu')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = await getWelcomeText(ctx.env);
+    const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

@@ -147,7 +147,7 @@ export function createBot(env: Env): Bot<MyContext> {
     // is registered (see USE_CONVERSATIONS gate above). Guard so /start works
     // in both states — the framework is currently dormant.
     await ctx.conversation?.exitAll();
-    return ctx.reply(await getWelcomeText(env), { reply_markup: mainMenu, parse_mode: 'HTML' });
+    return ctx.reply(await getWelcomeText(ctx.dataService), { reply_markup: mainMenu, parse_mode: 'HTML' });
   });
 
   setupAdminCommands(bot, env);

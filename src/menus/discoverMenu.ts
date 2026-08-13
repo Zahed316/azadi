@@ -1,6 +1,5 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { ProductRepository, SettingsRepository } from '../repositories';
 import { products, coffeeDetails } from '../database/schema';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { formatProduct, DEFAULT_PRICE_UNIT, DEFAULT_VAT_NOTE } from '../utils/formatters';
@@ -8,10 +7,10 @@ import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
-import type { Env } from '../bot';
+import type { IDataService } from '../services/types';
 
-async function loadPriceUnit(env: Env): Promise<string> {
-  return (await new SettingsRepository(env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+async function loadPriceUnit(dataService: IDataService): Promise<string> {
+  return (await dataService.getSetting('price_unit')) || DEFAULT_PRICE_UNIT;
 }
 
 export const discoverMenu = new Menu<MyContext>('discover-menu')
@@ -23,15 +22,15 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         });
         return;
       }
-      const items = await new ProductRepository(ctx.env.DB).getByFlag('featured');
+      const items = await ctx.dataService.getByFlag('featured');
       if (items.length === 0) {
         await ctx.reply('📭 در حال حاضر محصول ویژه‌ای نداریم.', {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
         return;
       }
-      const priceUnit = await loadPriceUnit(ctx.env);
-      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const priceUnit = await loadPriceUnit(ctx.dataService);
+      const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(items, 0, 5);
       const kb = new InlineKeyboard();
@@ -58,15 +57,15 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         });
         return;
       }
-      const items = await new ProductRepository(ctx.env.DB).getByFlag('isSeasonal');
+      const items = await ctx.dataService.getByFlag('isSeasonal');
       if (items.length === 0) {
         await ctx.reply('📭 در حال حاضر محصول فصلی موجود نیست.', {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
         return;
       }
-      const priceUnit = await loadPriceUnit(ctx.env);
-      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const priceUnit = await loadPriceUnit(ctx.dataService);
+      const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(items, 0, 5);
       const kb = new InlineKeyboard();
@@ -92,15 +91,15 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         });
         return;
       }
-      const rows = await new ProductRepository(ctx.env.DB).getBeansWithCoffeeDetails();
+      const rows = await ctx.dataService.getBeansWithCoffeeDetails();
       if (rows.length === 0) {
         await ctx.reply('📭 هنوز دانه قهوه‌ای با جزئیات کشت ثبت نشده است.', {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
         return;
       }
-      const priceUnit = await loadPriceUnit(ctx.env);
-      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const priceUnit = await loadPriceUnit(ctx.dataService);
+      const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(rows, 0, 5);
       const origins = Array.from(
@@ -158,7 +157,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = await getWelcomeText(ctx.env);
+    const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
