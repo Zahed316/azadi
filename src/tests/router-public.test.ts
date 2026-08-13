@@ -297,8 +297,8 @@ describe('Rate limiting', () => {
   function makeMockKv(): KVNamespace {
     const store = new Map<string, string>();
     return {
-      get: vi.fn(async (key: string) => store.get(key) ?? null),
-      put: vi.fn(async (key: string, value: string) => {
+      get: vi.fn((key: string) => Promise.resolve(store.get(key) ?? null)),
+      put: vi.fn((key: string, value: string) => {
         store.set(key, value);
       }),
       list: vi.fn(),
@@ -338,7 +338,7 @@ describe('Rate limiting', () => {
     const kv = makeMockKv();
     // Simulate 100 existing requests in the current window
     const windowKey = `ratelimit:10.0.0.1:${Math.floor(Date.now() / 1000 / 60)}`;
-    await kv.put!(windowKey, '100', undefined);
+    await kv.put(windowKey, '100', undefined);
 
     const res = await callWithCache('products', kv, { 'CF-Connecting-IP': '10.0.0.1' });
     expect(res.status).toBe(429);
@@ -348,7 +348,7 @@ describe('Rate limiting', () => {
   test('includes Retry-After header on 429', async () => {
     const kv = makeMockKv();
     const windowKey = `ratelimit:10.0.0.2:${Math.floor(Date.now() / 1000 / 60)}`;
-    await kv.put!(windowKey, '100', undefined);
+    await kv.put(windowKey, '100', undefined);
 
     const { handlePublicApiRequest } = await import('../api/public');
     const request = new Request('https://bot.test/api/public/products', {

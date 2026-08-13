@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
-import { buildMinimalContext } from '../utils/menuContext';
+import { buildMinimalContext, type ProductWithDetails } from '../utils/menuContext';
 
-const mockProducts = [
+const mockProducts: ProductWithDetails[] = [
   {
     products: {
       id: 1,
@@ -10,14 +10,49 @@ const mockProducts = [
       price: 50000,
       description: 'Strong',
       stock: 10,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      branchId: null,
+      unit: 'item',
+      available: true,
+      featured: false,
+      isSeasonal: false,
+      imageUrl: null,
+      priceOnRequest: false,
+      calories: null,
+      caffeineMg: null,
+      allergens: null,
+      sizeOptions: null,
+      syrupOptions: null,
     },
     coffee_details: null,
-    categories: { name: 'Hot Coffee' },
+    categories: { id: 1, name: 'Hot Coffee', description: null, emoji: null, sortOrder: 0 },
   },
   {
-    products: { id: 2, name: 'Latte', categoryId: 2, price: 60000, description: 'Mild', stock: 5 },
+    products: {
+      id: 2,
+      name: 'Latte',
+      categoryId: 2,
+      price: 60000,
+      description: 'Mild',
+      stock: 5,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      branchId: null,
+      unit: 'item',
+      available: true,
+      featured: false,
+      isSeasonal: false,
+      imageUrl: null,
+      priceOnRequest: false,
+      calories: null,
+      caffeineMg: null,
+      allergens: null,
+      sizeOptions: null,
+      syrupOptions: null,
+    },
     coffee_details: null,
-    categories: { name: 'Cold Coffee' },
+    categories: { id: 2, name: 'Cold Coffee', description: null, emoji: null, sortOrder: 0 },
   },
 ];
 
@@ -41,7 +76,7 @@ test('uses category name instead of category ID', () => {
 });
 
 test('handles null categories gracefully', () => {
-  const productsWithNullCat = [
+  const productsWithNullCat: ProductWithDetails[] = [
     {
       products: {
         id: 3,
@@ -50,6 +85,20 @@ test('handles null categories gracefully', () => {
         price: 55000,
         description: 'Sweet',
         stock: 3,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        branchId: null,
+        unit: 'item',
+        available: true,
+        featured: false,
+        isSeasonal: false,
+        imageUrl: null,
+        priceOnRequest: false,
+        calories: null,
+        caffeineMg: null,
+        allergens: null,
+        sizeOptions: null,
+        syrupOptions: null,
       },
       coffee_details: null,
       categories: null,
@@ -105,7 +154,7 @@ test('omits popular products when array is empty', () => {
 });
 
 test('includes coffee details when present', () => {
-  const productsWithDetails = [
+  const productsWithDetails: ProductWithDetails[] = [
     {
       products: {
         id: 1,
@@ -114,8 +163,23 @@ test('includes coffee details when present', () => {
         price: 80000,
         description: 'Floral',
         stock: 5,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        branchId: null,
+        unit: 'item',
+        available: true,
+        featured: false,
+        isSeasonal: false,
+        imageUrl: null,
+        priceOnRequest: false,
+        calories: null,
+        caffeineMg: null,
+        allergens: null,
+        sizeOptions: null,
+        syrupOptions: null,
       },
       coffee_details: {
+        productId: 1,
         origin: 'Ethiopia',
         farm: 'Kochere',
         altitude: '1,800m',
@@ -123,8 +187,12 @@ test('includes coffee details when present', () => {
         variety: 'Heirloom',
         roastLevel: 'Light',
         flavorNotes: 'Jasmine, citrus',
+        recommendedBrew: null,
+        acidity: null,
+        body: null,
+        brewGuide: null,
       },
-      categories: { name: 'Beans' },
+      categories: { id: 1, name: 'Beans', description: null, emoji: null, sortOrder: 0 },
     },
   ];
   const ctx = buildMinimalContext('ethiopian', productsWithDetails, [], []);
@@ -135,7 +203,7 @@ test('includes coffee details when present', () => {
 });
 
 test('includes nutritional info when present', () => {
-  const productsWithNutrition = [
+  const productsWithNutrition: ProductWithDetails[] = [
     {
       products: {
         id: 1,
@@ -144,12 +212,23 @@ test('includes nutritional info when present', () => {
         price: 55000,
         description: '',
         stock: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        branchId: null,
+        unit: 'cup',
+        available: true,
+        featured: false,
+        isSeasonal: false,
+        imageUrl: null,
+        priceOnRequest: false,
         calories: 120,
         caffeineMg: 63,
         allergens: 'milk',
+        sizeOptions: null,
+        syrupOptions: null,
       },
       coffee_details: null,
-      categories: { name: 'Drinks' },
+      categories: { id: 1, name: 'Drinks', description: null, emoji: null, sortOrder: 0 },
     },
   ];
   const ctx = buildMinimalContext('latte', productsWithNutrition, [], []);

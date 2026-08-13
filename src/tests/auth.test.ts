@@ -4,7 +4,7 @@
  * Tests AUTH-001 (auth_date required + freshness) and AUTH-002 (hash length check)
  * by calling the real HMAC validation with a known bot token.
  */
-import { expect, test, vi } from 'vitest';
+import { expect, test } from 'vitest';
 import { validateInitData } from '../api/auth';
 
 const BOT_TOKEN = '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11';

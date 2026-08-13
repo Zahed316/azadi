@@ -1,11 +1,13 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- import.meta.env is typed as any by Vite
 export const API_BASE =
   import.meta.env.VITE_API_BASE || 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
 
 function getAuthHeader(): Record<string, string> {
   try {
-    const { initDataRaw } = retrieveLaunchParams();
+    // retrieveLaunchParams() returns `any` from the Telegram SDK — narrow manually
+    const { initDataRaw } = retrieveLaunchParams() as { initDataRaw?: string };
     return { Authorization: `Telegram ${initDataRaw || ''}` };
   } catch {
     return { Authorization: '' };
@@ -29,7 +31,7 @@ export async function apiFetch<T = unknown>(
     const errText = await res.text();
     throw new Error(errText || `HTTP ${res.status}`);
   }
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
 export interface Message {

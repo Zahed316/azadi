@@ -7,7 +7,6 @@
  * @module services/types
  */
 
-import type { MyContext } from '../types/context';
 import {
   products,
   coffeeDetails,
@@ -86,7 +85,8 @@ export interface IBotService {
    * Get the underlying grammY Bot instance.
    * Used for testing and advanced configuration.
    */
-  getBot(): any; // Bot<MyContext> — avoiding grammY import in interface
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Bot<MyContext> avoids grammY import in interface
+  getBot(): any;
 }
 
 // ---------------------------------------------------------------------------

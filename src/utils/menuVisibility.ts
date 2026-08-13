@@ -1,4 +1,5 @@
 import { SettingsRepository } from '../repositories';
+import { D1Database } from '@cloudflare/workers-types';
 
 const MENU_VISIBILITY_KEYS: Record<string, string> = {
   featured: 'menu_visible_featured',
@@ -16,7 +17,7 @@ const MENU_VISIBILITY_KEYS: Record<string, string> = {
 
 export const HIDDEN_MESSAGE = '❌ این بخش در حال حاضر غیرفعال است.';
 
-export async function isMenuVisible(env: { DB: any }, section: string): Promise<boolean> {
+export async function isMenuVisible(env: { DB: D1Database }, section: string): Promise<boolean> {
   const key = MENU_VISIBILITY_KEYS[section];
   if (!key) return true;
   const value = await new SettingsRepository(env.DB).getValue(key);

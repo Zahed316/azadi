@@ -2,6 +2,15 @@ import { BranchRepository } from '../../repositories';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
+interface BranchBody {
+  name?: string;
+  address?: string;
+  phone?: string;
+  location?: string;
+  openingHours?: string;
+  isActive?: boolean;
+}
+
 export const handleBranches: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, request, corsHeaders } = ctx;
 
@@ -20,7 +29,8 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const repo = new BranchRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as BranchBody;
     if (!body.name || !body.address) {
       return new Response(JSON.stringify({ error: 'name and address required' }), {
         status: 400,
@@ -52,7 +62,8 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
     if (idResult instanceof Response) return idResult;
     const id = idResult;
     const repo = new BranchRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as BranchBody;
     if (!body.name || !body.address) {
       return new Response(JSON.stringify({ error: 'name and address required' }), {
         status: 400,

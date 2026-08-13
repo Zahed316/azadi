@@ -1,6 +1,15 @@
 import { UserStateRepository, SettingsRepository } from '../../repositories';
 import type { ResourceHandler } from './types';
 
+interface StreakConfigBody {
+  streakMessages?: boolean;
+  streakCronEnabled?: boolean;
+}
+
+interface StreakResetBody {
+  telegramId?: string | number;
+}
+
 export const handleStreaks: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, request, corsHeaders, env } = ctx;
 
@@ -49,7 +58,8 @@ export const handleStreaks: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as StreakConfigBody;
     const repo = new SettingsRepository(db);
     if (body.streakMessages !== undefined)
       await repo.setValue('streak_messages', body.streakMessages ? 'true' : 'false');
@@ -68,7 +78,8 @@ export const handleStreaks: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as StreakResetBody;
     if (!body.telegramId)
       return new Response(JSON.stringify({ error: 'telegramId required' }), {
         status: 400,

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
+import type { SettingsResponse, Setting } from '../api/types';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 import LoadingScreen from '../components/Spinner';
@@ -62,10 +63,10 @@ export default function SettingsPage() {
 
   const { data: settings = [], isLoading } = useQuery({
     queryKey: queryKeys.settings,
-    queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
+    queryFn: () => apiFetch<SettingsResponse>('/settings').then((r) => r.settings),
   });
 
-  const [localSettings, setLocalSettings] = useState<any[]>(settings);
+  const [localSettings, setLocalSettings] = useState<Setting[]>(settings);
   const [initialized, setInitialized] = useState(false);
   if (!initialized && settings.length > 0) {
     setLocalSettings(settings);
@@ -76,7 +77,7 @@ export default function SettingsPage() {
   const [newSettingValue, setNewSettingValue] = useState('');
 
   const saveSettingsMutation = useMutation({
-    mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
+    mutationFn: (body: { settings: Setting[] }) => apiFetch('/settings', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
       showToast('ذخیره شد ✓');
@@ -133,8 +134,8 @@ export default function SettingsPage() {
 
   const updateSetting = (key: string, value: string) => {
     setLocalSettings((prev) => {
-      const exists = prev.find((s: any) => s.key === key);
-      if (exists) return prev.map((s: any) => (s.key === key ? { ...s, value } : s));
+      const exists = prev.find((s) => s.key === key);
+      if (exists) return prev.map((s) => (s.key === key ? { ...s, value } : s));
       return [...prev, { key, value }];
     });
   };
@@ -143,7 +144,7 @@ export default function SettingsPage() {
   if (!menuVisInitialized && settings.length > 0) {
     const initial: Record<string, boolean> = {};
     for (const key of MENU_VISIBILITY_KEYS) {
-      const setting = settings.find((s: any) => s.key === key);
+      const setting = settings.find((s) => s.key === key);
       // Missing key = visible (default)
       initial[key] = setting?.value !== 'false';
     }
@@ -171,7 +172,7 @@ export default function SettingsPage() {
 
   const handleDeleteSetting = async (key: string) => {
     if (!(await confirm(`تنظیمات ${key} حذف شود؟`))) return;
-    setLocalSettings((prev) => prev.filter((s: any) => s.key !== key));
+    setLocalSettings((prev) => prev.filter((s) => s.key !== key));
     deleteSettingMutation.mutate(key);
   };
 
@@ -214,14 +215,14 @@ export default function SettingsPage() {
               key === 'vat_note' ||
               key === 'announcement' ? (
                 <textarea
-                  value={localSettings.find((s: any) => s.key === key)?.value || ''}
+                  value={localSettings.find((s) => s.key === key)?.value || ''}
                   onChange={(e) => updateSetting(key, e.target.value)}
                   dir="auto"
                   rows={4}
                 />
               ) : (
                 <input
-                  value={localSettings.find((s: any) => s.key === key)?.value || ''}
+                  value={localSettings.find((s) => s.key === key)?.value || ''}
                   onChange={(e) => updateSetting(key, e.target.value)}
                   dir={key === 'ai_greeting' ? 'auto' : undefined}
                 />
@@ -236,12 +237,12 @@ export default function SettingsPage() {
 
       <div className="card">
         <h2>تنظیمات سفارشی</h2>
-        {localSettings.filter((s: any) => !BUILTIN_KEYS.includes(s.key)).length === 0 ? (
+        {localSettings.filter((s) => !BUILTIN_KEYS.includes(s.key)).length === 0 ? (
           <EmptyState message="تنظیمات سفارشی وجود ندارد." />
         ) : (
           <ul className="list">
             {localSettings
-              .filter((s: any) => !BUILTIN_KEYS.includes(s.key))
+              .filter((s) => !BUILTIN_KEYS.includes(s.key))
               .map((s) => (
                 <li key={s.key} className="list-item">
                   <div className="list-item-info">
@@ -253,7 +254,9 @@ export default function SettingsPage() {
                   <div className="list-item-actions">
                     <button
                       className="danger"
-                      onClick={() => handleDeleteSetting(s.key)}
+                      onClick={() => {
+                        void handleDeleteSetting(s.key);
+                      }}
                       disabled={deleteSettingMutation.isPending}
                     >
                       حذف

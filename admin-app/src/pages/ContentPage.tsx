@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
+import type { FaqsResponse, Faq } from '../api/types';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 import LoadingScreen from '../components/Spinner';
@@ -13,15 +14,19 @@ export default function ContentPage() {
 
   const { data: faqs = [], isLoading } = useQuery({
     queryKey: queryKeys.faqs,
-    queryFn: () => apiFetch<{ faqs: any[] }>('/faqs').then((r) => r.faqs),
+    queryFn: () => apiFetch<FaqsResponse>('/faqs').then((r) => r.faqs),
   });
 
-  const [editingFaq, setEditingFaq] = useState<any>(null);
+  const [editingFaq, setEditingFaq] = useState<Faq | null>(null);
   const [faqQuestion, setFaqQuestion] = useState('');
   const [faqAnswer, setFaqAnswer] = useState('');
 
   const saveFaqMutation = useMutation({
-    mutationFn: (data: { method: string; id?: number; body: any }) =>
+    mutationFn: (data: {
+      method: string;
+      id?: number;
+      body: { question: string; answer: string };
+    }) =>
       apiFetch(data.id ? `/faqs/${data.id}` : '/faqs', {
         method: data.method,
         body: data.body,
@@ -65,7 +70,7 @@ export default function ContentPage() {
     deleteFaqMutation.mutate(id);
   };
 
-  const startEditFaq = (f: any) => {
+  const startEditFaq = (f: Faq) => {
     setEditingFaq(f);
     setFaqQuestion(f.question);
     setFaqAnswer(f.answer);
@@ -128,7 +133,9 @@ export default function ContentPage() {
                   </button>
                   <button
                     className="danger"
-                    onClick={() => deleteFaq(f.id)}
+                    onClick={() => {
+                      void deleteFaq(f.id);
+                    }}
                     disabled={deleteFaqMutation.isPending}
                   >
                     حذف

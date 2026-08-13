@@ -1,19 +1,21 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { ProductRepository, SettingsRepository } from '../repositories';
+import { products, coffeeDetails } from '../database/schema';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { formatProduct, DEFAULT_PRICE_UNIT, DEFAULT_VAT_NOTE } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
+import type { Env } from '../bot';
 
-async function loadPriceUnit(env: any): Promise<string> {
+async function loadPriceUnit(env: Env): Promise<string> {
   return (await new SettingsRepository(env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
 }
 
 export const discoverMenu = new Menu<MyContext>('discover-menu')
-  .text('⭐ پیشنهاد ویژه', async (ctx: any) => {
+  .text('⭐ پیشنهاد ویژه', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'featured'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -38,7 +40,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:1`);
-      const body = `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
+      const body = `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: typeof products.$inferSelect) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
 
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
@@ -48,7 +50,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         .catch(() => {});
     }
   })
-  .text('🌿 محصول فصلی', async (ctx: any) => {
+  .text('🌿 محصول فصلی', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'seasonal'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -73,7 +75,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `seasonal:page:1`);
-      const body = `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
+      const body = `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: typeof products.$inferSelect) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
@@ -82,7 +84,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         .catch(() => {});
     }
   })
-  .text('📖 پاسپورت', async (ctx: any) => {
+  .text('📖 پاسپورت', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'passport'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
@@ -102,7 +104,16 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(rows, 0, 5);
       const origins = Array.from(
-        new Set(page.items.map((r: any) => r.details?.origin).filter(Boolean)),
+        new Set(
+          page.items
+            .map(
+              (r: {
+                product: typeof products.$inferSelect;
+                details: typeof coffeeDetails.$inferSelect;
+              }) => r.details?.origin,
+            )
+            .filter(Boolean),
+        ),
       );
       const originsLine =
         origins.length > 0
@@ -116,7 +127,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:1`);
-      const body = `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit, vatNote)).join('\n\n')}`;
+      const body = `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: { product: typeof products.$inferSelect; details: typeof coffeeDetails.$inferSelect }) => formatProduct(r.product, priceUnit, vatNote)).join('\n\n')}`;
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);

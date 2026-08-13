@@ -746,7 +746,7 @@ export class FavoritesRepository {
 export class MessageRepository {
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any) {
+  constructor(d1Binding: D1Database) {
     this.db = getDb(d1Binding);
   }
 

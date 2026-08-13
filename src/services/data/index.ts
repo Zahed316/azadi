@@ -19,6 +19,7 @@ import {
   FavoritesRepository,
   MessageRepository,
 } from '../../repositories';
+import type { D1Database } from '@cloudflare/workers-types';
 import { getDb } from '../../database/client';
 import { eq, desc, sql } from 'drizzle-orm';
 import {
@@ -49,7 +50,7 @@ export class DataService implements IDataService {
   private db: ReturnType<typeof getDb>;
 
   constructor(
-    d1Binding: any,
+    d1Binding: D1Database,
     private cache?: ICacheService,
   ) {
     this.db = getDb(d1Binding);
@@ -342,7 +343,7 @@ export class DataService implements IDataService {
       branches: batch[1],
       faqs: batch[2],
       menuConfig: batch[3],
-      about: (batch[4] as any[])[0]?.value as string | undefined,
+      about: (batch[4] as Array<{ value?: string }>)[0]?.value,
       recentLogs: batch[5],
       favorites: batch[6],
       popularProducts: batch[7],

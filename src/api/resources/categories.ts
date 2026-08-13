@@ -2,6 +2,13 @@ import { CategoryRepository } from '../../repositories';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
+interface CategoryBody {
+  name?: string;
+  description?: string;
+  emoji?: string;
+  sortOrder?: number;
+}
+
 export const handleCategories: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, request, corsHeaders } = ctx;
 
@@ -22,9 +29,10 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const repo = new CategoryRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as CategoryBody;
     await repo.addCategory({
-      name: body.name,
+      name: body.name!,
       description: body.description || null,
       emoji: body.emoji || null,
       sortOrder: body.sortOrder || 0,
@@ -48,9 +56,10 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
     if (idResult instanceof Response) return idResult;
     const id = idResult;
     const repo = new CategoryRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as CategoryBody;
     await repo.updateCategory(id, {
-      name: body.name,
+      name: body.name!,
       description: body.description || null,
       emoji: body.emoji || null,
       sortOrder: body.sortOrder || 0,

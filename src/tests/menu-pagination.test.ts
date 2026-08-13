@@ -33,6 +33,21 @@ const products = Array.from({ length: 12 }, (_, i) => ({
   price: 10000 + i * 1000,
   priceOnRequest: false,
   isSeasonal: false,
+  categoryId: 7,
+  available: true,
+  featured: false,
+  unit: 'cup',
+  stock: 0,
+  description: null,
+  imageUrl: null,
+  sizeOptions: null,
+  syrupOptions: null,
+  calories: null,
+  caffeineMg: null,
+  allergens: null,
+  branchId: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }));
 
 /** Flatten the InlineKeyboard rows to a single list of button objects. */
@@ -87,7 +102,28 @@ describe('buildCategoryPage (drinks paginated view)', () => {
   test('seasonal flag appends the 🌿 marker to the product button label', async () => {
     const { ctx, last } = makeMockCtx();
     const seasonalProducts = [
-      { id: 99, name: 'پای کدو', price: 25000, priceOnRequest: false, isSeasonal: true },
+      {
+        id: 99,
+        name: 'پای کدو',
+        price: 25000,
+        priceOnRequest: false,
+        isSeasonal: true,
+        categoryId: 7,
+        available: true,
+        featured: false,
+        unit: 'item',
+        stock: 0,
+        description: null,
+        imageUrl: null,
+        sizeOptions: null,
+        syrupOptions: null,
+        calories: null,
+        caffeineMg: null,
+        allergens: null,
+        branchId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ];
     await buildCategoryPage(ctx, config, seasonalProducts, 0, 'تومان');
     const btn = flatten(last.opts.reply_markup)[0];
@@ -97,7 +133,28 @@ describe('buildCategoryPage (drinks paginated view)', () => {
   test('priceOnRequest renders the (سوال در کافه) fallback', async () => {
     const { ctx, last } = makeMockCtx();
     const onRequest = [
-      { id: 50, name: 'ویژه', price: null, priceOnRequest: true, isSeasonal: false },
+      {
+        id: 50,
+        name: 'ویژه',
+        price: null,
+        priceOnRequest: true,
+        isSeasonal: false,
+        categoryId: 7,
+        available: true,
+        featured: false,
+        unit: 'item',
+        stock: 0,
+        description: null,
+        imageUrl: null,
+        sizeOptions: null,
+        syrupOptions: null,
+        calories: null,
+        caffeineMg: null,
+        allergens: null,
+        branchId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ];
     await buildCategoryPage(ctx, config, onRequest, 0, 'تومان');
     const btn = flatten(last.opts.reply_markup)[0];

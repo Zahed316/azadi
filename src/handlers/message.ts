@@ -59,7 +59,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
   // INJ-003: Sanitize AI HTML output to prevent phishing links or malformed HTML
   function sanitizeTelegramHtml(text: string): string {
     const ALLOWED_TAGS = ['b', 'i', 'u', 's', 'code', 'pre', 'a', 'tg-spoiler'];
-    return text.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)[^>]*>/gi, (match, tag) => {
+    return text.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)[^>]*>/gi, (match: string, tag: string) => {
       if (ALLOWED_TAGS.includes(tag.toLowerCase())) return match;
       return '';
     });
@@ -258,15 +258,16 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
             }),
           );
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
         console.error(
           JSON.stringify({
             ts: new Date().toISOString(),
             operation: 'ai-message-handler',
-            error: e?.message || String(e),
+            error: msg,
           }),
         );
-        if (e?.message === 'AI_TIMEOUT') {
+        if (msg === 'AI_TIMEOUT') {
           await ctx.reply('⏳ پاسخگویی دستیار هوشمند طول کشید. لطفاً کمی بعد دوباره تلاش کنید.', {
             parse_mode: 'HTML',
           });

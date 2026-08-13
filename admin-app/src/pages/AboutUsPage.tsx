@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
+import type { SettingsResponse, Setting, BranchesResponse, Branch } from '../api/types';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 import LoadingScreen from '../components/Spinner';
@@ -14,21 +15,21 @@ export default function AboutUsPage() {
   // About text
   const { data: settings = [], isLoading } = useQuery({
     queryKey: queryKeys.settings,
-    queryFn: () => apiFetch<{ settings: any[] }>('/settings').then((r) => r.settings),
+    queryFn: () => apiFetch<SettingsResponse>('/settings').then((r) => r.settings),
   });
 
   const [aboutText, setAboutText] = useState('');
 
   // Sync aboutText when settings query loads
   const [initialized, setInitialized] = useState(false);
-  const aboutSetting = settings.find((s: any) => s.key === 'about');
+  const aboutSetting = settings.find((s) => s.key === 'about');
   if (!initialized && aboutSetting) {
     setAboutText(aboutSetting.value || '');
     setInitialized(true);
   }
 
   const saveAboutMutation = useMutation({
-    mutationFn: (body: any) => apiFetch('/settings', { method: 'POST', body }),
+    mutationFn: (body: { settings: Setting[] }) => apiFetch('/settings', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
       showToast('متن درباره ما ذخیره شد ✓');
@@ -42,10 +43,10 @@ export default function AboutUsPage() {
   // Branches
   const { data: branches = [] } = useQuery({
     queryKey: queryKeys.branches,
-    queryFn: () => apiFetch<{ branches: any[] }>('/branches').then((r) => r.branches),
+    queryFn: () => apiFetch<BranchesResponse>('/branches').then((r) => r.branches),
   });
 
-  const [editingBranch, setEditingBranch] = useState<any>(null);
+  const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [branchName, setBranchName] = useState('');
   const [branchAddress, setBranchAddress] = useState('');
   const [branchPhone, setBranchPhone] = useState('');
@@ -54,7 +55,18 @@ export default function AboutUsPage() {
   const [branchActive, setBranchActive] = useState(true);
 
   const saveBranchMutation = useMutation({
-    mutationFn: (data: { method: string; id?: number; body: any }) =>
+    mutationFn: (data: {
+      method: string;
+      id?: number;
+      body: {
+        name: string;
+        address: string;
+        phone: string;
+        location: string;
+        openingHours: string;
+        isActive: boolean;
+      };
+    }) =>
       apiFetch(data.id ? `/branches/${data.id}` : '/branches', {
         method: data.method,
         body: data.body,
@@ -85,10 +97,10 @@ export default function AboutUsPage() {
   if (isLoading) return <LoadingScreen />;
 
   const handleSaveAbout = () => {
-    const updatedSettings = settings.map((s: any) =>
+    const updatedSettings = settings.map((s) =>
       s.key === 'about' ? { ...s, value: aboutText } : s,
     );
-    if (!updatedSettings.find((s: any) => s.key === 'about')) {
+    if (!updatedSettings.find((s) => s.key === 'about')) {
       updatedSettings.push({ key: 'about', value: aboutText });
     }
     saveAboutMutation.mutate({ settings: updatedSettings });
@@ -115,14 +127,14 @@ export default function AboutUsPage() {
     deleteBranchMutation.mutate(id);
   };
 
-  const startEditBranch = (b: any) => {
+  const startEditBranch = (b: Branch) => {
     setEditingBranch(b);
     setBranchName(b.name);
     setBranchAddress(b.address);
     setBranchPhone(b.phone || '');
     setBranchLocation(b.location || '');
     setBranchHours(b.openingHours || '');
-    setBranchActive(b.isActive);
+    setBranchActive(b.isActive ?? false);
   };
 
   const resetBranchForm = () => {
@@ -224,7 +236,9 @@ export default function AboutUsPage() {
                   </button>
                   <button
                     className="danger"
-                    onClick={() => deleteBranch(b.id)}
+                    onClick={() => {
+                      void deleteBranch(b.id);
+                    }}
                     disabled={deleteBranchMutation.isPending}
                   >
                     حذف

@@ -12,14 +12,11 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { BranchRepository, SettingsRepository } from '../repositories';
+import { branches as branchesTable } from '../database/schema';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
-import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
-
-const BRANCHES_PAGE_PREFIX = 'branches:page:';
-const BRANCHES_PAGE_SIZE = 5;
 
 export const branchesMenu = new Menu<MyContext>('branches-menu')
   .text('🏠 درباره ما', async (ctx) => {
@@ -37,16 +34,13 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
         new BranchRepository(ctx.env.DB).getAllBranches(),
       ]);
 
-      // Build the about text section
-      const aboutSection = aboutText
-        ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
-        : '<b>🏠 درباره ما</b>';
-
       // Build keyboard: branch buttons (if any) + back button
       const kb = new InlineKeyboard();
       if (branches.length > 0) {
         // Show branches as buttons below the about text
-        const activeBranches = branches.filter((b: any) => b.isActive !== false);
+        const activeBranches = branches.filter(
+          (b: typeof branchesTable.$inferSelect) => b.isActive !== false,
+        );
         for (let i = 0; i < activeBranches.length; i++) {
           kb.text(`📍 ${activeBranches[i].name}`, `branch:${activeBranches[i].id}`);
           if (i % 2 === 1 || i === activeBranches.length - 1) kb.row();

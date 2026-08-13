@@ -1,8 +1,13 @@
 import { SettingsRepository } from '../../repositories';
 import type { ResourceHandler } from './types';
 
+interface SettingsBody {
+  settings?: Array<{ key: string; value: string }>;
+  value?: string;
+}
+
 export const handleSettings: ResourceHandler = async (method, path, ctx) => {
-  const { db, isSuperAdmin, request, corsHeaders, env } = ctx;
+  const { db, isSuperAdmin, request, corsHeaders, env: _env } = ctx;
 
   // GET /settings
   if (path === 'settings' && method === 'GET') {
@@ -11,7 +16,8 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
     // SEC-005: Filter out sensitive keys to prevent accidental exposure
     const SENSITIVE_KEYS = ['bot_token', 'api_key', 'secret', 'password', 'token'];
     const filteredSettings = allSettings.filter(
-      (s: any) => !SENSITIVE_KEYS.some((blocked) => s.key.toLowerCase().includes(blocked)),
+      (s: { key: string; value: string }) =>
+        !SENSITIVE_KEYS.some((blocked) => s.key.toLowerCase().includes(blocked)),
     );
     return new Response(JSON.stringify({ settings: filteredSettings }), { headers: corsHeaders });
   }
@@ -24,7 +30,8 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const repo = new SettingsRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as SettingsBody;
     if (!body || !Array.isArray(body.settings)) {
       return new Response(JSON.stringify({ error: 'settings must be an array' }), {
         status: 400,
@@ -88,7 +95,8 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const key = decodeURIComponent(path.split('/')[1]);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as SettingsBody;
     if (body.value === undefined || typeof body.value !== 'string')
       return new Response(JSON.stringify({ error: 'value required (string)' }), {
         status: 400,

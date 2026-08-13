@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
+import type { MenuConfigsResponse, CategoriesResponse, MenuConfig } from '../api/types';
 import Field from '../components/Field';
 import LoadingScreen from '../components/Spinner';
 
@@ -14,12 +15,12 @@ export default function MenuConfigPage() {
 
   const { data: menuConfigs = [], isLoading } = useQuery({
     queryKey: queryKeys.menuConfigs,
-    queryFn: () => apiFetch<{ menuConfigs: any[] }>('/menu-config').then((r) => r.menuConfigs),
+    queryFn: () => apiFetch<MenuConfigsResponse>('/menu-config').then((r) => r.menuConfigs),
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: queryKeys.categories,
-    queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
+    queryFn: () => apiFetch<CategoriesResponse>('/categories').then((r) => r.categories),
   });
 
   const [menuActiveSection, setMenuActiveSection] = useState<Section>('drinks');
@@ -30,12 +31,12 @@ export default function MenuConfigPage() {
   const [buttonLabelValue, setButtonLabelValue] = useState('');
 
   const toggleVisibilityMutation = useMutation({
-    mutationFn: (data: { id: number; body: any }) =>
+    mutationFn: (data: { id: number; body: Partial<MenuConfig> }) =>
       apiFetch(`/menu-config/${data.id}`, { method: 'PUT', body: data.body }),
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.menuConfigs });
       const prev = queryClient.getQueryData(queryKeys.menuConfigs);
-      queryClient.setQueryData(queryKeys.menuConfigs, (old: any[] | undefined) =>
+      queryClient.setQueryData<MenuConfig[]>(queryKeys.menuConfigs, (old) =>
         old?.map((c) => (c.id === data.id ? { ...c, isVisible: !c.isVisible } : c)),
       );
       return { prev };
@@ -53,7 +54,7 @@ export default function MenuConfigPage() {
   });
 
   const reorderMutation = useMutation({
-    mutationFn: (items: any[]) =>
+    mutationFn: (items: Array<{ id: number; displayOrder: number }>) =>
       apiFetch('/menu-config/reorder', { method: 'POST', body: { items } }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
@@ -76,7 +77,12 @@ export default function MenuConfigPage() {
   });
 
   const addToSectionMutation = useMutation({
-    mutationFn: (body: any) => apiFetch('/menu-config', { method: 'POST', body }),
+    mutationFn: (body: {
+      categoryId: number;
+      menuSection: string;
+      displayOrder: number;
+      isVisible: boolean;
+    }) => apiFetch('/menu-config', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
       showToast('آیتم به منو اضافه شد', 'success');
@@ -88,7 +94,7 @@ export default function MenuConfigPage() {
   });
 
   const saveSpecialMessageMutation = useMutation({
-    mutationFn: (data: { id: number; body: any }) =>
+    mutationFn: (data: { id: number; body: Partial<MenuConfig> }) =>
       apiFetch(`/menu-config/${data.id}`, { method: 'PUT', body: data.body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.menuConfigs });
@@ -103,10 +109,10 @@ export default function MenuConfigPage() {
   if (isLoading) return <LoadingScreen />;
 
   const sectionItems = menuConfigs
-    .filter((c: any) => c.menuSection === menuActiveSection)
-    .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
+    .filter((c) => c.menuSection === menuActiveSection)
+    .sort((a, b) => a.displayOrder - b.displayOrder);
 
-  const handleToggleMenuVisibility = (config: any) => {
+  const handleToggleMenuVisibility = (config: MenuConfig) => {
     toggleVisibilityMutation.mutate({
       id: config.id,
       body: { ...config, isVisible: !config.isVisible },
@@ -114,7 +120,7 @@ export default function MenuConfigPage() {
   };
 
   const handleMenuReorder = (id: number, direction: 'up' | 'down') => {
-    const idx = sectionItems.findIndex((c: any) => c.id === id);
+    const idx = sectionItems.findIndex((c) => c.id === id);
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= sectionItems.length) return;
     const items = [
@@ -131,7 +137,7 @@ export default function MenuConfigPage() {
 
   const handleAddToSection = () => {
     if (!menuAddCatId) return;
-    const maxOrder = sectionItems.reduce((m: number, c: any) => Math.max(m, c.displayOrder), 0);
+    const maxOrder = sectionItems.reduce((m: number, c) => Math.max(m, c.displayOrder), 0);
     addToSectionMutation.mutate({
       categoryId: parseInt(menuAddCatId),
       menuSection: menuActiveSection,
@@ -141,7 +147,7 @@ export default function MenuConfigPage() {
   };
 
   const handleSaveSpecialMessage = (configId: number) => {
-    const config = menuConfigs.find((c: any) => c.id === configId);
+    const config = menuConfigs.find((c) => c.id === configId);
     saveSpecialMessageMutation.mutate({
       id: configId,
       body: { ...config, specialMessage: specialMsgValue || null },
@@ -149,7 +155,7 @@ export default function MenuConfigPage() {
   };
 
   const handleSaveButtonLabel = (configId: number) => {
-    const config = menuConfigs.find((c: any) => c.id === configId);
+    const config = menuConfigs.find((c) => c.id === configId);
     saveSpecialMessageMutation.mutate({
       id: configId,
       body: { ...config, buttonLabel: buttonLabelValue || null },
@@ -190,11 +196,11 @@ export default function MenuConfigPage() {
           <div className="empty-state">آیتمی در این بخش وجود ندارد.</div>
         ) : (
           <ul className="list">
-            {sectionItems.map((config: any, idx: number) => (
+            {sectionItems.map((config, idx) => (
               <li key={config.id} className="list-item">
                 <div className="list-item-info">
                   <span dir="auto">
-                    {categories.find((c: any) => c.id === config.categoryId)?.name || 'ناشناخته'}
+                    {categories.find((c) => c.id === config.categoryId)?.name || 'ناشناخته'}
                   </span>
                   <span className="list-item-meta">{config.isVisible ? 'نمایش' : 'مخفی'}</span>
                   {config.buttonLabel && (
@@ -247,7 +253,9 @@ export default function MenuConfigPage() {
                   </button>
                   <button
                     className="danger"
-                    onClick={() => handleDeleteMenuConfig(config.id)}
+                    onClick={() => {
+                      void handleDeleteMenuConfig(config.id);
+                    }}
                     disabled={deleteMenuConfigMutation.isPending}
                   >
                     حذف

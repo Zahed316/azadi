@@ -3,7 +3,6 @@ import { getDb } from '../database/client';
 import { CacheService } from '../services/cache';
 import { DataService } from '../services/data';
 import { settings } from '../database/schema';
-import { eq, asc } from 'drizzle-orm';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -89,10 +88,12 @@ export async function handlePublicApiRequest(
       const sectionEntries = await Promise.all(
         sections.map(async (section) => ({
           section,
-          entries: (await dataService.getBySection(section)).filter((e: any) => e.isVisible),
+          entries: (await dataService.getBySection(section)).filter(
+            (e: { isVisible: boolean }) => e.isVisible,
+          ),
         })),
       );
-      const menuData: Record<string, any[]> = Object.fromEntries(
+      const menuData: Record<string, Array<{ isVisible: boolean }>> = Object.fromEntries(
         sectionEntries.map(({ section, entries }) => [section, entries]),
       );
       return new Response(JSON.stringify({ sections: menuData }), { headers: CORS_HEADERS });

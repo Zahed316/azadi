@@ -2,6 +2,10 @@ import { MessageRepository } from '../../repositories';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
+interface MessageReplyBody {
+  replyText?: string;
+}
+
 export const handleMessages: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, request, corsHeaders, env } = ctx;
 
@@ -77,7 +81,8 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
       });
     }
 
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as MessageReplyBody;
     if (!body.replyText || typeof body.replyText !== 'string') {
       return new Response(JSON.stringify({ error: 'replyText required (string)' }), {
         status: 400,

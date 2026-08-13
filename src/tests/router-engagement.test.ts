@@ -73,7 +73,7 @@ test('GET /api/favorites?groupBy=user returns 200 with favorites for super_admin
   // harness returns { favorites: { ...row }, products: null } instead of the
   // flat column projection. Verify the row data is reachable through the
   // nested shape. The productName join resolves correctly on production D1.
-  const row = res.body.favorites[0] as any;
+  const row = res.body.favorites[0];
   const fav = row.favorites ?? row;
   expect(fav.telegramId).toBe('u1');
   expect(fav.productId).toBe(10);

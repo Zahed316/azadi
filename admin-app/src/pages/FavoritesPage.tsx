@@ -42,6 +42,7 @@ export default function FavoritesPage() {
     onSuccess: (_data, vars) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.favorites });
       // Audit log: stdout only. No persistent audit table by design.
+      // eslint-disable-next-line no-console -- intentional audit trail
       console.info('favorites: removed', {
         telegramId: vars.telegramId,
         productId: vars.productId,
@@ -170,7 +171,9 @@ export default function FavoritesPage() {
                       type="button"
                       className="danger"
                       disabled={removeMutation.isPending}
-                      onClick={() => handleRemove(f.telegramId, f.productId)}
+                      onClick={() => {
+                        void handleRemove(f.telegramId, f.productId);
+                      }}
                     >
                       حذف
                     </button>

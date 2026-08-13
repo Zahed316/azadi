@@ -1,17 +1,18 @@
 import { StorageAdapter } from 'grammy';
+import type { D1Database } from '@cloudflare/workers-types';
 
 /**
  * D1-backed session storage adapter for grammY.
  * Persists conversation state across Cloudflare Worker invocations.
  */
 export class D1SessionStorage<T> implements StorageAdapter<T> {
-  constructor(private db: any) {}
+  constructor(private db: D1Database) {}
 
   async read(key: string): Promise<T | undefined> {
-    const result = (await this.db
+    const result: { value: string } | null = await this.db
       .prepare('SELECT value FROM sessions WHERE key = ?')
       .bind(key)
-      .first()) as { value: string } | null;
+      .first();
     if (!result) return undefined;
     try {
       return JSON.parse(result.value) as T;

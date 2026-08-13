@@ -1,6 +1,7 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { ProductRepository, MenuConfigRepository, SettingsRepository } from '../repositories';
+import { products as productsTable } from '../database/schema';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { DEFAULT_VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { formatPersianPrice } from '../utils/numbers';
@@ -32,7 +33,7 @@ export async function buildCategoryPage(
     categoryEmoji: string | null;
     specialMessage: string | null;
   },
-  items: any[],
+  items: (typeof productsTable.$inferSelect)[],
   idx: number,
   priceUnit: string,
   vatNote: string = DEFAULT_VAT_NOTE,

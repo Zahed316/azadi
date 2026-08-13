@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react';
+import type { Admin } from './api/types';
 
 export interface AppContextValue {
-  currentUser: any;
+  currentUser: Admin | undefined;
   currentUserLoading: boolean;
   isSuperAdmin: boolean;
   allowedCatId: number | undefined;

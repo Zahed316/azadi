@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
+import type { ProductRow, ProductsResponse, CategoriesResponse } from '../api/types';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 import { ProductSkeleton } from '../components/SkeletonLoader';
@@ -13,12 +14,12 @@ export default function ProductsPage() {
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: queryKeys.products,
-    queryFn: () => apiFetch<{ products: any[] }>('/products').then((r) => r.products),
+    queryFn: () => apiFetch<ProductsResponse>('/products').then((r) => r.products),
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: queryKeys.categories,
-    queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
+    queryFn: () => apiFetch<CategoriesResponse>('/categories').then((r) => r.categories),
   });
 
   // Batch
@@ -28,7 +29,7 @@ export default function ProductsPage() {
   const [batchToggleValue, setBatchToggleValue] = useState('true');
 
   // Editing
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<ProductRow | null>(null);
 
   // Search and filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,14 +103,15 @@ export default function ProductsPage() {
       setProdImageUrl('');
       showToast('تصویر حذف شد');
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
-    } catch (err: any) {
-      setError(err.message);
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      showToast(msg, 'error');
     }
   };
 
   const batchMutation = useMutation({
-    mutationFn: (data: { ids: number[]; action: string; updateData?: any }) =>
+    mutationFn: (data: { ids: number[]; action: string; updateData?: Record<string, unknown> }) =>
       apiFetch('/products/batch', { method: 'POST', body: data }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
@@ -127,7 +129,25 @@ export default function ProductsPage() {
     mutationFn: async (data: {
       method: string;
       id?: number;
-      body: any;
+      body: {
+        name: string;
+        price: number;
+        stock: number;
+        categoryId: number;
+        description: string;
+        available: boolean;
+        featured: boolean;
+        isSeasonal: boolean;
+        unit: string;
+        priceOnRequest: boolean;
+        sizeOptions: string | null;
+        syrupOptions: string | null;
+        calories: number | null;
+        allergens: string | null;
+        caffeineMg: number | null;
+        coffeeDetails: Record<string, string | null> | null;
+        imageUrl: string | null;
+      };
       imageUrl?: string | null;
     }) => {
       // Save the product
@@ -152,7 +172,7 @@ export default function ProductsPage() {
       }
       return result;
     },
-    onSuccess: async (_, variables) => {
+    onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products });
       resetProductForm();
       showToast(variables.id ? 'محصول به‌روزرسانی شد ✓' : 'محصول اضافه شد ✓');
@@ -183,7 +203,7 @@ export default function ProductsPage() {
     onMutate: async ({ id, field, value }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.products });
       const prev = queryClient.getQueryData(queryKeys.products);
-      queryClient.setQueryData(queryKeys.products, (old: any[] | undefined) =>
+      queryClient.setQueryData<ProductRow[]>(queryKeys.products, (old) =>
         old?.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
       );
       return { prev };
@@ -206,7 +226,7 @@ export default function ProductsPage() {
   };
 
   // Client-side search and category filter
-  const filteredProducts = products.filter((p: any) => {
+  const filteredProducts = products.filter((p) => {
     const matchesSearch = !searchQuery || p.name?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCat = !filterCatId || p.categoryId?.toString() === filterCatId;
     return matchesSearch && matchesCat;
@@ -258,7 +278,7 @@ export default function ProductsPage() {
     deleteProductMutation.mutate(id);
   };
 
-  const startEditProduct = (p: any) => {
+  const startEditProduct = (p: ProductRow) => {
     setEditingProduct(p);
     setProdImageUrl(p.imageUrl || '');
     setProdName(p.name);
@@ -266,7 +286,7 @@ export default function ProductsPage() {
     setProdStock(p.stock?.toString() || '0');
     setProdCatId(p.categoryId?.toString() || '');
     setProdDesc(p.description || '');
-    setProdAvailable(p.available);
+    setProdAvailable(p.available ?? false);
     setProdFeatured(p.featured ?? false);
     setProdSeasonal(p.isSeasonal ?? false);
     setProdUnit(p.unit || 'item');
@@ -427,7 +447,9 @@ export default function ProductsPage() {
                   type="button"
                   className="danger"
                   style={{ marginLeft: '8px' }}
-                  onClick={() => removeImage(editingProduct.id)}
+                  onClick={() => {
+                    void removeImage(editingProduct.id);
+                  }}
                 >
                   حذف
                 </button>
@@ -617,7 +639,7 @@ export default function ProductsPage() {
               />
               <select value={filterCatId} onChange={(e) => setFilterCatId(e.target.value)}>
                 <option value="">همه دسته‌بندی‌ها</option>
-                {categories.map((c: any) => (
+                {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>
@@ -706,7 +728,9 @@ export default function ProductsPage() {
                         </button>
                         <button
                           className="danger"
-                          onClick={() => deleteProduct(p.id)}
+                          onClick={() => {
+                            void deleteProduct(p.id);
+                          }}
                           disabled={deleteProductMutation.isPending}
                         >
                           حذف
@@ -723,7 +747,10 @@ export default function ProductsPage() {
 
       {selectedProductIds.length > 0 && (
         <div className="batch-bar">
-          <select value={batchAction} onChange={(e) => setBatchAction(e.target.value as any)}>
+          <select
+            value={batchAction}
+            onChange={(e) => setBatchAction(e.target.value as 'move' | 'toggle' | 'delete' | '')}
+          >
             <option value="">انتخاب عملیات...</option>
             <option value="move">انتقال به دسته‌بندی</option>
             <option value="toggle">تغییر وضعیت موجودی</option>
@@ -746,7 +773,9 @@ export default function ProductsPage() {
           )}
           <button
             className="primary"
-            onClick={handleBatchExecute}
+            onClick={() => {
+              void handleBatchExecute();
+            }}
             disabled={batchMutation.isPending}
           >
             {batchMutation.isPending ? '⏳...' : `اعمال روی ${selectedProductIds.length} محصول`}

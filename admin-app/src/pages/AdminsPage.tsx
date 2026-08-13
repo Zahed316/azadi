@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
+import type { AdminsResponse } from '../api/types';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 import LoadingScreen from '../components/Spinner';
@@ -13,7 +14,7 @@ export default function AdminsPage() {
 
   const { data: admins = [], isLoading } = useQuery({
     queryKey: queryKeys.admins,
-    queryFn: () => apiFetch<{ admins: any[] }>('/admins').then((r) => r.admins),
+    queryFn: () => apiFetch<AdminsResponse>('/admins').then((r) => r.admins),
   });
 
   const [adminId, setAdminId] = useState('');
@@ -21,7 +22,8 @@ export default function AdminsPage() {
   const [adminCatId, setAdminCatId] = useState('');
 
   const addAdminMutation = useMutation({
-    mutationFn: (body: any) => apiFetch('/admins', { method: 'POST', body }),
+    mutationFn: (body: { telegramId: string; role: string; categoryId: string }) =>
+      apiFetch('/admins', { method: 'POST', body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admins });
       showToast('ادمین اضافه شد', 'success');
@@ -88,7 +90,7 @@ export default function AdminsPage() {
         ) : (
           <ul className="list">
             {admins.map((a) => (
-              <li key={a.id} className="list-item">
+              <li key={a.telegramId} className="list-item">
                 <div className="list-item-info">
                   <span>{a.telegramId}</span>
                   <span className="list-item-meta">{a.role}</span>
@@ -96,7 +98,9 @@ export default function AdminsPage() {
                 <div className="list-item-actions">
                   <button
                     className="danger"
-                    onClick={() => deleteAdmin(a.id)}
+                    onClick={() => {
+                      void deleteAdmin(a.telegramId);
+                    }}
                     disabled={deleteAdminMutation.isPending}
                   >
                     حذف

@@ -7,6 +7,7 @@ import { useConfirm } from './components/ConfirmDialog';
 import AppContext from './AppContext';
 import { apiFetch } from './api/client';
 import { queryKeys } from './api/keys';
+import type { CurrentUserResponse } from './api/types';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 const ProductsPage = lazy(() => import('./pages/ProductsPage'));
@@ -25,7 +26,7 @@ function AppInner() {
 
   const currentUserQuery = useQuery({
     queryKey: queryKeys.currentUser,
-    queryFn: () => apiFetch<{ user: any }>('/currentUser').then((r) => r.user),
+    queryFn: () => apiFetch<CurrentUserResponse>('/currentUser').then((r) => r.user),
     staleTime: Infinity,
   });
 

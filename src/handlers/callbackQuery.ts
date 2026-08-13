@@ -15,6 +15,7 @@ import {
   DEFAULT_PRICE_UNIT,
   DEFAULT_VAT_NOTE,
 } from '../utils/formatters';
+import { products as productsTable, coffeeDetails, faq as faqTable } from '../database/schema';
 import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { buildCategoryPage } from '../menus/drinksNavMenu';
@@ -42,7 +43,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const idx = parseInt(ctx.match[1]);
       const faqs = await new FaqRepository(ctx.env.DB).getAll();
       const page = buildListPage(faqs, idx, 5);
-      const text = page.items.map((f: any) => formatFaq(f)).join('\n\n');
+      const text = page.items.map((f: typeof faqTable.$inferSelect) => formatFaq(f)).join('\n\n');
       const kb = new InlineKeyboard();
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `faq:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `faq:page:${idx + 1}`);
@@ -160,7 +161,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         new ProductRepository(ctx.env.DB).getProductsByCategory(catId),
         new SettingsRepository(ctx.env.DB).getValue('price_unit'),
       ]);
-      const config = configs.find((c: any) => c.categoryId === catId);
+      const config = configs.find((c) => c.categoryId === catId);
       if (!config) {
         await ctx.reply('دسته‌بندی مورد نظر یافت نشد.');
         return;
@@ -276,7 +277,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const body =
         page.items.length === 0
           ? `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})`
-          : `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
+          : `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: typeof productsTable.$inferSelect) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
@@ -307,7 +308,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const body =
         page.items.length === 0
           ? `<b>🌿 مخصوص فصل</b> (${page.pageLabel})`
-          : `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
+          : `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: typeof productsTable.$inferSelect) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
@@ -338,7 +339,16 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
       const origins = Array.from(
-        new Set(page.items.map((r: any) => r.details?.origin).filter(Boolean)),
+        new Set(
+          page.items
+            .map(
+              (r: {
+                product: typeof productsTable.$inferSelect;
+                details: typeof coffeeDetails.$inferSelect;
+              }) => r.details?.origin,
+            )
+            .filter(Boolean),
+        ),
       );
       const originsLine =
         origins.length > 0
@@ -347,7 +357,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const body =
         page.items.length === 0
           ? `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})`
-          : `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit, vatNote)).join('\n\n')}`;
+          : `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: { product: typeof productsTable.$inferSelect; details: typeof coffeeDetails.$inferSelect }) => formatProduct(r.product, priceUnit, vatNote)).join('\n\n')}`;
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));

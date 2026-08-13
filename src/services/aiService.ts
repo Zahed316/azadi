@@ -70,7 +70,7 @@ export class AiService {
   async processQuery(
     query: string,
     userId: string,
-    recentLogs: any[],
+    recentLogs: Array<{ question: string; response: string }>,
     userFavorites: string[] = [],
   ): Promise<string> {
     // AI-002: Truncate input to prevent abuse and reduce prompt injection surface.
@@ -122,7 +122,7 @@ export class AiService {
       });
 
       if (!response.ok) {
-        const errorBody = await response.text().catch(() => '');
+        await response.text().catch(() => '');
         console.error(
           JSON.stringify({
             ts: new Date().toISOString(),
@@ -137,7 +137,7 @@ export class AiService {
         return '⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
       }
 
-      const data: any = await response.json();
+      const data: { choices?: Array<{ message?: { content?: string } }> } = await response.json();
       let answer =
         data.choices?.[0]?.message?.content ??
         '⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
@@ -146,7 +146,7 @@ export class AiService {
         answer = answer.slice(0, MAX_TELEGRAM_MSG - 20) + '\n\n… (پاسخ خلاصه شد)';
       }
       return answer;
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       return '⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
     }

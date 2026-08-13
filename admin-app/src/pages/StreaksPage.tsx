@@ -89,12 +89,14 @@ export default function StreaksPage() {
               type="checkbox"
               checked={config?.streakMessages ?? false}
               onChange={(e) => {
-                apiFetch('/streaks/config', {
+                void apiFetch('/streaks/config', {
                   method: 'POST',
                   body: { streakMessages: e.target.checked },
                 })
                   .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.streakConfig }))
-                  .catch((err) => setError(err.message));
+                  .catch((err: unknown) =>
+                    setError(err instanceof Error ? err.message : String(err)),
+                  );
               }}
             />
             پیام‌های استریک
@@ -104,12 +106,14 @@ export default function StreaksPage() {
               type="checkbox"
               checked={config?.streakCronEnabled ?? false}
               onChange={(e) => {
-                apiFetch('/streaks/config', {
+                void apiFetch('/streaks/config', {
                   method: 'POST',
                   body: { streakCronEnabled: e.target.checked },
                 })
                   .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.streakConfig }))
-                  .catch((err) => setError(err.message));
+                  .catch((err: unknown) =>
+                    setError(err instanceof Error ? err.message : String(err)),
+                  );
               }}
             />
             کرون بروزرسانی استریک
@@ -150,13 +154,15 @@ export default function StreaksPage() {
                   <button
                     type="button"
                     className="secondary"
-                    onClick={async () => {
-                      if (!(await confirm(`استریک کاربر ${u.telegramId} بازنشانی شود؟`))) return;
-                      await apiFetch('/streaks/reset', {
-                        method: 'POST',
-                        body: { telegramId: u.telegramId },
-                      });
-                      void queryClient.invalidateQueries({ queryKey: queryKeys.streaks });
+                    onClick={() => {
+                      void (async () => {
+                        if (!(await confirm(`استریک کاربر ${u.telegramId} بازنشانی شود؟`))) return;
+                        await apiFetch('/streaks/reset', {
+                          method: 'POST',
+                          body: { telegramId: u.telegramId },
+                        });
+                        void queryClient.invalidateQueries({ queryKey: queryKeys.streaks });
+                      })();
                     }}
                   >
                     ↺ بازنشانی

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
+import type { CategoriesResponse, Category } from '../api/types';
 import Field from '../components/Field';
 import EmptyState from '../components/EmptyState';
 import { CategorySkeleton } from '../components/SkeletonLoader';
@@ -13,17 +14,21 @@ export default function CategoriesPage() {
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: queryKeys.categories,
-    queryFn: () => apiFetch<{ categories: any[] }>('/categories').then((r) => r.categories),
+    queryFn: () => apiFetch<CategoriesResponse>('/categories').then((r) => r.categories),
   });
 
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [catName, setCatName] = useState('');
   const [catEmoji, setCatEmoji] = useState('');
   const [catDesc, setCatDesc] = useState('');
   const [catSort, setCatSort] = useState('0');
 
   const saveCategoryMutation = useMutation({
-    mutationFn: (data: { method: string; id?: number; body: any }) =>
+    mutationFn: (data: {
+      method: string;
+      id?: number;
+      body: { name: string; emoji: string; description: string; sortOrder: number };
+    }) =>
       apiFetch(data.id ? `/categories/${data.id}` : '/categories', {
         method: data.method,
         body: data.body,
@@ -67,7 +72,7 @@ export default function CategoriesPage() {
     deleteCategoryMutation.mutate(id);
   };
 
-  const startEditCategory = (c: any) => {
+  const startEditCategory = (c: Category) => {
     setEditingCategory(c);
     setCatName(c.name);
     setCatEmoji(c.emoji || '');
@@ -136,7 +141,9 @@ export default function CategoriesPage() {
                     </button>
                     <button
                       className="danger"
-                      onClick={() => deleteCategory(c.id)}
+                      onClick={() => {
+                        void deleteCategory(c.id);
+                      }}
                       disabled={deleteCategoryMutation.isPending}
                     >
                       حذف

@@ -2,6 +2,19 @@ import { MenuConfigRepository } from '../../repositories';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
+interface MenuConfigBody {
+  categoryId?: string;
+  menuSection?: string;
+  displayOrder?: number;
+  isVisible?: boolean;
+  buttonLabel?: string;
+  specialMessage?: string;
+}
+
+interface MenuConfigReorderBody {
+  items?: Array<{ id: number; displayOrder: number }>;
+}
+
 export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, request, corsHeaders } = ctx;
 
@@ -20,13 +33,14 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const repo = new MenuConfigRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as MenuConfigBody;
     const catIdResult = parseRequiredInt(body.categoryId, 'categoryId');
     if (catIdResult instanceof Response) return catIdResult;
     const now = new Date();
     const result = await repo.add({
       categoryId: catIdResult,
-      menuSection: body.menuSection,
+      menuSection: body.menuSection!,
       displayOrder: body.displayOrder ?? 0,
       isVisible: body.isVisible ?? true,
       buttonLabel: body.buttonLabel ?? null,
@@ -51,7 +65,8 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as MenuConfigReorderBody;
     if (!Array.isArray(body.items)) {
       return new Response(JSON.stringify({ error: 'items must be an array' }), {
         status: 400,
@@ -94,7 +109,8 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
     if (idResult instanceof Response) return idResult;
     const id = idResult;
     const repo = new MenuConfigRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as MenuConfigBody;
     await repo.update(id, {
       menuSection: body.menuSection,
       displayOrder: body.displayOrder,

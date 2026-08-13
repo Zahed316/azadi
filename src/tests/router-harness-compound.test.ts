@@ -7,7 +7,7 @@
  */
 import { describe, test, expect, beforeEach } from 'vitest';
 import { eq, and, or, gt, lt, gte, lte } from 'drizzle-orm';
-import { seedTable, readTable, clearStore } from './_helpers/routerHarness';
+import { seedTable, clearStore } from './_helpers/routerHarness';
 
 // We need a fake table to test with. The harness uses tableNameOf() to get
 // the table name, so we need a table-like object with the drizzle symbol.

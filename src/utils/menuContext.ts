@@ -1,13 +1,33 @@
+import {
+  products,
+  coffeeDetails,
+  categories,
+  branches as branchSchema,
+  faq,
+} from '../database/schema';
+
 // Score pre-normalized searchable text against normalized query keywords.
 function score(normalizedText: string, keywords: string[]): number {
   return keywords.filter((k) => normalizedText.includes(k)).length;
 }
 
+type ProductRow = typeof products.$inferSelect;
+type CoffeeDetailsRow = typeof coffeeDetails.$inferSelect;
+type CategoryRow = typeof categories.$inferSelect;
+type BranchRow = typeof branchSchema.$inferSelect;
+type FaqRow = typeof faq.$inferSelect;
+
+export interface ProductWithDetails {
+  products: ProductRow;
+  coffee_details: CoffeeDetailsRow | null;
+  categories: CategoryRow | null;
+}
+
 export interface MenuContextOptions {
   query: string;
-  productsWithDetails: any[];
-  branches: any[];
-  faqs: any[];
+  productsWithDetails: ProductWithDetails[];
+  branches: BranchRow[];
+  faqs: FaqRow[];
   visibleCategoryIds?: Set<number>;
   settings?: Record<string, string>;
   popularProducts?: Array<{ name: string; category: string; favoritedCount: number }>;
@@ -17,9 +37,9 @@ export interface MenuContextOptions {
 
 export function buildMinimalContext(
   queryOrOptions: string | MenuContextOptions,
-  productsWithDetails?: any[],
-  branches?: any[],
-  faqs?: any[],
+  productsWithDetails?: ProductWithDetails[],
+  branches?: BranchRow[],
+  faqs?: FaqRow[],
   visibleCategoryIds?: Set<number>,
 ): string {
   // Support both legacy positional args and new options object

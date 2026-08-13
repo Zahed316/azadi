@@ -10,7 +10,7 @@ import { drinksNavMenu } from './menus/drinksNavMenu';
 import { setupAdminCommands } from './commands/admin';
 import { setupMessageHandlers } from './handlers/message';
 import { setupCallbackHandlers } from './handlers/callbackQuery';
-import { MyContext, SessionData } from './types/context';
+import { MyContext } from './types/context';
 import { getEnv, getExecCtx } from './requestContext';
 import { D1SessionStorage } from './database/sessionStorage';
 import { SettingsRepository, UserStateRepository } from './repositories';

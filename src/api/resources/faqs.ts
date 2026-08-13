@@ -2,6 +2,12 @@ import { FaqRepository } from '../../repositories';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
+interface FaqBody {
+  question?: string;
+  answer?: string;
+  sortOrder?: number;
+}
+
 export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, request, corsHeaders } = ctx;
 
@@ -20,7 +26,8 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const repo = new FaqRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as FaqBody;
     if (!body.question || !body.answer) {
       return new Response(JSON.stringify({ error: 'question and answer required' }), {
         status: 400,
@@ -45,7 +52,8 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
     if (idResult instanceof Response) return idResult;
     const id = idResult;
     const repo = new FaqRepository(db);
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as FaqBody;
     if (!body.question || !body.answer) {
       return new Response(JSON.stringify({ error: 'question and answer required' }), {
         status: 400,

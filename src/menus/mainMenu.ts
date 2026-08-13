@@ -66,7 +66,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .submenu('🍰 کیک و کوکی', 'products-menu-cakes')
   .row()
   .submenu('ℹ️ اطلاعات', 'info-menu')
-  .text('✉️ پیام به ما', async (ctx: any) => {
+  .text('✉️ پیام به ما', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.env, 'messages'))) {
         await ctx.reply(HIDDEN_MESSAGE, {

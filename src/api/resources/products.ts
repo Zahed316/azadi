@@ -2,6 +2,49 @@ import { ProductRepository } from '../../repositories';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
+interface ProductBody {
+  name: string;
+  categoryId: number;
+  description?: string;
+  price?: number;
+  unit?: string;
+  available?: boolean;
+  featured?: boolean;
+  isSeasonal?: boolean;
+  imageUrl?: string;
+  stock?: number;
+  priceOnRequest?: boolean;
+  calories?: number;
+  caffeineMg?: number;
+  allergens?: string;
+  sizeOptions?: string;
+  syrupOptions?: string;
+  coffeeDetails?: {
+    origin?: string;
+    farm?: string;
+    altitude?: string;
+    processing?: string;
+    variety?: string;
+    roastLevel?: string;
+    flavorNotes?: string;
+    recommendedBrew?: string;
+    acidity?: string;
+    body?: string;
+    brewGuide?: string;
+  } | null;
+}
+
+interface ProductBatchBody {
+  ids: number[];
+  updateData?: Partial<ProductBody>;
+  action: 'update' | 'delete';
+}
+
+interface ProductStockBody {
+  stock?: number;
+  available?: boolean;
+}
+
 export const handleProducts: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, allowedCategoryId, request, corsHeaders } = ctx;
 
@@ -22,8 +65,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
   // POST /products
   if (path === 'products' && method === 'POST') {
     const repo = new ProductRepository(db);
-    const body: any = await request.json();
-    const catIdResult = parseRequiredInt(body.categoryId, 'categoryId');
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as ProductBody;
+    const catIdResult = parseRequiredInt(String(body.categoryId), 'categoryId');
     if (catIdResult instanceof Response) return catIdResult;
     const catId = catIdResult;
     if (!isSuperAdmin && allowedCategoryId !== catId) {
@@ -33,12 +77,19 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
       });
     }
     const result = await repo.addProduct({
-      ...body,
+      name: body.name,
+      categoryId: catId,
+      description: body.description ?? null,
+      price: body.price ?? null,
+      stock: body.stock ?? 0,
       unit: body.unit || 'item',
+      imageUrl: body.imageUrl ?? null,
       available: body.available ?? true,
       featured: body.featured ?? false,
       priceOnRequest: body.priceOnRequest ?? false,
       isSeasonal: body.isSeasonal ?? false,
+      sizeOptions: body.sizeOptions ?? null,
+      syrupOptions: body.syrupOptions ?? null,
       calories: body.calories ?? null,
       allergens: body.allergens ?? null,
       caffeineMg: body.caffeineMg ?? null,
@@ -58,8 +109,8 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
   // POST /products/batch
   if (path === 'products/batch' && method === 'POST') {
     const repo = new ProductRepository(db);
-    const body: { ids: number[]; updateData?: any; action: 'update' | 'delete' } =
-      await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as ProductBatchBody;
 
     if (!Array.isArray(body.ids) || body.ids.length === 0) {
       return new Response(JSON.stringify({ error: 'ids array required' }), {
@@ -220,15 +271,16 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
       });
     }
 
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as ProductStockBody;
     if (action === 'stock') {
-      await repo.updateStock(id, body.stock);
+      await repo.updateStock(id, body.stock!);
       if (ctx.cache) {
         await ctx.cache.deleteByPrefix('cache:products:');
       }
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     } else if (action === 'toggle') {
-      await repo.toggleAvailability(id, body.available);
+      await repo.toggleAvailability(id, body.available!);
       if (ctx.cache) {
         await ctx.cache.deleteByPrefix('cache:products:');
       }
@@ -256,10 +308,11 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
       });
     }
 
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as ProductBody;
     // If changing category, check permission
     if (body.categoryId !== undefined && !isSuperAdmin) {
-      const permCatId = parseRequiredInt(body.categoryId, 'categoryId');
+      const permCatId = parseRequiredInt(String(body.categoryId), 'categoryId');
       if (permCatId instanceof Response) return permCatId;
       if (permCatId !== allowedCategoryId) {
         return new Response(JSON.stringify({ error: 'Forbidden: Cannot move to this category' }), {
@@ -270,7 +323,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
     }
 
     const updateCatId =
-      body.categoryId !== undefined ? parseRequiredInt(body.categoryId, 'categoryId') : undefined;
+      body.categoryId !== undefined
+        ? parseRequiredInt(String(body.categoryId), 'categoryId')
+        : undefined;
     if (updateCatId instanceof Response) return updateCatId;
 
     await repo.updateProduct(id, {

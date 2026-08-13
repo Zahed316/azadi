@@ -1,6 +1,7 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { BranchRepository, FaqRepository, SettingsRepository } from '../repositories';
+import { branches as branchesTable, faq as faqTable } from '../database/schema';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { formatFaq } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
@@ -22,7 +23,9 @@ export const infoMenu = new Menu<MyContext>('info-menu')
         new BranchRepository(ctx.env.DB).getAllBranches(),
       ]);
       const kb = new InlineKeyboard();
-      const activeBranches = branches.filter((b: any) => b.isActive !== false);
+      const activeBranches = branches.filter(
+        (b: typeof branchesTable.$inferSelect) => b.isActive !== false,
+      );
       for (let i = 0; i < activeBranches.length; i++) {
         kb.text(`📍 ${activeBranches[i].name}`, `branch:${activeBranches[i].id}`);
         if (i % 2 === 1 || i === activeBranches.length - 1) kb.row();
@@ -55,7 +58,7 @@ export const infoMenu = new Menu<MyContext>('info-menu')
         return;
       }
       const page = buildListPage(faqs, 0, 5);
-      const text = page.items.map((f: any) => formatFaq(f)).join('\n\n');
+      const text = page.items.map((f: typeof faqTable.$inferSelect) => formatFaq(f)).join('\n\n');
       const kb = new InlineKeyboard();
       if (page.hasNext) kb.text('◀️ صفحه بعد', `faq:page:1`);
       const body = `<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`;

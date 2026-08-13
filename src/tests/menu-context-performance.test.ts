@@ -1,15 +1,48 @@
 import { expect, test } from 'vitest';
-import { buildMinimalContext } from '../utils/menuContext';
+import { buildMinimalContext, type ProductWithDetails } from '../utils/menuContext';
+
+const baseProduct = {
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  branchId: null,
+  unit: 'item',
+  available: true,
+  featured: false,
+  isSeasonal: false,
+  imageUrl: null,
+  priceOnRequest: false,
+  calories: null,
+  caffeineMg: null,
+  allergens: null,
+  sizeOptions: null,
+  syrupOptions: null,
+};
 
 test('ranking remains deterministic for equal scores', () => {
-  const rows = [
+  const rows: ProductWithDetails[] = [
     {
-      products: { name: 'Alpha', description: 'coffee', categoryId: 1, price: 1, stock: 1 },
+      products: {
+        ...baseProduct,
+        id: 1,
+        name: 'Alpha',
+        description: 'coffee',
+        categoryId: 1,
+        price: 1,
+        stock: 1,
+      },
       coffee_details: null,
       categories: null,
     },
     {
-      products: { name: 'Beta', description: 'coffee', categoryId: 1, price: 1, stock: 1 },
+      products: {
+        ...baseProduct,
+        id: 2,
+        name: 'Beta',
+        description: 'coffee',
+        categoryId: 1,
+        price: 1,
+        stock: 1,
+      },
       coffee_details: null,
       categories: null,
     },
@@ -20,8 +53,16 @@ test('ranking remains deterministic for equal scores', () => {
 });
 
 test('large catalogs produce a bounded product section', () => {
-  const rows = Array.from({ length: 1000 }, (_, i) => ({
-    products: { name: `Coffee ${i}`, description: 'coffee', categoryId: 1, price: i, stock: 1 },
+  const rows: ProductWithDetails[] = Array.from({ length: 1000 }, (_, i) => ({
+    products: {
+      ...baseProduct,
+      id: i,
+      name: `Coffee ${i}`,
+      description: 'coffee',
+      categoryId: 1,
+      price: i,
+      stock: 1,
+    },
     coffee_details: null,
     categories: null,
   }));

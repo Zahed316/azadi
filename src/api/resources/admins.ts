@@ -5,6 +5,12 @@ import { getDb } from '../../database/client';
 import { parseRequiredInt, parseOptionalInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
+interface AdminBody {
+  telegramId?: string;
+  categoryId?: string;
+  role?: string;
+}
+
 export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, request, corsHeaders } = ctx;
   const dbClient = getDb(db);
@@ -27,7 +33,8 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const body: any = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const body = (await request.json()) as AdminBody;
     if (!body.telegramId) {
       return new Response(JSON.stringify({ error: 'telegramId required' }), {
         status: 400,
