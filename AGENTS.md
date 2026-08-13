@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-Azadi Coffee Roastery — Telegram bot + admin panel for a coffee shop in Iranshahr, Iran. Cloudflare Workers backend, grammY bot framework, D1 database (Drizzle ORM), Cloudflare Workers AI for chat fallback. Admin management via a standalone React Mini App (admin-app/). Persian UI text in all bot replies.
+Azadi Coffee Roastery — Telegram bot + admin panel for a coffee shop in Iranshahr, Iran. Cloudflare Workers backend, grammY bot framework, D1 database (Drizzle ORM), OpenCode API (mimo-v2.5) for chat fallback. Admin management via a standalone React Mini App (admin-app/). Persian UI text in all bot replies.
 
 ## Build & Test
 

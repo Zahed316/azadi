@@ -5,29 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1785502543122,
-      "tag": "0000_whole_colleen_wing",
+      "when": 1755072000000,
+      "tag": "0000_baseline",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1785545847669,
-      "tag": "0001_lumpy_zuras",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1786101448930,
-      "tag": "0002_salty_jocasta",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1786144048000,
-      "tag": "0007_messages",
+      "when": 1755072000001,
+      "tag": "0001_add_check_constraints",
       "breakpoints": true
     }
   ]

@@ -1,6 +1,7 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk';
 
-export const API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
+export const API_BASE =
+  import.meta.env.VITE_API_BASE || 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
 
 function getAuthHeader(): Record<string, string> {
   try {
@@ -56,4 +57,3 @@ export async function replyToMessage(id: number, replyText: string): Promise<{ s
     body: { replyText },
   });
 }
-
