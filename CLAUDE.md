@@ -10,6 +10,10 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 
 - [cacheservice-test-spy-on-prototype](memory/cacheservice-test-spy-on-prototype.md) — spy on `CacheService.prototype` in tests, not the KV mock
 - [vitest-mock-class-no-fn-wrap](memory/vitest-mock-class-no-fn-wrap.md) — pass class directly in `vi.mock()`, wrapping in `vi.fn()` breaks constructor
+- [lint-fix-type-at-boundary](memory/lint-fix-type-at-boundary.md) — type `apiFetch<T>()` response first during lint sweeps; cascades fixes
+- [boolean-null-after-any-removal](memory/boolean-null-after-any-removal.md) — replacing `any` surfaces `boolean|null` errors; use `?? false`
+- [prettier-checks-yaml-too](memory/prettier-checks-yaml-too.md) — run prettier on `deploy.yml` after manual edits; YAML is in `format:check`
+- [wrangler-action-v4-needs-version-pin](memory/wrangler-action-v4-needs-version-pin.md) — `wrangler-action` v4 defaults to Wrangler v4; pin `wranglerVersion`
 
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 
@@ -99,13 +103,14 @@ Worker `scheduled` handler: runs `sweepStreaks(env)` on the daily cron (`0 21 * 
 - `createBot(env)` returns a `Bot<MyContext>`. `botInstance` is cached at module scope in `src/index.ts`.
 - Middleware order matters:
   1. Inject `ctx.env` / `ctx.execCtx` from request context
-  2. **Streak counter** — gated by `env.STREAK_MESSAGES === 'true'` (off by default). Writes to `user_state` via `UserStateRepository.upsertVisit` on every non-`/` message; replies with the streak-increment message in `ctx.execCtx.waitUntil` so the rest of the chain isn't blocked. **Never re-throw** (the streak path must not break the bot chain — wrapped in `try/catch` with a `console.error` only).
-  3. `session({ storage: new D1SessionStorage(env.DB) })`
-  4. **Idempotency guard**: skip duplicate `update_id` (Telegram retry protection)
-  5. `conversations({ storage: { type: "key", prefix: "convo_", adapter: new D1SessionStorage(env.DB) } })` — gated by `env.USE_CONVERSATIONS === 'true'` (off by default; see Pitfalls). When on, must use persistent storage + `prefix: "convo_"` so session and conversation state don't overwrite each other in D1
-  6. `mainMenu` (grammY menu)
-  7. Command & handler registration
-- `MyContext` = `Context & SessionFlavor<SessionData> & ConversationFlavor<Context> & { env, execCtx? }`. **Always use this type** for handlers.
+  2. **DataService injection** — creates `DataService(env.DB, env.CACHE ? new CacheService(env.CACHE) : undefined)` per-request, attached to `ctx.dataService`. All bot handlers and menus use this for data access (read-through KV caching + D1 batch). Direct repository instantiation is eliminated from handlers/menus (except write-side operations like `AiLogRepository`).
+  3. **Streak counter** — gated by `env.STREAK_MESSAGES === 'true'` (off by default). Writes to `user_state` via `UserStateRepository.upsertVisit` on every non-`/` message; replies with the streak-increment message in `ctx.execCtx.waitUntil` so the rest of the chain isn't blocked. **Never re-throw** (the streak path must not break the bot chain — wrapped in `try/catch` with a `console.error` only).
+  4. `session({ storage: new D1SessionStorage(env.DB) })`
+  5. **Idempotency guard**: skip duplicate `update_id` (Telegram retry protection)
+  6. `conversations({ storage: { type: "key", prefix: "convo_", adapter: new D1SessionStorage(env.DB) } })` — gated by `env.USE_CONVERSATIONS === 'true'` (off by default; see Pitfalls). When on, must use persistent storage + `prefix: "convo_"` so session and conversation state don't overwrite each other in D1
+  7. `mainMenu` (grammY menu)
+  8. Command & handler registration
+- `MyContext` = `Context & SessionFlavor<SessionData> & ConversationFlavor<Context> & { env, execCtx?, dataService: IDataService }`. **Always use this type** for handlers. `dataService` is the single data access layer with read-through KV caching.
 - **Product display**: `formatProduct()` in `src/utils/formatters.ts` shows nutritional info (calories, caffeine, allergens) when present. Bot uses `replyWithPhoto(url)` for products with images, falling back to `reply()` for text-only. Coffee details callback shows `brewGuide` for coffee beans.
 
 ### Database (`src/database/`, `src/repositories/`)
@@ -114,6 +119,7 @@ Worker `scheduled` handler: runs `sweepStreaks(env)` on the daily cron (`0 21 * 
 - **D1 migrations**: `npx drizzle-kit generate` creates SQL in `drizzle/`. Apply with `wrangler d1 execute azadi-db --remote --file=drizzle/XXXX_name.sql`. **Never use `drizzle-kit push`** — D1 doesn't have a URL. See [[d1-migrations-use-wrangler]].
 - `getDb(d1Binding)` (`src/database/client.ts`) is the only Drizzle factory. Repositories call it in their constructor.
 - **Repository pattern**: one class per table group (`ProductRepository`, `CategoryRepository`, `BranchRepository`, `FaqRepository`, `SettingsRepository`, `AiLogRepository`, `MenuConfigRepository`, `UserStateRepository`, `FavoritesRepository`, `MessageRepository`). All take `d1Binding: any` in the constructor. Add new data access as a new repository class.
+- **DataService** (`src/services/data/index.ts`, interface at `src/services/types.ts`): the single data access layer for bot handlers. Implements `IDataService` with read-through KV caching via `CacheService` and a `buildAIContextBatch()` method that collapses 8 D1 queries into 1 batch call. **All bot data access goes through `ctx.dataService`** — do not instantiate repositories directly in handlers or menus.
 - `D1SessionStorage` (`src/database/sessionStorage.ts`) is a grammY `StorageAdapter` that reads/writes the `sessions` table (key/value JSON).
 - **Schema tables** (13): `branches`, `categories`, `products`, `coffee_details`, `faq`, `settings`, `ai_conversation_logs`, `sessions`, `admins`, `menu_config`, `user_state`, `favorites`, `messages`.
 
@@ -124,12 +130,13 @@ Worker `scheduled` handler: runs `sweepStreaks(env)` on the daily cron (`0 21 * 
 - Resources: `admins`, `settings`, `categories`, `menu-config` (+ `/reorder`), `products` (+ `/batch`, `/{id}/stock`, `/{id}/toggle`, `/{id}/image`), `faqs`, `branches`, `currentUser`.
 - **Product images**: stored as full public URLs in D1 (`imageUrl` column). Admins paste URLs from free hosts (imgbb, imgur, etc.) via the admin app. `PUT /products/:id/image` accepts `{ imageUrl: string }` (validates URL format). `DELETE /products/:id/image` clears the field. Bot displays via `replyWithPhoto(url)` when `imageUrl` is set. **R2 is not used** — requires credit card activation. See [[r2-requires-credit-card]].
 - **Menu visibility**: `menu_visible_*` keys in `settings` table control which top-level bot menu sections are shown. Missing key = visible (safe default). Bot reads per-request via `isMenuVisible()` from `src/utils/menuVisibility.ts`. Admin toggles in the "Menu Visibility" card on SettingsPage.
+- **Messages envelope**: `GET /messages` returns `{ messages: [...] }` (envelope, not bare array). `GET /messages/unread-count` and `GET /messages/:id` return shaped objects — no change.
 - All responses use `corsHeaders` (`Access-Control-Allow-Origin: *`); `OPTIONS` is preflight-only.
 
 ### AI fallback (`src/services/aiService.ts`, `src/handlers/message.ts`)
 
 - `message:text` handler skips when text starts with `/` (commands are handled upstream). When `USE_CONVERSATIONS` is enabled and a wizard is active, you must add a `ctx.hasActiveConversation` skip here — see Pitfalls.
-- Loads `products`, `branches`, `faqs`, `recentLogs`, `visibleCategoryIds`, `about` setting, `userFavorites`, and `popularProducts` in parallel. Builds enriched context via `buildMinimalContext` (options object form in `src/utils/menuContext.ts`), then calls OpenCode API (`mimo-v2.5` model via `OPENCODE_API_KEY` secret).
+- Loads context via `ctx.dataService.buildAIContextBatch(userId)` — a single D1 batch call that collapses 8 queries (products, branches, faqs, menu config, about, recent logs, favorites, popular products) into 1 round-trip. Builds enriched context via `buildMinimalContext` (options object form in `src/utils/menuContext.ts`), then calls OpenCode API (`mimo-v2.5` model via `OPENCODE_API_KEY` secret).
 - **Context enrichment**: `buildMinimalContext` now includes shop identity (about text), enriched product details (farm, altitude, processing, brew guide, nutritional info), product flags (⭐ Featured, 🌿 Seasonal), and popular items (most-favorited across all users). The AI system prompt (`AiService`) has a comprehensive personality, language rules, and personalization section that includes the user's favorited products for tailored recommendations.
 - 20s timeout via `Promise.race`. Logs to `ai_conversation_logs` after replying (in `ctx.execCtx.waitUntil` if available so the response isn't blocked).
 - `PERF_LOG === 'true'` env var emits per-request timing JSON to stdout.
@@ -171,7 +178,7 @@ Filtering rules:
 ## Conventions
 
 - **All bot text is Persian, HTML parse mode.** Use `toPersianDigits()` and `formatPersianPrice(amount, unit)` from `src/utils/numbers.ts`. `formatPersianPrice` wraps the price run in LRI/PDI (U+2066/U+2069) so it stays LTR inside RTL sentences — keep the isolates.
-- **Price unit is editable** via the `price_unit` key in the `settings` table (admin app). Bot code reads it through `SettingsRepository.getValue('price_unit')` with `DEFAULT_PRICE_UNIT` (`تومان`) as fallback. Phone numbers and opening hours stay Latin digits (dial-ability); prices, stock, page numbers go Persian.
+- **Price unit is editable** via the `price_unit` key in the `settings` table (admin app). Bot code reads it through `ctx.dataService.getSetting('price_unit')` with `DEFAULT_PRICE_UNIT` (`تومان`) as fallback. Phone numbers and opening hours stay Latin digits (dial-ability); prices, stock, page numbers go Persian.
 - **Registered bot commands**: only `/start` and `/admin` (plus `/setup_bot` for the bot owner to push them). Do not add more without updating `setMyCommands` in `src/commands/admin.ts`.
 - **Menu navigation**: lists use `editMessageText(...).catch(() => ctx.reply(...))` to edit in place with fresh-reply fallback. Detail replies carry a `back:main` inline button handled in `src/handlers/callbackQuery.ts`.
 - **Mini App UX**: toast notifications via `showToast()` (never `alert()`), form fields wrapped in `<Field label>` (placeholder is a hint, not a label), every list renders an `.empty-state` block when empty, Persian data elements get `dir="auto"` while chrome stays English.
