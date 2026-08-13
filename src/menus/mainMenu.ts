@@ -5,6 +5,7 @@ import { toPersianDigits } from '../utils/numbers';
 import { escapeHtml } from '../utils/htmlEscape';
 import { MyContext } from '../types/context';
 import type { IDataService } from '../services/types';
+import { pushMessage, getActiveMessage, handleEditFailure } from '../utils/menuLifecycle';
 
 const DEFAULT_WELCOME_TEXT =
   'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
@@ -49,10 +50,26 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         kb.text(items[i].name, `product:${items[i].id}`);
         if (i % 2 === 1 || i === items.length - 1) kb.row();
       }
-      await ctx.reply(
-        `<b>⭐ منوهای من</b> (${toPersianDigits(items.length)} مورد)\n\nبرای دیدن جزئیات هر مورد، روی آن بزنید.`,
-        { parse_mode: 'HTML', reply_markup: kb },
-      );
+      const body = `<b>⭐ منوهای من</b> (${toPersianDigits(items.length)} مورد)\n\nبرای دیدن جزئیات هر مورد، روی آن بزنید.`;
+
+      // Try to edit active message first
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        try {
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+            parse_mode: 'HTML',
+            reply_markup: kb,
+          });
+          active.state = 'favorites';
+          return;
+        } catch (e) {
+          await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: kb }, e);
+          return;
+        }
+      }
+      // No active message — create new
+      const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
+      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'favorites');
     } catch (e) {
       console.error(e);
     }
@@ -73,11 +90,12 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         return;
       }
       ctx.session.messageFlow = { step: 'name' };
-      await ctx.reply('نام شما چیست؟', {
+      const sent = await ctx.reply('نام شما چیست؟', {
         reply_markup: new InlineKeyboard()
           .text('⏭ ناشناس ارسال کن', 'rate:skip')
           .text('❌ انصراف', 'msg:cancel'),
       });
+      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'contact');
     } catch (e) {
       console.error(e);
       await ctx.reply('خطا در ارتباط با سرور.');
