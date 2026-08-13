@@ -12,7 +12,12 @@ import { escapeHtml } from '../utils/htmlEscape';
 import { buildCategoryPage } from '../menus/drinksNavMenu';
 import { mainMenu, getWelcomeText } from '../menus/mainMenu';
 import { MyContext } from '../types/context';
-import { pushMessage, getActiveMessage, handleEditFailure } from '../utils/menuLifecycle';
+import {
+  pushMessage,
+  popMessage,
+  getActiveMessage,
+  handleEditFailure,
+} from '../utils/menuLifecycle';
 
 const backKeyboard = () => new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
 
@@ -21,20 +26,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery();
       const body = await getWelcomeText(ctx.dataService);
+
+      // Always pop and delete the current message from Telegram
       const active = getActiveMessage(ctx.session);
       if (active) {
-        try {
-          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
-            parse_mode: 'HTML',
-            reply_markup: mainMenu,
-          });
-          active.state = 'main';
-          return;
-        } catch (e) {
-          await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: mainMenu }, e);
-          return;
-        }
+        popMessage(ctx.session);
+        await ctx.api.deleteMessage(active.chatId, active.messageId).catch(() => {});
       }
+
+      // Send fresh main menu
       const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
       const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
       if (evicted) {
