@@ -14,6 +14,8 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 - [boolean-null-after-any-removal](memory/boolean-null-after-any-removal.md) — replacing `any` surfaces `boolean|null` errors; use `?? false`
 - [prettier-checks-yaml-too](memory/prettier-checks-yaml-too.md) — run prettier on `deploy.yml` after manual edits; YAML is in `format:check`
 - [wrangler-action-v4-needs-version-pin](memory/wrangler-action-v4-needs-version-pin.md) — `wrangler-action` v4 defaults to Wrangler v4; pin `wranglerVersion`
+- [favorites-toggle-pattern](memory/favorites-toggle-pattern.md) — IDataService has `toggleFavorite()`, not add/remove; use `isFavorited()` pre-check for guard messages
+- [plan-file-enumeration-incomplete](memory/plan-file-enumeration-incomplete.md) — plans under-enumerate files; typecheck catches missed call sites, not the plan text
 
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 
