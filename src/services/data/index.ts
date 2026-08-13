@@ -154,6 +154,14 @@ export class DataService implements IDataService {
     return this.cached(CACHE_KEYS.branches.active, () => this.branchesRepo.getActiveBranches());
   }
 
+  async getBranchById(id: number) {
+    return this.branchesRepo.getBranchById(id);
+  }
+
+  async getAllBranches() {
+    return this.branchesRepo.getAllBranches();
+  }
+
   // ---------------------------------------------------------------------------
   // FAQs
   // ---------------------------------------------------------------------------

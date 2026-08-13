@@ -65,6 +65,42 @@ export interface AIContext {
   }>;
 }
 
+/**
+ * Raw result from the D1 batch query in `buildAIContextBatch`.
+ * Contains pre-joined data that needs light transformation before passing
+ * to `buildMinimalContext` to produce an `AIContext`.
+ */
+export interface AIContextBatchResult {
+  products: Array<{
+    products: typeof products.$inferSelect;
+    coffee_details: typeof coffeeDetails.$inferSelect | null;
+    categories: typeof categories.$inferSelect | null;
+  }>;
+  branches: (typeof branches.$inferSelect)[];
+  faqs: (typeof faq.$inferSelect)[];
+  menuConfig: Array<{
+    id: number;
+    categoryId: number;
+    menuSection: string;
+    displayOrder: number;
+    isVisible: boolean;
+    buttonLabel: string | null;
+    specialMessage: string | null;
+  }>;
+  about: string | undefined;
+  recentLogs: Array<{
+    question: string;
+    response: string;
+    timestamp: Date;
+  }>;
+  favorites: Array<{ name: string }>;
+  popularProducts: Array<{
+    name: string;
+    category: string;
+    favoritedCount: number;
+  }>;
+}
+
 // ---------------------------------------------------------------------------
 // Bot Service
 // ---------------------------------------------------------------------------
@@ -321,4 +357,11 @@ export interface IDataService {
     rating?: number;
     isAnonymous?: boolean;
   }): Promise<(typeof messages.$inferSelect)[]>;
+
+  // -- AI Batch --
+  buildAIContextBatch(userId: string): Promise<AIContextBatchResult>;
+
+  // -- Branches (single) --
+  getBranchById(id: number): Promise<typeof branches.$inferSelect | undefined>;
+  getAllBranches(): Promise<(typeof branches.$inferSelect)[]>;
 }
