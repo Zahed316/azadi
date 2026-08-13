@@ -10,7 +10,6 @@ import {
   AiLogRepository,
   MenuConfigRepository,
   SettingsRepository,
-  FavoritesRepository,
 } from '../repositories';
 import { buildMinimalContext } from '../utils/menuContext';
 import { checkAndSetCooldown } from '../utils/rateLimit';
@@ -166,46 +165,21 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         const requestStartedAt = performance.now();
         // Best-effort typing indicator — Telegram timeout is expected
         await ctx.replyWithChatAction('typing').catch(() => {});
-        const db = ctx.env.DB;
-        const productRepo = new ProductRepository(db);
-        const branchRepo = new BranchRepository(db);
-        const faqRepo = new FaqRepository(db);
-        const aiLogRepo = new AiLogRepository(db);
-        const menuConfigRepo = new MenuConfigRepository(db);
-        const settingsRepo = new SettingsRepository(db);
-        const favoritesRepo = new FavoritesRepository(db);
+        const aiLogRepo = new AiLogRepository(ctx.env.DB);
 
         const catalogStartedAt = performance.now();
-        const [
-          productsWithDetails,
-          branches,
-          faqs,
-          recentLogs,
-          visibleCategoryIds,
-          aboutSetting,
-          userFavorites,
-          popularProducts,
-        ] = await Promise.all([
-          productRepo.getAllProductsWithDetails(),
-          branchRepo.getActiveBranches(),
-          faqRepo.getAll(),
-          aiLogRepo.getRecentLogs(userId, 5),
-          menuConfigRepo.getVisibleCategoryIds(),
-          settingsRepo.getValue('about'),
-          favoritesRepo.list(userId).then((rows) => rows.map((r) => r.name)),
-          productRepo.getPopularProducts(5),
-        ]);
+        const batch = await ctx.dataService.buildAIContextBatch(userId);
         const catalogDuration = performance.now() - catalogStartedAt;
 
         const contextStartedAt = performance.now();
         const menuContext = buildMinimalContext({
           query: ctx.message.text,
-          productsWithDetails,
-          branches,
-          faqs,
-          visibleCategoryIds,
-          settings: aboutSetting ? { about: aboutSetting } : undefined,
-          popularProducts,
+          productsWithDetails: batch.products,
+          branches: batch.branches,
+          faqs: batch.faqs,
+          visibleCategoryIds: undefined,
+          settings: batch.about ? { about: batch.about } : undefined,
+          popularProducts: batch.popularProducts,
         });
         const contextDuration = performance.now() - contextStartedAt;
 
@@ -216,8 +190,8 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         const aiPromise = aiService.processQuery(
           ctx.message.text,
           userId,
-          recentLogs,
-          userFavorites,
+          batch.recentLogs,
+          batch.favorites.map((f) => f.name),
         );
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('AI_TIMEOUT')), AI_TIMEOUT_MS),
