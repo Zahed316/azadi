@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -30,7 +30,7 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HashRouter>
+      <BrowserRouter>
         <Header />
         <main className="container" ref={revealRef}>
           <Suspense fallback={<Spinner />}>
@@ -47,7 +47,7 @@ export default function App() {
           </Suspense>
         </main>
         <Footer />
-      </HashRouter>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
