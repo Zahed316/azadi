@@ -36,7 +36,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         }
       }
       const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
-      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      }
     } catch (e) {
       console.error(e);
     }
@@ -52,12 +55,22 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const kb = new InlineKeyboard();
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `faq:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `faq:page:${idx + 1}`);
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body = `<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`;
       const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'faq');
+        const evicted = pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'faq',
+        );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -84,6 +97,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `branches:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `branches:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body = aboutText
         ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
         : '<b>🏠 درباره ما</b>';
@@ -91,12 +106,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(
+        const evicted = pushMessage(
           ctx.session,
           ctx.chat!.id,
           (sent as { message_id: number }).message_id,
           'branches',
         );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -122,6 +140,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `beans:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `beans:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body =
         page.items.length === 0
           ? `<b>دانه‌های قهوه</b> (${page.pageLabel})`
@@ -130,12 +150,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(
+        const evicted = pushMessage(
           ctx.session,
           ctx.chat!.id,
           (sent as { message_id: number }).message_id,
           'beans',
         );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -161,6 +184,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `cakes:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `cakes:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body =
         page.items.length === 0
           ? `<b>کیک و کوکی</b> (${page.pageLabel})`
@@ -169,12 +194,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(
+        const evicted = pushMessage(
           ctx.session,
           ctx.chat!.id,
           (sent as { message_id: number }).message_id,
           'cakes',
         );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -238,7 +266,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
           }
         }
         const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
-        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, `branch:${id}`);
+        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, `branch:${id}`);
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       } else {
         await ctx.reply('شعبه مورد نظر یافت نشد.');
       }
@@ -299,7 +330,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
             }
           }
           const sent = await ctx.reply(caption, { parse_mode: 'HTML', reply_markup: kb });
-          pushMessage(ctx.session, ctx.chat!.id, sent.message_id, `product:${id}`);
+          const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, `product:${id}`);
+          if (evicted) {
+            await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+          }
         }
       } else {
         await ctx.reply('محصول مورد نظر یافت نشد.');
@@ -331,6 +365,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `featured:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body =
         page.items.length === 0
           ? `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})`
@@ -339,12 +375,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(
+        const evicted = pushMessage(
           ctx.session,
           ctx.chat!.id,
           (sent as { message_id: number }).message_id,
           'featured',
         );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -370,6 +409,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `seasonal:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `seasonal:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body =
         page.items.length === 0
           ? `<b>🌿 مخصوص فصل</b> (${page.pageLabel})`
@@ -378,12 +419,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(
+        const evicted = pushMessage(
           ctx.session,
           ctx.chat!.id,
           (sent as { message_id: number }).message_id,
           'seasonal',
         );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -411,6 +455,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `passport:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const origins = Array.from(
         new Set(
           page.items
@@ -435,12 +481,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(
+        const evicted = pushMessage(
           ctx.session,
           ctx.chat!.id,
           (sent as { message_id: number }).message_id,
           'passport',
         );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -474,7 +523,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
           }
         }
         const sent = await ctx.reply(body, { reply_markup: kb });
-        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
+        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
         return;
       }
       await ctx.dataService.toggleFavorite(uid, productId);
@@ -493,7 +545,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         }
       }
       const sent = await ctx.reply(body, { reply_markup: kb });
-      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -523,7 +578,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
           }
         }
         const sent = await ctx.reply(body, { reply_markup: kb });
-        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
+        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
         return;
       }
       await ctx.dataService.toggleFavorite(uid, productId);
@@ -542,7 +600,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         }
       }
       const sent = await ctx.reply(body, { reply_markup: kb });
-      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});

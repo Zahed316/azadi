@@ -5,26 +5,30 @@ export type { MenuStackEntry };
 // Alias used by tests
 export type MessageStackEntry = MenuStackEntry;
 
-const MAX_STACK_SIZE = 5;
+const MAX_STACK_SIZE = 4;
 
 /**
  * Push a new message onto the session's menu stack.
- * If the stack exceeds MAX_STACK_SIZE, the oldest entry is removed (shift).
+ * If the stack exceeds MAX_STACK_SIZE, the oldest entry is evicted and returned
+ * so the caller can delete the actual Telegram message.
  */
 export function pushMessage(
   session: SessionData,
   chatId: number,
   messageId: number,
   state: string,
-): void {
+): MenuStackEntry | null {
   if (!session.menuStack) {
     session.menuStack = [];
   }
   session.menuStack.push({ chatId, messageId, state, timestamp: Date.now() });
   // FIFO cleanup: remove oldest when exceeding limit
+  let evicted: MenuStackEntry | null = null;
   while (session.menuStack.length > MAX_STACK_SIZE) {
-    session.menuStack.shift();
+    const old = session.menuStack.shift();
+    if (old) evicted = old;
   }
+  return evicted;
 }
 
 /**
@@ -87,12 +91,14 @@ export async function cleanupOldMessages(
 /**
  * Handle editMessageText failure with smart fallback:
  * - "message is not modified" → answerCallbackQuery with "Already showing this"
- * - Other errors → create new message via ctx.reply()
+ * - Other errors → create new message via ctx.reply() and push to stack
  */
 export async function handleEditFailure(
   ctx: {
     answerCallbackQuery: (opts?: { text?: string; show_alert?: boolean }) => Promise<unknown>;
     reply: (text: string, opts?: Record<string, unknown>) => Promise<{ message_id: number }>;
+    session?: SessionData;
+    chat?: { id: number };
   },
   newContent: string,
   opts: Record<string, unknown>,
@@ -107,6 +113,9 @@ export async function handleEditFailure(
     return;
   }
 
-  // All other errors: create new message as fallback
-  await ctx.reply(newContent, opts).catch(() => {});
+  // All other errors: create new message as fallback and track it
+  const sent = await ctx.reply(newContent, opts).catch(() => null);
+  if (sent && ctx.session && ctx.chat) {
+    pushMessage(ctx.session, ctx.chat.id, sent.message_id, 'fallback');
+  }
 }

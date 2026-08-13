@@ -40,6 +40,8 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `featured:page:1`);
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body = `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: typeof products.$inferSelect) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
 
       // Try to edit active message first
@@ -59,7 +61,10 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       }
       // No active message — create new
       const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
-      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'featured');
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'featured');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      }
     } catch (e) {
       console.error(e);
       await ctx
@@ -92,6 +97,8 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `seasonal:page:1`);
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body = `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: typeof products.$inferSelect) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
 
       // Try to edit active message first
@@ -111,7 +118,10 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       }
       // No active message — create new
       const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
-      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'seasonal');
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'seasonal');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      }
     } catch (e) {
       console.error(e);
       await ctx
@@ -162,6 +172,8 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
         if (i % 2 === 1 || i === page.items.length - 1) kb.row();
       }
       if (page.hasNext) kb.text('◀️ صفحه بعد', `passport:page:1`);
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body = `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: { product: typeof products.$inferSelect; details: typeof coffeeDetails.$inferSelect }) => formatProduct(r.product, priceUnit, vatNote)).join('\n\n')}`;
 
       // Try to edit active message first
@@ -181,7 +193,10 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       }
       // No active message — create new
       const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
-      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'passport');
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'passport');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      }
     } catch (e) {
       console.error(e);
       await ctx
@@ -216,6 +231,9 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(async () => {
         const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
-        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       });
   });

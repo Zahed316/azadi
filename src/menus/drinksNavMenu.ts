@@ -55,6 +55,8 @@ export async function buildCategoryPage(
   if (page.hasNext)
     kb.text('◀️ صفحه بعد', `${DRINKS_PAGE_PREFIX}${config.categoryId}:page:${idx + 1}`);
   if (page.hasPrev || page.hasNext) kb.row();
+  kb.row();
+  kb.text('🔙 بازگشت به منو', 'back:main');
 
   const name = config.categoryName ?? 'بدون نام';
   const header = `<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${name}</b> (${page.pageLabel})`;
@@ -63,12 +65,15 @@ export async function buildCategoryPage(
     .editMessageText(text, { parse_mode: 'HTML', reply_markup: kb })
     .catch(() => ctx.reply(text, { parse_mode: 'HTML', reply_markup: kb }));
   if (sent && typeof sent === 'object' && 'message_id' in sent) {
-    pushMessage(
+    const evicted = pushMessage(
       ctx.session,
       ctx.chat!.id,
       (sent as { message_id: number }).message_id,
       `drinks:cat:${config.categoryId}`,
     );
+    if (evicted) {
+      await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+    }
   }
 }
 
@@ -136,6 +141,9 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(async () => {
         const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
-        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       });
   });

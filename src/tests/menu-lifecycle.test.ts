@@ -38,16 +38,15 @@ describe('pushMessage', () => {
     expect(session.menuStack![3].messageId).toBe(40);
   });
 
-  test('cleans up when stack exceeds 5', () => {
+  test('cleans up when stack exceeds 4', () => {
     const session = makeSession([
       { chatId: 1, messageId: 10, state: 'a', timestamp: 1 },
       { chatId: 1, messageId: 20, state: 'b', timestamp: 2 },
       { chatId: 1, messageId: 30, state: 'c', timestamp: 3 },
       { chatId: 1, messageId: 40, state: 'd', timestamp: 4 },
-      { chatId: 1, messageId: 50, state: 'e', timestamp: 5 },
     ]);
-    pushMessage(session, 1, 60, 'f');
-    expect(session.menuStack).toHaveLength(5);
+    pushMessage(session, 1, 50, 'e');
+    expect(session.menuStack).toHaveLength(4);
     expect(session.menuStack![0].messageId).toBe(20); // oldest removed
   });
 
@@ -56,6 +55,26 @@ describe('pushMessage', () => {
     pushMessage(session, 1, 10, 'main');
     expect(session.menuStack).toBeDefined();
     expect(session.menuStack).toHaveLength(1);
+  });
+
+  test('returns null when no eviction needed', () => {
+    const session = makeSession([{ chatId: 1, messageId: 10, state: 'a', timestamp: 1 }]);
+    const evicted = pushMessage(session, 1, 20, 'b');
+    expect(evicted).toBeNull();
+    expect(session.menuStack).toHaveLength(2);
+  });
+
+  test('returns evicted entry when stack overflows', () => {
+    const session = makeSession([
+      { chatId: 1, messageId: 10, state: 'a', timestamp: 1 },
+      { chatId: 1, messageId: 20, state: 'b', timestamp: 2 },
+      { chatId: 1, messageId: 30, state: 'c', timestamp: 3 },
+      { chatId: 1, messageId: 40, state: 'd', timestamp: 4 },
+    ]);
+    const evicted = pushMessage(session, 1, 50, 'e');
+    expect(evicted).toEqual({ chatId: 1, messageId: 10, state: 'a', timestamp: 1 });
+    expect(session.menuStack).toHaveLength(4);
+    expect(session.menuStack![0].messageId).toBe(20);
   });
 });
 
@@ -111,14 +130,14 @@ describe('peekStack', () => {
 });
 
 describe('cleanupOldMessages', () => {
-  test('does nothing when stack <= 5', async () => {
+  test('does nothing when stack <= 4', async () => {
     const api = { deleteMessage: vi.fn() };
     const session = makeSession([{ chatId: 1, messageId: 10, state: 'a', timestamp: 1 }]);
     await cleanupOldMessages(api, session);
     expect(api.deleteMessage).not.toHaveBeenCalled();
   });
 
-  test('deletes oldest when stack > 5', async () => {
+  test('deletes oldest when stack > 4', async () => {
     const api = { deleteMessage: vi.fn().mockResolvedValue({}) };
     const session = makeSession([
       { chatId: 1, messageId: 10, state: 'a', timestamp: 1 },
@@ -126,11 +145,10 @@ describe('cleanupOldMessages', () => {
       { chatId: 1, messageId: 30, state: 'c', timestamp: 3 },
       { chatId: 1, messageId: 40, state: 'd', timestamp: 4 },
       { chatId: 1, messageId: 50, state: 'e', timestamp: 5 },
-      { chatId: 1, messageId: 60, state: 'f', timestamp: 6 },
     ]);
     await cleanupOldMessages(api, session);
     expect(api.deleteMessage).toHaveBeenCalledWith(1, 10);
-    expect(session.menuStack).toHaveLength(5);
+    expect(session.menuStack).toHaveLength(4);
   });
 
   test('handles deleteMessage failure gracefully', async () => {
@@ -141,11 +159,10 @@ describe('cleanupOldMessages', () => {
       { chatId: 1, messageId: 30, state: 'c', timestamp: 3 },
       { chatId: 1, messageId: 40, state: 'd', timestamp: 4 },
       { chatId: 1, messageId: 50, state: 'e', timestamp: 5 },
-      { chatId: 1, messageId: 60, state: 'f', timestamp: 6 },
     ]);
     // Should not throw
     await cleanupOldMessages(api, session);
-    expect(session.menuStack).toHaveLength(5);
+    expect(session.menuStack).toHaveLength(4);
   });
 });
 
@@ -192,5 +209,36 @@ describe('handleEditFailure', () => {
     const error = new Error('network timeout');
     await handleEditFailure(ctx, 'new text', {}, error);
     expect(ctx.reply).toHaveBeenCalled();
+  });
+
+  test('pushes fallback message to stack when ctx has session and chat', async () => {
+    const session = makeSession([{ chatId: 1, messageId: 10, state: 'main', timestamp: 1 }]);
+    const ctx = {
+      answerCallbackQuery: vi.fn().mockResolvedValue({}),
+      reply: vi.fn().mockResolvedValue({ message_id: 77 }),
+      session,
+      chat: { id: 1 },
+    };
+    const error = new Error('message to edit not found');
+    await handleEditFailure(ctx, 'fallback text', { parse_mode: 'HTML' }, error);
+    expect(ctx.reply).toHaveBeenCalledWith('fallback text', { parse_mode: 'HTML' });
+    expect(session.menuStack).toHaveLength(2);
+    expect(session.menuStack![1]).toEqual({
+      chatId: 1,
+      messageId: 77,
+      state: 'fallback',
+      timestamp: expect.any(Number),
+    });
+  });
+
+  test('does not push to stack when ctx has no session', async () => {
+    const ctx = {
+      answerCallbackQuery: vi.fn().mockResolvedValue({}),
+      reply: vi.fn().mockResolvedValue({ message_id: 77 }),
+    };
+    const error = new Error('message to edit not found');
+    await handleEditFailure(ctx, 'fallback text', {}, error);
+    expect(ctx.reply).toHaveBeenCalled();
+    // No crash — just no stack push
   });
 });

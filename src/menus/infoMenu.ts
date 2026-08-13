@@ -30,6 +30,8 @@ export const infoMenu = new Menu<MyContext>('info-menu')
         kb.text(`📍 ${activeBranches[i].name}`, `branch:${activeBranches[i].id}`);
         if (i % 2 === 1 || i === activeBranches.length - 1) kb.row();
       }
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body = aboutText
         ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
         : '<b>🏠 درباره ما</b>\n\nاطلاعاتی ثبت نشده است.';
@@ -37,12 +39,15 @@ export const infoMenu = new Menu<MyContext>('info-menu')
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(
+        const evicted = pushMessage(
           ctx.session,
           ctx.chat!.id,
           (sent as { message_id: number }).message_id,
           'about',
         );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -68,12 +73,22 @@ export const infoMenu = new Menu<MyContext>('info-menu')
       const text = page.items.map((f: typeof faqTable.$inferSelect) => formatFaq(f)).join('\n\n');
       const kb = new InlineKeyboard();
       if (page.hasNext) kb.text('◀️ صفحه بعد', `faq:page:1`);
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body = `<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`;
       const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'faq');
+        const evicted = pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'faq',
+        );
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       }
     } catch (e) {
       console.error(e);
@@ -88,6 +103,9 @@ export const infoMenu = new Menu<MyContext>('info-menu')
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(async () => {
         const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
-        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
       });
   });

@@ -152,7 +152,10 @@ export function createBot(env: Env): Bot<MyContext> {
       reply_markup: mainMenu,
       parse_mode: 'HTML',
     });
-    pushMessage(ctx.session, ctx.chat.id, sent.message_id, 'main');
+    const evicted = pushMessage(ctx.session, ctx.chat.id, sent.message_id, 'main');
+    if (evicted) {
+      await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+    }
   });
 
   setupAdminCommands(bot, env);

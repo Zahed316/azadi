@@ -50,6 +50,8 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         kb.text(items[i].name, `product:${items[i].id}`);
         if (i % 2 === 1 || i === items.length - 1) kb.row();
       }
+      kb.row();
+      kb.text('🔙 بازگشت به منو', 'back:main');
       const body = `<b>⭐ منوهای من</b> (${toPersianDigits(items.length)} مورد)\n\nبرای دیدن جزئیات هر مورد، روی آن بزنید.`;
 
       // Try to edit active message first
@@ -69,7 +71,10 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       }
       // No active message — create new
       const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
-      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'favorites');
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'favorites');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      }
     } catch (e) {
       console.error(e);
     }
@@ -95,7 +100,10 @@ export const mainMenu = new Menu<MyContext>('main-menu')
           .text('⏭ ناشناس ارسال کن', 'rate:skip')
           .text('❌ انصراف', 'msg:cancel'),
       });
-      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'contact');
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'contact');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      }
     } catch (e) {
       console.error(e);
       await ctx.reply('خطا در ارتباط با سرور.');
