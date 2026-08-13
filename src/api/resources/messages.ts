@@ -32,7 +32,7 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
     }
     const repo = new MessageRepository(db);
     const messages = await repo.getAll();
-    return new Response(JSON.stringify(messages), { headers: corsHeaders });
+    return new Response(JSON.stringify({ messages }), { headers: corsHeaders });
   }
 
   // GET /messages/:id (must not match /reply)

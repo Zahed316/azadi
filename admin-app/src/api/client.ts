@@ -50,7 +50,8 @@ export interface Message {
 }
 
 export async function fetchMessages(): Promise<Message[]> {
-  return apiFetch<Message[]>('/messages');
+  const data = await apiFetch<{ messages: Message[] }>('/messages');
+  return data.messages;
 }
 
 export async function replyToMessage(id: number, replyText: string): Promise<{ success: boolean }> {
