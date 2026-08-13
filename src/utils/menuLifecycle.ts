@@ -91,7 +91,7 @@ export async function cleanupOldMessages(
 /**
  * Handle editMessageText failure with smart fallback:
  * - "message is not modified" → answerCallbackQuery with "Already showing this"
- * - Other errors → create new message via ctx.reply() and push to stack
+ * - Other errors → pop the failed message from stack, then create new message
  */
 export async function handleEditFailure(
   ctx: {
@@ -111,6 +111,12 @@ export async function handleEditFailure(
       .answerCallbackQuery({ text: 'Already showing this', show_alert: false })
       .catch(() => {});
     return;
+  }
+
+  // Pop the failed-to-edit message from the stack before creating a new one.
+  // This prevents the stale message from being referenced by getActiveMessage later.
+  if (ctx.session) {
+    popMessage(ctx.session);
   }
 
   // All other errors: create new message as fallback and track it

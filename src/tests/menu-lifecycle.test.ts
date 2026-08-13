@@ -211,8 +211,11 @@ describe('handleEditFailure', () => {
     expect(ctx.reply).toHaveBeenCalled();
   });
 
-  test('pushes fallback message to stack when ctx has session and chat', async () => {
-    const session = makeSession([{ chatId: 1, messageId: 10, state: 'main', timestamp: 1 }]);
+  test('pops active message then pushes fallback to stack', async () => {
+    const session = makeSession([
+      { chatId: 1, messageId: 10, state: 'drinks', timestamp: 1 },
+      { chatId: 1, messageId: 20, state: 'espresso', timestamp: 2 },
+    ]);
     const ctx = {
       answerCallbackQuery: vi.fn().mockResolvedValue({}),
       reply: vi.fn().mockResolvedValue({ message_id: 77 }),
@@ -222,7 +225,14 @@ describe('handleEditFailure', () => {
     const error = new Error('message to edit not found');
     await handleEditFailure(ctx, 'fallback text', { parse_mode: 'HTML' }, error);
     expect(ctx.reply).toHaveBeenCalledWith('fallback text', { parse_mode: 'HTML' });
+    // Active message (espresso) was popped, then fallback was pushed
     expect(session.menuStack).toHaveLength(2);
+    expect(session.menuStack![0]).toEqual({
+      chatId: 1,
+      messageId: 10,
+      state: 'drinks',
+      timestamp: expect.any(Number),
+    });
     expect(session.menuStack![1]).toEqual({
       chatId: 1,
       messageId: 77,
