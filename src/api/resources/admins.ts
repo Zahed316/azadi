@@ -2,6 +2,7 @@ import { admins } from '../../database/schema';
 import { eq } from 'drizzle-orm';
 import { CategoryRepository } from '../../repositories';
 import { getDb } from '../../database/client';
+import { parseRequiredInt, parseOptionalInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
 export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
@@ -35,28 +36,37 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
     }
     // Validate categoryId exists if provided
     if (body.categoryId) {
-      const catRepo = new CategoryRepository(db);
-      const cat = await catRepo.getCategoryById(parseInt(body.categoryId));
-      if (!cat) {
-        return new Response(JSON.stringify({ error: 'Category not found' }), {
-          status: 400,
-          headers: corsHeaders,
-        });
+      const catIdVal = parseOptionalInt(body.categoryId, 'categoryId');
+      if (catIdVal !== null) {
+        const catRepo = new CategoryRepository(db);
+        const cat = await catRepo.getCategoryById(catIdVal);
+        if (!cat) {
+          return new Response(JSON.stringify({ error: 'Category not found' }), {
+            status: 400,
+            headers: corsHeaders,
+          });
+        }
       }
     }
     // AUTH-003: Validate role enum
     const VALID_ROLES = ['super_admin', 'category_admin'];
     const role = body.role || 'category_admin';
     if (!VALID_ROLES.includes(role)) {
-      return new Response(JSON.stringify({ error: 'Invalid role. Must be super_admin or category_admin' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return new Response(
+        JSON.stringify({ error: 'Invalid role. Must be super_admin or category_admin' }),
+        {
+          status: 400,
+          headers: corsHeaders,
+        },
+      );
     }
+    const telegramIdResult = parseRequiredInt(body.telegramId, 'telegramId');
+    if (telegramIdResult instanceof Response) return telegramIdResult;
+    const adminCatId = body.categoryId ? parseOptionalInt(body.categoryId, 'categoryId') : null;
     await dbClient.insert(admins).values({
-      telegramId: parseInt(body.telegramId),
+      telegramId: telegramIdResult,
       role,
-      categoryId: body.categoryId ? parseInt(body.categoryId) : null,
+      categoryId: adminCatId,
     });
     return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
@@ -68,7 +78,9 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
 
     // AUTH-002: Prevent self-deletion to avoid accidental lockout
     if (id === ctx.telegramId) {

@@ -1,4 +1,5 @@
 import { ProductRepository } from '../../repositories';
+import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
 export const handleProducts: ResourceHandler = async (method, path, ctx) => {
@@ -22,7 +23,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
   if (path === 'products' && method === 'POST') {
     const repo = new ProductRepository(db);
     const body: any = await request.json();
-    const catId = parseInt(body.categoryId);
+    const catIdResult = parseRequiredInt(body.categoryId, 'categoryId');
+    if (catIdResult instanceof Response) return catIdResult;
+    const catId = catIdResult;
     if (!isSuperAdmin && allowedCategoryId !== catId) {
       return new Response(JSON.stringify({ error: 'Forbidden: Cannot add to this category' }), {
         status: 403,
@@ -107,7 +110,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
 
   // PUT /products/:id/image (must be before general /products/:id handler)
   if (path.startsWith('products/') && path.endsWith('/image') && method === 'PUT') {
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new ProductRepository(db);
     const product = await repo.getProductById(id);
 
@@ -144,7 +149,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
       if (ctx.cache) {
         await ctx.cache.deleteByPrefix('cache:products:');
       }
-      return new Response(JSON.stringify({ success: true, imageUrl: body.imageUrl }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, imageUrl: body.imageUrl }), {
+        headers: corsHeaders,
+      });
     } catch (e) {
       console.error(e);
       return new Response(JSON.stringify({ error: 'Failed to save image' }), {
@@ -156,7 +163,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
 
   // DELETE /products/:id/image (must be before general /products/:id handler)
   if (path.startsWith('products/') && path.endsWith('/image') && method === 'DELETE') {
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new ProductRepository(db);
     const product = await repo.getProductById(id);
 
@@ -190,7 +199,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
   // PUT /products/:id/stock or /products/:id/toggle (path.split length === 3)
   // TODO: legacy path-split guard — migrate to /products/:id/stock and /products/:id/toggle routes
   if (path.startsWith('products/') && method === 'PUT' && path.split('/').length === 3) {
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const action = path.split('/')[2];
     const repo = new ProductRepository(db);
     const product = await repo.getProductById(id);
@@ -225,7 +236,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
 
   // PUT /products/:id (general update — after image/stock/toggle checks)
   if (path.startsWith('products/') && path.split('/').length === 2 && method === 'PUT') {
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new ProductRepository(db);
     const product = await repo.getProductById(id);
 
@@ -243,22 +256,26 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
 
     const body: any = await request.json();
     // If changing category, check permission
-    if (
-      body.categoryId !== undefined &&
-      !isSuperAdmin &&
-      parseInt(body.categoryId) !== allowedCategoryId
-    ) {
-      return new Response(
-        JSON.stringify({ error: 'Forbidden: Cannot move to this category' }),
-        { status: 403, headers: corsHeaders },
-      );
+    if (body.categoryId !== undefined && !isSuperAdmin) {
+      const permCatId = parseRequiredInt(body.categoryId, 'categoryId');
+      if (permCatId instanceof Response) return permCatId;
+      if (permCatId !== allowedCategoryId) {
+        return new Response(JSON.stringify({ error: 'Forbidden: Cannot move to this category' }), {
+          status: 403,
+          headers: corsHeaders,
+        });
+      }
     }
+
+    const updateCatId =
+      body.categoryId !== undefined ? parseRequiredInt(body.categoryId, 'categoryId') : undefined;
+    if (updateCatId instanceof Response) return updateCatId;
 
     await repo.updateProduct(id, {
       name: body.name,
       price: body.price,
       stock: body.stock,
-      categoryId: body.categoryId !== undefined ? parseInt(body.categoryId) : undefined,
+      categoryId: updateCatId,
       description: body.description !== undefined ? body.description : null,
       unit: body.unit || 'item',
       available: body.available !== undefined ? body.available : true,
@@ -283,7 +300,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
 
   // DELETE /products/:id (after image/stock/toggle checks)
   if (path.startsWith('products/') && path.split('/').length === 2 && method === 'DELETE') {
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new ProductRepository(db);
     const product = await repo.getProductById(id);
 

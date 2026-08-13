@@ -1,4 +1,5 @@
 import { MessageRepository } from '../../repositories';
+import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
 export const handleMessages: ResourceHandler = async (method, path, ctx) => {
@@ -38,7 +39,9 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     }
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new MessageRepository(db);
     const message = await repo.getById(id);
     if (!message) {
@@ -62,7 +65,9 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     }
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new MessageRepository(db);
     const message = await repo.getById(id);
     if (!message) {
@@ -100,12 +105,14 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
 
       if (!telegramResponse.ok) {
         await telegramResponse.text().catch(() => {});
-        console.error(JSON.stringify({
-          ts: new Date().toISOString(),
-          operation: 'telegram-send-reply-error',
-          status: telegramResponse.status,
-          messageId: id,
-        }));
+        console.error(
+          JSON.stringify({
+            ts: new Date().toISOString(),
+            operation: 'telegram-send-reply-error',
+            status: telegramResponse.status,
+            messageId: id,
+          }),
+        );
       }
     } catch (e) {
       console.error('Failed to send Telegram reply:', e);

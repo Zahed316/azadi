@@ -152,20 +152,19 @@ test('GET /products returns flattened list with coffee_details and category fiel
 });
 
 // ---------------------------------------------------------------------------
-// NaN categoryId edge case (documents existing behaviour)
+// NaN categoryId edge case (validates correctly now, not NaN bypass)
 // ---------------------------------------------------------------------------
 
-test('non-numeric categoryId body is rejected as 403 for category_admin (parseInt NaN !== allowedCategoryId)', async () => {
+test('non-numeric categoryId body is rejected as 400 (validation catches NaN before permission check)', async () => {
   setAdminRole({ telegramId: 2, role: 'category_admin', categoryId: 5 });
   seedTable(products, [{ id: 1, categoryId: 5, name: 'X' }]);
-  // parseInt('abc') → NaN; NaN !== 5 → true → 403
   const res = await callRouter({
     method: 'PUT',
     path: 'products/1',
     body: { categoryId: 'abc' },
   });
-  expect(res.status).toBe(403);
-  expect(res.body.error).toMatch(/Cannot move to this category/i);
+  expect(res.status).toBe(400);
+  expect(res.body.error).toMatch(/categoryId must be a valid integer/i);
 });
 
 // ---------------------------------------------------------------------------
@@ -266,7 +265,9 @@ test('image delete returns 404 for nonexistent product', async () => {
 
 test('image delete succeeds for existing product', async () => {
   setAdminRole({ telegramId: 1, role: 'super_admin', categoryId: null });
-  seedTable(products, [{ id: 1, name: 'Espresso', categoryId: 1, imageUrl: 'https://example.com/photo.jpg' }]);
+  seedTable(products, [
+    { id: 1, name: 'Espresso', categoryId: 1, imageUrl: 'https://example.com/photo.jpg' },
+  ]);
   const res = await callRouter({
     method: 'DELETE',
     path: 'products/1/image',

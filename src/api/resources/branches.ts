@@ -1,4 +1,5 @@
 import { BranchRepository } from '../../repositories';
+import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
 export const handleBranches: ResourceHandler = async (method, path, ctx) => {
@@ -47,7 +48,9 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new BranchRepository(db);
     const body: any = await request.json();
     if (!body.name || !body.address) {
@@ -77,7 +80,9 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new BranchRepository(db);
     await repo.deleteBranch(id);
     if (ctx.cache) {

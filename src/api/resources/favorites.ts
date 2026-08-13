@@ -1,4 +1,5 @@
 import { FavoritesRepository } from '../../repositories';
+import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
 export const handleFavorites: ResourceHandler = async (method, path, ctx) => {
@@ -35,13 +36,9 @@ export const handleFavorites: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const [, telegramId, productIdStr] = favDeleteMatch;
-    const productId = parseInt(productIdStr, 10);
-    if (Number.isNaN(productId)) {
-      return new Response(JSON.stringify({ error: 'Invalid productId' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
-    }
+    const productIdResult = parseRequiredInt(productIdStr, 'productId');
+    if (productIdResult instanceof Response) return productIdResult;
+    const productId = productIdResult;
     const repo = new FavoritesRepository(db);
     const ok = await repo.remove(telegramId, productId);
     if (!ok) {
