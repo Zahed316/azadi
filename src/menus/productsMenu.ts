@@ -5,6 +5,7 @@ import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
+import { pushMessage } from '../utils/menuLifecycle';
 
 /**
  * Pagination callback prefixes (page-size 5):
@@ -48,9 +49,12 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
       if (page.hasPrev || page.hasNext) kb.row();
 
       const body = `<b>کیک و کوکی</b> (${page.pageLabel})\n\nیک کیک یا کوکی انتخاب کنید:`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'cakes');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری کیک‌ها ناموفق بود.' }).catch(() => {});
@@ -62,7 +66,10 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
     const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
-      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
+      .catch(async () => {
+        const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
+        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+      });
   });
 
 export const beansMenu = new Menu<MyContext>('products-menu-beans')
@@ -96,9 +103,12 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
       if (page.hasPrev || page.hasNext) kb.row();
 
       const body = `<b>دانه‌های قهوه</b> (${page.pageLabel})\n\nدانه قهوه مورد نظر را انتخاب کنید:`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'beans');
+      }
     } catch (e) {
       console.error(e);
       await ctx
@@ -112,5 +122,8 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
     const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
-      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
+      .catch(async () => {
+        const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
+        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+      });
   });
