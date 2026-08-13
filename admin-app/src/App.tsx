@@ -36,15 +36,18 @@ function AppInner() {
 
   const scrollToTop = () => window.scrollTo(0, 0);
 
-  const ctxValue = useMemo(() => ({
-    currentUser,
-    currentUserLoading,
-    isSuperAdmin,
-    allowedCatId,
-    showToast,
-    confirm,
-    setError,
-  }), [currentUser, currentUserLoading, isSuperAdmin, allowedCatId, showToast, confirm, setError]);
+  const ctxValue = useMemo(
+    () => ({
+      currentUser,
+      currentUserLoading,
+      isSuperAdmin,
+      allowedCatId,
+      showToast,
+      confirm,
+      setError,
+    }),
+    [currentUser, currentUserLoading, isSuperAdmin, allowedCatId, showToast, confirm, setError],
+  );
 
   if (currentUserLoading) return <LoadingScreen />;
 
@@ -52,34 +55,47 @@ function AppInner() {
     <AppContext.Provider value={ctxValue}>
       <HashRouter>
         <div className="container" style={{ paddingBottom: '80px' }}>
-          {error && <div className="error" role="alert" aria-live="assertive">{error}</div>}
+          {error && (
+            <div className="error" role="alert" aria-live="assertive">
+              {error}
+            </div>
+          )}
           <Toast toast={toast} />
           {ConfirmModal}
           <main>
-          <Suspense fallback={<LoadingScreen />}>
-          <ErrorBoundary>
-            <Routes>
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              {/* Grouped tabs */}
-              <Route path="/insights" element={isSuperAdmin ? <InsightsPage /> : <Navigate to="/products" replace />} />
-              <Route path="/configure" element={isSuperAdmin ? <ConfigurePage /> : <Navigate to="/products" replace />} />
-              <Route path="/info" element={isSuperAdmin ? <InfoPage /> : <Navigate to="/products" replace />} />
-              {/* Redirect old routes to grouped pages */}
-              <Route path="/settings" element={<Navigate to="/configure" replace />} />
-              <Route path="/branches" element={<Navigate to="/info" replace />} />
-              <Route path="/faqs" element={<Navigate to="/info" replace />} />
-              <Route path="/admins" element={<Navigate to="/configure" replace />} />
-              <Route path="/menu-config" element={<Navigate to="/configure" replace />} />
-              <Route path="/streaks" element={<Navigate to="/insights" replace />} />
-              <Route path="/favorites" element={<Navigate to="/insights" replace />} />
-              <Route path="/ai-logs" element={<Navigate to="/insights" replace />} />
-              <Route path="/ai-test" element={<Navigate to="/insights" replace />} />
-              <Route path="/messages" element={<Navigate to="/info" replace />} />
-              <Route path="*" element={<Navigate to="/products" replace />} />
-            </Routes>
-          </ErrorBoundary>
-          </Suspense>
+            <Suspense fallback={<LoadingScreen />}>
+              <ErrorBoundary>
+                <Routes>
+                  <Route path="/products" element={<ProductsPage />} />
+                  <Route path="/categories" element={<CategoriesPage />} />
+                  {/* Grouped tabs */}
+                  <Route
+                    path="/insights"
+                    element={isSuperAdmin ? <InsightsPage /> : <Navigate to="/products" replace />}
+                  />
+                  <Route
+                    path="/configure"
+                    element={isSuperAdmin ? <ConfigurePage /> : <Navigate to="/products" replace />}
+                  />
+                  <Route
+                    path="/info"
+                    element={isSuperAdmin ? <InfoPage /> : <Navigate to="/products" replace />}
+                  />
+                  {/* Redirect old routes to grouped pages */}
+                  <Route path="/settings" element={<Navigate to="/configure" replace />} />
+                  <Route path="/branches" element={<Navigate to="/info" replace />} />
+                  <Route path="/faqs" element={<Navigate to="/info" replace />} />
+                  <Route path="/admins" element={<Navigate to="/configure" replace />} />
+                  <Route path="/menu-config" element={<Navigate to="/configure" replace />} />
+                  <Route path="/streaks" element={<Navigate to="/insights" replace />} />
+                  <Route path="/favorites" element={<Navigate to="/insights" replace />} />
+                  <Route path="/ai-logs" element={<Navigate to="/insights" replace />} />
+                  <Route path="/ai-test" element={<Navigate to="/insights" replace />} />
+                  <Route path="/messages" element={<Navigate to="/info" replace />} />
+                  <Route path="*" element={<Navigate to="/products" replace />} />
+                </Routes>
+              </ErrorBoundary>
+            </Suspense>
           </main>
           <nav className="bottom-nav" aria-label="ناوبری اصلی">
             <NavLink

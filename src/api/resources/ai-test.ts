@@ -7,16 +7,25 @@ export const handleAiTest: ResourceHandler = async (method, path, ctx) => {
   // POST /ai-test
   if (path === 'ai-test' && method === 'POST') {
     if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: corsHeaders,
+      });
     const body: any = await request.json();
     if (!body.query || typeof body.query !== 'string')
-      return new Response(JSON.stringify({ error: 'query required' }), { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'query required' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     try {
       const response = await runAiQuery(db, body.query, 'admin-test', env.OPENCODE_API_KEY);
       return new Response(JSON.stringify({ response }), { headers: corsHeaders });
     } catch (e: any) {
       console.error('ai-test error:', e);
-      return new Response(JSON.stringify({ error: 'AI query failed' }), { status: 500, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'AI query failed' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
     }
   }
 

@@ -94,7 +94,9 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
                   await ctx.reply(config.specialMessage, { parse_mode: 'HTML' });
                 } else {
                   const fallbackName = config.categoryName ?? 'بدون نام';
-                await ctx.reply(`📭 در حال حاضر ${fallbackName} موجود نیست.`, { parse_mode: 'HTML' });
+                  await ctx.reply(`📭 در حال حاضر ${fallbackName} موجود نیست.`, {
+                    parse_mode: 'HTML',
+                  });
                 }
                 return;
               }

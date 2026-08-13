@@ -47,6 +47,7 @@ Expose the two Phase 5 tables to super_admins in the existing admin mini app, as
 4. **`admin-app/src/api/keys.ts`** — add two keys: `streaks` and `favorites`. Same shape as the existing eight.
 
 5. **`admin-app/src/components/StatTile.tsx`** (new file) — a reusable presentational component for the stat tiles. Shape:
+
    ```tsx
    <StatTile label="Users tracked" value={42} hint="all-time" />
    ```
@@ -176,27 +177,27 @@ Two design notes:
 
 ### Server
 
-| Failure | Response | Surfaced as |
-|---|---|---|
-| Missing/invalid init data | 401 with plain text | Client toast + top error banner |
-| Valid init, not in admins | 401 | Same |
-| category_admin attempting access | 403 | Same |
-| D1 throws | 500 with `error.message` | Same |
-| Invalid `groupBy` value | 400 | Same |
-| Delete on missing pair | 404 with `{ ok: false }` | Same |
-| Repository returns unexpected shape | 500 | Same |
+| Failure                             | Response                 | Surfaced as                     |
+| ----------------------------------- | ------------------------ | ------------------------------- |
+| Missing/invalid init data           | 401 with plain text      | Client toast + top error banner |
+| Valid init, not in admins           | 401                      | Same                            |
+| category_admin attempting access    | 403                      | Same                            |
+| D1 throws                           | 500 with `error.message` | Same                            |
+| Invalid `groupBy` value             | 400                      | Same                            |
+| Delete on missing pair              | 404 with `{ ok: false }` | Same                            |
+| Repository returns unexpected shape | 500                      | Same                            |
 
 All error messages are the same Persian/English text the existing endpoints use — no new strings to localize.
 
 ### Client
 
-| Failure | UX |
-|---|---|
-| `useQuery` loading | `<LoadingScreen />` (existing) |
-| `useQuery` returns `[]` | `<EmptyState>` with the diagnostic message |
-| `useQuery` throws | `setError(err.message)` (existing top banner) + toast `error` (existing) |
-| `useMutation` (delete) throws | Same as above |
-| Double-tap "Remove" | The mutation's `isPending` disables the row's button; second click is a no-op |
+| Failure                       | UX                                                                            |
+| ----------------------------- | ----------------------------------------------------------------------------- |
+| `useQuery` loading            | `<LoadingScreen />` (existing)                                                |
+| `useQuery` returns `[]`       | `<EmptyState>` with the diagnostic message                                    |
+| `useQuery` throws             | `setError(err.message)` (existing top banner) + toast `error` (existing)      |
+| `useMutation` (delete) throws | Same as above                                                                 |
+| Double-tap "Remove"           | The mutation's `isPending` disables the row's button; second click is a no-op |
 
 Explicitly **out of scope**: retry logic, optimistic UI, persistent audit table, offline mode. The mini app only runs inside Telegram, the network is reliable, and the dataset is small.
 
@@ -241,23 +242,23 @@ The in-memory D1 test harness (`src/tests/_helpers/routerHarness.ts`) only handl
 
 ### New files (3 + 1 test file)
 
-| Path | Purpose |
-|---|---|
-| `admin-app/src/components/StatTile.tsx` | Reusable stat tile |
-| `admin-app/src/pages/StreaksPage.tsx` | The streaks page |
-| `admin-app/src/pages/FavoritesPage.tsx` | The favorites page |
-| `src/tests/router-engagement.test.ts` | 6 router tests for the 3 new endpoints |
+| Path                                    | Purpose                                |
+| --------------------------------------- | -------------------------------------- |
+| `admin-app/src/components/StatTile.tsx` | Reusable stat tile                     |
+| `admin-app/src/pages/StreaksPage.tsx`   | The streaks page                       |
+| `admin-app/src/pages/FavoritesPage.tsx` | The favorites page                     |
+| `src/tests/router-engagement.test.ts`   | 6 router tests for the 3 new endpoints |
 
 ### Edited files (6)
 
-| Path | Change |
-|---|---|
-| `src/repositories/index.ts` | +2 methods (`UserStateRepository.listAll`, `FavoritesRepository.listAllGrouped`) |
-| `src/api/router.ts` | +3 endpoints (all super_admin only) |
-| `src/tests/phase-5-repos.test.ts` | +2 new test cases |
-| `admin-app/src/api/keys.ts` | +2 keys |
-| `admin-app/src/App.tsx` | +2 routes, +2 NavLinks |
-| `admin-app/src/index.css` | +1 class (`.stat-tile`) |
+| Path                              | Change                                                                           |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| `src/repositories/index.ts`       | +2 methods (`UserStateRepository.listAll`, `FavoritesRepository.listAllGrouped`) |
+| `src/api/router.ts`               | +3 endpoints (all super_admin only)                                              |
+| `src/tests/phase-5-repos.test.ts` | +2 new test cases                                                                |
+| `admin-app/src/api/keys.ts`       | +2 keys                                                                          |
+| `admin-app/src/App.tsx`           | +2 routes, +2 NavLinks                                                           |
+| `admin-app/src/index.css`         | +1 class (`.stat-tile`)                                                          |
 
 ### Deleted files (0)
 

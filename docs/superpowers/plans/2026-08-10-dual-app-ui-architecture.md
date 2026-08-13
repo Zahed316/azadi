@@ -29,41 +29,41 @@
 
 ### New Files
 
-| File | Purpose |
-|---|---|
-| `src/api/public.ts` | Public API handler — 9 routes, no auth, filtered data |
-| `menu-app/package.json` | Menu app dependencies (no @telegram-apps/sdk) |
-| `menu-app/tsconfig.json` | TypeScript config (copied from admin-app) |
-| `menu-app/vite.config.ts` | Vite config (no telegram chunk) |
-| `menu-app/eslint.config.mjs` | ESLint config (copied from admin-app) |
-| `menu-app/index.html` | Entry HTML |
-| `menu-app/src/main.tsx` | React entry point |
-| `menu-app/src/App.tsx` | Root component with HashRouter + React Query |
-| `menu-app/src/index.css` | Styles (RTL, mobile-first) |
-| `menu-app/src/api/client.ts` | API fetch wrapper (no auth) |
-| `menu-app/src/api/keys.ts` | Query key constants |
-| `menu-app/src/components/Header.tsx` | Site header with logo |
-| `menu-app/src/components/ProductCard.tsx` | Product display card |
-| `menu-app/src/components/CategoryGrid.tsx` | Category navigation grid |
-| `menu-app/src/components/BranchInfo.tsx` | Branch hours/location display |
-| `menu-app/src/components/EmptyState.tsx` | Empty state component (copied) |
-| `menu-app/src/components/Spinner.tsx` | Loading spinner (copied) |
-| `menu-app/src/pages/HomePage.tsx` | Section navigation |
-| `menu-app/src/pages/CategoryPage.tsx` | Products in a category |
-| `menu-app/src/pages/ProductPage.tsx` | Single product detail |
-| `menu-app/src/pages/FeaturedPage.tsx` | Featured products |
-| `menu-app/src/pages/SeasonalPage.tsx` | Seasonal products |
-| `menu-app/src/pages/BranchesPage.tsx` | Active branches |
-| `menu-app/src/pages/FaqPage.tsx` | FAQ list |
-| `menu-app/src/utils/numbers.ts` | Persian digit utilities (copied) |
+| File                                       | Purpose                                               |
+| ------------------------------------------ | ----------------------------------------------------- |
+| `src/api/public.ts`                        | Public API handler — 9 routes, no auth, filtered data |
+| `menu-app/package.json`                    | Menu app dependencies (no @telegram-apps/sdk)         |
+| `menu-app/tsconfig.json`                   | TypeScript config (copied from admin-app)             |
+| `menu-app/vite.config.ts`                  | Vite config (no telegram chunk)                       |
+| `menu-app/eslint.config.mjs`               | ESLint config (copied from admin-app)                 |
+| `menu-app/index.html`                      | Entry HTML                                            |
+| `menu-app/src/main.tsx`                    | React entry point                                     |
+| `menu-app/src/App.tsx`                     | Root component with HashRouter + React Query          |
+| `menu-app/src/index.css`                   | Styles (RTL, mobile-first)                            |
+| `menu-app/src/api/client.ts`               | API fetch wrapper (no auth)                           |
+| `menu-app/src/api/keys.ts`                 | Query key constants                                   |
+| `menu-app/src/components/Header.tsx`       | Site header with logo                                 |
+| `menu-app/src/components/ProductCard.tsx`  | Product display card                                  |
+| `menu-app/src/components/CategoryGrid.tsx` | Category navigation grid                              |
+| `menu-app/src/components/BranchInfo.tsx`   | Branch hours/location display                         |
+| `menu-app/src/components/EmptyState.tsx`   | Empty state component (copied)                        |
+| `menu-app/src/components/Spinner.tsx`      | Loading spinner (copied)                              |
+| `menu-app/src/pages/HomePage.tsx`          | Section navigation                                    |
+| `menu-app/src/pages/CategoryPage.tsx`      | Products in a category                                |
+| `menu-app/src/pages/ProductPage.tsx`       | Single product detail                                 |
+| `menu-app/src/pages/FeaturedPage.tsx`      | Featured products                                     |
+| `menu-app/src/pages/SeasonalPage.tsx`      | Seasonal products                                     |
+| `menu-app/src/pages/BranchesPage.tsx`      | Active branches                                       |
+| `menu-app/src/pages/FaqPage.tsx`           | FAQ list                                              |
+| `menu-app/src/utils/numbers.ts`            | Persian digit utilities (copied)                      |
 
 ### Modified Files
 
-| File | Change |
-|---|---|
-| `src/index.ts` | Route `/api/public/*` to new handler before auth-gated handler |
-| `src/api/router.ts` | Add `https://azadi-menu.pages.dev` to `ALLOWED_ORIGINS` |
-| `.github/workflows/deploy.yml` | Add `deploy-menu-app` job |
+| File                           | Change                                                         |
+| ------------------------------ | -------------------------------------------------------------- |
+| `src/index.ts`                 | Route `/api/public/*` to new handler before auth-gated handler |
+| `src/api/router.ts`            | Add `https://azadi-menu.pages.dev` to `ALLOWED_ORIGINS`        |
+| `.github/workflows/deploy.yml` | Add `deploy-menu-app` job                                      |
 
 ---
 
@@ -72,11 +72,13 @@
 ### Task 1: Public API Endpoints
 
 **Files:**
+
 - Create: `src/api/public.ts`
 - Modify: `src/index.ts:24-34`
 - Modify: `src/api/router.ts:23`
 
 **Interfaces:**
+
 - Consumes: `DataService` (from `src/services/data/index.ts`), `CacheService` (from `src/services/cache/index.ts`)
 - Produces: `handlePublicApiRequest(request, env, ctx)` — returns `Promise<Response>`
 
@@ -181,9 +183,12 @@ export async function handlePublicApiRequest(
       const details = await dataService.getCoffeeDetails(id);
       const categories = await dataService.getAllCategories();
       const category = categories.find((c) => c.id === product.categoryId);
-      return new Response(JSON.stringify({
-        product: { ...product, coffee_details: details, category },
-      }), { headers: CORS_HEADERS });
+      return new Response(
+        JSON.stringify({
+          product: { ...product, coffee_details: details, category },
+        }),
+        { headers: CORS_HEADERS },
+      );
     }
 
     // --- GET /api/public/products ---
@@ -236,13 +241,15 @@ export async function handlePublicApiRequest(
     });
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error(JSON.stringify({
-      ts: new Date().toISOString(),
-      operation: 'public-api-error',
-      method,
-      path,
-      error: errMsg,
-    }));
+    console.error(
+      JSON.stringify({
+        ts: new Date().toISOString(),
+        operation: 'public-api-error',
+        method,
+        path,
+        error: errMsg,
+      }),
+    );
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: CORS_HEADERS,
@@ -268,6 +275,7 @@ if (path.startsWith('/api/public/')) {
 - [ ] **Step 3: Update CORS whitelist in `src/api/router.ts`**
 
 Change line 23:
+
 ```typescript
 const ALLOWED_ORIGINS = [
   'https://azadi-admin.pages.dev',
@@ -310,6 +318,7 @@ git commit -m "feat: add public API endpoints for menu website
 ### Task 2: Menu App Scaffold
 
 **Files:**
+
 - Create: `menu-app/package.json`
 - Create: `menu-app/tsconfig.json`
 - Create: `menu-app/vite.config.ts`
@@ -323,6 +332,7 @@ git commit -m "feat: add public API endpoints for menu website
 - Create: `menu-app/src/utils/numbers.ts`
 
 **Interfaces:**
+
 - Consumes: Public API endpoints from Task 1 (`/api/public/*`)
 - Produces: Runnable Vite dev server, buildable production bundle
 
@@ -585,10 +595,14 @@ export default function App() {
   --accent-light: #d4a574;
   --border: #e5e7eb;
   --radius: 12px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -724,7 +738,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .branch-card {
@@ -777,7 +793,9 @@ body {
   font-size: 14px;
 }
 
-.back-link:hover { text-decoration: underline; }
+.back-link:hover {
+  text-decoration: underline;
+}
 
 .detail-grid {
   display: grid;
@@ -888,6 +906,7 @@ git commit -m "feat: scaffold menu-app with Vite + React + HashRouter
 ### Task 3: Menu App Components
 
 **Files:**
+
 - Create: `menu-app/src/components/Header.tsx`
 - Create: `menu-app/src/components/ProductCard.tsx`
 - Create: `menu-app/src/components/CategoryGrid.tsx`
@@ -896,6 +915,7 @@ git commit -m "feat: scaffold menu-app with Vite + React + HashRouter
 - Create: `menu-app/src/components/Spinner.tsx`
 
 **Interfaces:**
+
 - Consumes: Query keys from `menu-app/src/api/keys.ts`
 - Produces: Reusable UI components for pages
 
@@ -967,10 +987,12 @@ export default function ProductCard({
   priceOnRequest,
 }: ProductCardProps) {
   return (
-    <Link to={`/product/${id}`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
-      {imageUrl && (
-        <img src={imageUrl} alt={name} className="card-image" loading="lazy" />
-      )}
+    <Link
+      to={`/product/${id}`}
+      className="card"
+      style={{ textDecoration: 'none', color: 'inherit' }}
+    >
+      {imageUrl && <img src={imageUrl} alt={name} className="card-image" loading="lazy" />}
       <div className="card-title">
         {featured && <span className="badge badge-featured">⭐ ویژه</span>}
         {isSeasonal && <span className="badge badge-seasonal">🌿 فصلی</span>}
@@ -982,7 +1004,10 @@ export default function ProductCard({
       )}
       {priceOnRequest && <div className="card-price">قیمت به درخواست</div>}
       {unit !== 'cup' && stock != null && (
-        <div className="stock-info">موجودی: {toPersianDigits(stock)} {unit === 'kg' ? 'کیلوگرم' : unit === 'g' ? 'گرم' : 'عدد'}</div>
+        <div className="stock-info">
+          موجودی: {toPersianDigits(stock)}{' '}
+          {unit === 'kg' ? 'کیلوگرم' : unit === 'g' ? 'گرم' : 'عدد'}
+        </div>
       )}
     </Link>
   );
@@ -1008,11 +1033,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
   return (
     <div className="grid">
       {categories.map((cat) => (
-        <Link
-          key={cat.id}
-          to={`/category/${cat.id}`}
-          className="grid-item"
-        >
+        <Link key={cat.id} to={`/category/${cat.id}`} className="grid-item">
           {cat.emoji && <div className="grid-emoji">{cat.emoji}</div>}
           <div className="grid-label">{cat.name}</div>
         </Link>
@@ -1082,6 +1103,7 @@ git commit -m "feat: add menu-app components (Header, ProductCard, CategoryGrid,
 ### Task 4: Menu App Pages
 
 **Files:**
+
 - Create: `menu-app/src/pages/HomePage.tsx`
 - Create: `menu-app/src/pages/CategoryPage.tsx`
 - Create: `menu-app/src/pages/ProductPage.tsx`
@@ -1091,6 +1113,7 @@ git commit -m "feat: add menu-app components (Header, ProductCard, CategoryGrid,
 - Create: `menu-app/src/pages/FaqPage.tsx`
 
 **Interfaces:**
+
 - Consumes: Components from Task 3, API client from Task 2, query keys from Task 2
 - Produces: Complete page components for all routes
 
@@ -1142,10 +1165,18 @@ export default function HomePage() {
   return (
     <div>
       <div className="nav-links">
-        <Link to="/featured" className="nav-link">⭐ ویژه</Link>
-        <Link to="/seasonal" className="nav-link">🌿 فصلی</Link>
-        <Link to="/branches" className="nav-link">📍 شعب</Link>
-        <Link to="/faq" className="nav-link">❓ سوالات</Link>
+        <Link to="/featured" className="nav-link">
+          ⭐ ویژه
+        </Link>
+        <Link to="/seasonal" className="nav-link">
+          🌿 فصلی
+        </Link>
+        <Link to="/branches" className="nav-link">
+          📍 شعب
+        </Link>
+        <Link to="/faq" className="nav-link">
+          ❓ سوالات
+        </Link>
       </div>
 
       {Object.entries(data.sections).map(([section, entries]) => (
@@ -1210,13 +1241,13 @@ export default function CategoryPage() {
 
   return (
     <div>
-      <Link to="/" className="back-link">← بازگشت</Link>
+      <Link to="/" className="back-link">
+        ← بازگشت
+      </Link>
       {filtered.length === 0 ? (
         <EmptyState message="محصولی در این دسته‌بندی نیست" />
       ) : (
-        filtered.map((product) => (
-          <ProductCard key={product.id} {...product} />
-        ))
+        filtered.map((product) => <ProductCard key={product.id} {...product} />)
       )}
     </div>
   );
@@ -1285,18 +1316,20 @@ export default function ProductPage() {
 
   return (
     <div>
-      <Link to="/" className="back-link">← بازگشت</Link>
+      <Link to="/" className="back-link">
+        ← بازگشت
+      </Link>
       <div className="card">
-        {p.imageUrl && (
-          <img src={p.imageUrl} alt={p.name} className="card-image" />
-        )}
+        {p.imageUrl && <img src={p.imageUrl} alt={p.name} className="card-image" />}
         <div className="card-title">
           {p.featured && <span className="badge badge-featured">⭐ ویژه</span>}
           {p.isSeasonal && <span className="badge badge-seasonal">🌿 فصلی</span>}
           {p.name}
         </div>
         {p.category && (
-          <div className="card-subtitle">{p.category.emoji} {p.category.name}</div>
+          <div className="card-subtitle">
+            {p.category.emoji} {p.category.name}
+          </div>
         )}
         {p.description && <p style={{ marginTop: 8, lineHeight: 1.7 }}>{p.description}</p>}
         {p.price != null && !p.priceOnRequest && (
@@ -1381,7 +1414,9 @@ export default function ProductPage() {
 
         {p.coffee_details!.brewGuide && (
           <div style={{ marginTop: 12, padding: 12, background: '#f9fafb', borderRadius: 8 }}>
-            <div className="detail-label" style={{ marginBottom: 4 }}>راهنمای دم‌آوری</div>
+            <div className="detail-label" style={{ marginBottom: 4 }}>
+              راهنمای دم‌آوری
+            </div>
             <div style={{ fontSize: 14, lineHeight: 1.7 }}>{p.coffee_details!.brewGuide}</div>
           </div>
         )}
@@ -1428,7 +1463,9 @@ export default function FeaturedPage() {
 
   return (
     <div>
-      <Link to="/" className="back-link">← بازگشت</Link>
+      <Link to="/" className="back-link">
+        ← بازگشت
+      </Link>
       <h2 className="section-title">⭐ محصولات ویژه</h2>
       {data.products.map((product) => (
         <ProductCard key={product.id} {...product} />
@@ -1475,7 +1512,9 @@ export default function SeasonalPage() {
 
   return (
     <div>
-      <Link to="/" className="back-link">← بازگشت</Link>
+      <Link to="/" className="back-link">
+        ← بازگشت
+      </Link>
       <h2 className="section-title">🌿 محصولات فصلی</h2>
       {data.products.map((product) => (
         <ProductCard key={product.id} {...product} />
@@ -1520,7 +1559,9 @@ export default function BranchesPage() {
 
   return (
     <div>
-      <Link to="/" className="back-link">← بازگشت</Link>
+      <Link to="/" className="back-link">
+        ← بازگشت
+      </Link>
       <h2 className="section-title">📍 شعب ازادی کافه</h2>
       {data.branches.map((branch) => (
         <BranchInfo key={branch.id} branch={branch} />
@@ -1561,7 +1602,9 @@ export default function FaqPage() {
 
   return (
     <div>
-      <Link to="/" className="back-link">← بازگشت</Link>
+      <Link to="/" className="back-link">
+        ← بازگشت
+      </Link>
       <h2 className="section-title">❓ سوالات متداول</h2>
       {data.faqs.map((faq) => (
         <div key={faq.id} className="faq-item">
@@ -1602,9 +1645,11 @@ git commit -m "feat: add menu-app pages (Home, Category, Product, Featured, Seas
 ### Task 5: CI Pipeline
 
 **Files:**
+
 - Modify: `.github/workflows/deploy.yml`
 
 **Interfaces:**
+
 - Consumes: menu-app/ directory from Task 2-4
 - Produces: CI job that builds and deploys menu-app to Cloudflare Pages
 
@@ -1613,47 +1658,47 @@ git commit -m "feat: add menu-app pages (Home, Category, Product, Featured, Seas
 Append after the `deploy-admin-app` job:
 
 ```yaml
-  deploy-menu-app:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    concurrency:
-      group: ${{ github.workflow }}-menu-${{ github.ref }}
-      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+deploy-menu-app:
+  runs-on: ubuntu-latest
+  timeout-minutes: 15
+  concurrency:
+    group: ${{ github.workflow }}-menu-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: menu-app/package-lock.json
+    - name: Setup Node.js
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      with:
+        node-version: '22'
+        cache: 'npm'
+        cache-dependency-path: menu-app/package-lock.json
 
-      - name: Install menu-app dependencies
-        working-directory: menu-app
-        run: npm ci
+    - name: Install menu-app dependencies
+      working-directory: menu-app
+      run: npm ci
 
-      - name: Typecheck menu-app
-        working-directory: menu-app
-        run: npm run typecheck
+    - name: Typecheck menu-app
+      working-directory: menu-app
+      run: npm run typecheck
 
-      - name: Lint menu-app (non-blocking)
-        working-directory: menu-app
-        continue-on-error: true
-        run: npm run lint
+    - name: Lint menu-app (non-blocking)
+      working-directory: menu-app
+      continue-on-error: true
+      run: npm run lint
 
-      - name: Build menu-app
-        working-directory: menu-app
-        run: npm run build
+    - name: Build menu-app
+      working-directory: menu-app
+      run: npm run build
 
-      - name: Deploy menu-app to Cloudflare Pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
-        env:
-          NPM_CONFIG_LEGACY_PEER_DEPS: 'true'
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          command: pages deploy menu-app/dist --project-name=azadi-menu
+    - name: Deploy menu-app to Cloudflare Pages
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
+      env:
+        NPM_CONFIG_LEGACY_PEER_DEPS: 'true'
+      with:
+        apiToken: ${{ secrets.CF_API_TOKEN }}
+        command: pages deploy menu-app/dist --project-name=azadi-menu
 ```
 
 - [ ] **Step 2: Verify workflow syntax**
@@ -1680,9 +1725,11 @@ git commit -m "ci: add deploy-menu-app job for Cloudflare Pages
 ### Task 6: Final Verification
 
 **Files:**
+
 - No new files (verification only)
 
 **Interfaces:**
+
 - Consumes: All tasks complete
 - Produces: Verified build, clean typecheck, no regressions
 

@@ -161,7 +161,9 @@ export default function MenuConfigPage() {
       <div className="card">
         <h2>تنظیمات منو</h2>
         <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 12 }}>
-          ترتیب منو در اینجا چیدمان دکمه‌های ربات را کنترل می‌کند. بخش‌ها: ☕ نوشیدنی‌ها، 🌱 دانه‌های قهوه، 🍰 کیک و کوکی، 📍 شعب. برای پیش‌نمایش نتیجه از دستور <code>/start</code> ربات استفاده کنید.
+          ترتیب منو در اینجا چیدمان دکمه‌های ربات را کنترل می‌کند. بخش‌ها: ☕ نوشیدنی‌ها، 🌱
+          دانه‌های قهوه، 🍰 کیک و کوکی، 📍 شعب. برای پیش‌نمایش نتیجه از دستور <code>/start</code>{' '}
+          ربات استفاده کنید.
         </p>
         <div className="section-tabs">
           {(['drinks', 'beans', 'cakes', 'extras'] as Section[]).map((sec) => (
@@ -170,7 +172,16 @@ export default function MenuConfigPage() {
               className={`tab ${menuActiveSection === sec ? 'active' : ''}`}
               onClick={() => setMenuActiveSection(sec)}
             >
-              {({ drinks: 'نوشیدنی‌ها', beans: 'دانه‌های قهوه', cakes: 'کیک و کوکی', extras: 'سایر' } as Record<Section, string>)[sec]}
+              {
+                (
+                  {
+                    drinks: 'نوشیدنی‌ها',
+                    beans: 'دانه‌های قهوه',
+                    cakes: 'کیک و کوکی',
+                    extras: 'سایر',
+                  } as Record<Section, string>
+                )[sec]
+              }
             </button>
           ))}
         </div>
@@ -193,7 +204,11 @@ export default function MenuConfigPage() {
                   )}
                 </div>
                 <div className="list-item-actions">
-                  <button className="secondary" onClick={() => handleToggleMenuVisibility(config)} disabled={toggleVisibilityMutation.isPending}>
+                  <button
+                    className="secondary"
+                    onClick={() => handleToggleMenuVisibility(config)}
+                    disabled={toggleVisibilityMutation.isPending}
+                  >
                     {config.isVisible ? 'مخفی کردن' : 'نمایش'}
                   </button>
                   {idx > 0 && (
@@ -230,7 +245,11 @@ export default function MenuConfigPage() {
                   >
                     برچسب
                   </button>
-                  <button className="danger" onClick={() => handleDeleteMenuConfig(config.id)} disabled={deleteMenuConfigMutation.isPending}>
+                  <button
+                    className="danger"
+                    onClick={() => handleDeleteMenuConfig(config.id)}
+                    disabled={deleteMenuConfigMutation.isPending}
+                  >
                     حذف
                   </button>
                 </div>
@@ -244,7 +263,11 @@ export default function MenuConfigPage() {
                         rows={3}
                       />
                     </Field>
-                    <button className="primary" onClick={() => handleSaveSpecialMessage(config.id)} disabled={saveSpecialMessageMutation.isPending}>
+                    <button
+                      className="primary"
+                      onClick={() => handleSaveSpecialMessage(config.id)}
+                      disabled={saveSpecialMessageMutation.isPending}
+                    >
                       ذخیره
                     </button>
                     <button className="secondary" onClick={() => setEditingSpecialMsg(null)}>
@@ -262,7 +285,11 @@ export default function MenuConfigPage() {
                         dir="auto"
                       />
                     </Field>
-                    <button className="primary" onClick={() => handleSaveButtonLabel(config.id)} disabled={saveSpecialMessageMutation.isPending}>
+                    <button
+                      className="primary"
+                      onClick={() => handleSaveButtonLabel(config.id)}
+                      disabled={saveSpecialMessageMutation.isPending}
+                    >
                       ذخیره
                     </button>
                     <button className="secondary" onClick={() => setEditingButtonLabel(null)}>
@@ -277,7 +304,19 @@ export default function MenuConfigPage() {
       </div>
 
       <div className="card">
-        <h2>افزودن به {({ drinks: 'نوشیدنی‌ها', beans: 'دانه‌های قهوه', cakes: 'کیک و کوکی', extras: 'سایر' } as Record<Section, string>)[menuActiveSection]}</h2>
+        <h2>
+          افزودن به{' '}
+          {
+            (
+              {
+                drinks: 'نوشیدنی‌ها',
+                beans: 'دانه‌های قهوه',
+                cakes: 'کیک و کوکی',
+                extras: 'سایر',
+              } as Record<Section, string>
+            )[menuActiveSection]
+          }
+        </h2>
         <Field label="دسته‌بندی">
           <select value={menuAddCatId} onChange={(e) => setMenuAddCatId(e.target.value)}>
             <option value="">انتخاب دسته‌بندی...</option>
@@ -288,7 +327,11 @@ export default function MenuConfigPage() {
             ))}
           </select>
         </Field>
-        <button className="primary" onClick={handleAddToSection} disabled={addToSectionMutation.isPending}>
+        <button
+          className="primary"
+          onClick={handleAddToSection}
+          disabled={addToSectionMutation.isPending}
+        >
           {addToSectionMutation.isPending ? '⏳...' : 'افزودن'}
         </button>
       </div>

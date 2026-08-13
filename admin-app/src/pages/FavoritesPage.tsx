@@ -73,7 +73,10 @@ export default function FavoritesPage() {
         .map(([telegramId, v]) => ({ telegramId, ...v }))
         .sort((a, b) => b.lastFavorited - a.lastFavorited);
     } else {
-      const map = new Map<number, { productName: string | null; count: number; lastFavorited: number }>();
+      const map = new Map<
+        number,
+        { productName: string | null; count: number; lastFavorited: number }
+      >();
       for (const f of data) {
         const ts = toMillis(f.favoritedAt);
         const cur = map.get(f.productId);
@@ -142,8 +145,7 @@ export default function FavoritesPage() {
                   <div className="list-item-info">
                     <span>{g.telegramId}</span>
                     <span className="list-item-meta">
-                      {g.count} مورد محبوب · آخرین{' '}
-                      {new Date(g.lastFavorited).toLocaleDateString()}
+                      {g.count} مورد محبوب · آخرین {new Date(g.lastFavorited).toLocaleDateString()}
                     </span>
                   </div>
                 </li>

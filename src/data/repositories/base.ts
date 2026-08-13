@@ -12,15 +12,12 @@ export abstract class BaseRepository<T extends Record<string, unknown>> {
 
   async findAll(): Promise<T[]> {
     const table = this.getTable();
-    return (this.db.select().from(table) as any) as Promise<T[]>;
+    return this.db.select().from(table) as any as Promise<T[]>;
   }
 
   async findById(id: number): Promise<T | undefined> {
     const table = this.getTable();
-    const result = (await (this.db
-      .select()
-      .from(table)
-      .where(eq(table.id, id)) as any)) as T[];
+    const result = (await (this.db.select().from(table).where(eq(table.id, id)) as any)) as T[];
     return result[0];
   }
 
@@ -54,7 +51,7 @@ export abstract class BaseRepository<T extends Record<string, unknown>> {
     if (orderBy) {
       query = query.orderBy(orderBy);
     }
-    return (query as any) as Promise<T[]>;
+    return query as any as Promise<T[]>;
   }
 
   protected async findMany(options: {
@@ -69,6 +66,6 @@ export abstract class BaseRepository<T extends Record<string, unknown>> {
     if (options.orderBy) query = query.orderBy(options.orderBy);
     if (options.limit) query = query.limit(options.limit);
     if (options.offset) query = query.offset(options.offset);
-    return (query as any) as Promise<T[]>;
+    return query as any as Promise<T[]>;
   }
 }

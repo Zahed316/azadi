@@ -96,9 +96,12 @@ export async function handlePublicApiRequest(
       const details = await dataService.getCoffeeDetails(id);
       const categories = await dataService.getAllCategories();
       const category = categories.find((c) => c.id === product.categoryId);
-      return new Response(JSON.stringify({
-        product: { ...product, coffee_details: details, category },
-      }), { headers: CORS_HEADERS });
+      return new Response(
+        JSON.stringify({
+          product: { ...product, coffee_details: details, category },
+        }),
+        { headers: CORS_HEADERS },
+      );
     }
 
     // --- GET /api/public/products ---
@@ -158,13 +161,15 @@ export async function handlePublicApiRequest(
     });
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error(JSON.stringify({
-      ts: new Date().toISOString(),
-      operation: 'public-api-error',
-      method,
-      path,
-      error: errMsg,
-    }));
+    console.error(
+      JSON.stringify({
+        ts: new Date().toISOString(),
+        operation: 'public-api-error',
+        method,
+        path,
+        error: errMsg,
+      }),
+    );
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: CORS_HEADERS,

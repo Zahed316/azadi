@@ -107,7 +107,8 @@ export default function SettingsPage() {
 
   const { data: streakConfig } = useQuery({
     queryKey: queryKeys.streakConfig,
-    queryFn: () => apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
+    queryFn: () =>
+      apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
   });
 
   const { data: health } = useQuery({
@@ -167,16 +168,15 @@ export default function SettingsPage() {
       <div className="card">
         <h2>🔘 نمایش منو</h2>
         <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
-          نمایش یا مخفی‌سازی بخش‌های منوی اصلی ربات. بخش‌های مخفی‌شده پیام «در دسترس نیست» را به کاربران نشان می‌دهند.
+          نمایش یا مخفی‌سازی بخش‌های منوی اصلی ربات. بخش‌های مخفی‌شده پیام «در دسترس نیست» را به
+          کاربران نشان می‌دهند.
         </p>
         <ul className="list">
           {MENU_VISIBILITY_KEYS.map((key) => (
             <li key={key} className="list-item">
               <div className="list-item-info">
                 <span>{MENU_VISIBILITY_LABELS[key]}</span>
-                <span className="list-item-meta">
-                  {menuVis[key] ? '✅ قابل نمایش' : '❌ مخفی'}
-                </span>
+                <span className="list-item-meta">{menuVis[key] ? '✅ قابل نمایش' : '❌ مخفی'}</span>
               </div>
               <div className="list-item-actions">
                 <button
@@ -184,7 +184,7 @@ export default function SettingsPage() {
                   onClick={() => handleToggleMenuVis(key, !menuVis[key])}
                   disabled={saveMenuVisMutation.isPending}
                 >
-                  {saveMenuVisMutation.isPending ? '...' : (menuVis[key] ? 'مخفی کردن' : 'نمایش')}
+                  {saveMenuVisMutation.isPending ? '...' : menuVis[key] ? 'مخفی کردن' : 'نمایش'}
                 </button>
               </div>
             </li>
@@ -236,7 +236,11 @@ export default function SettingsPage() {
                     </span>
                   </div>
                   <div className="list-item-actions">
-                    <button className="danger" onClick={() => handleDeleteSetting(s.key)} disabled={deleteSettingMutation.isPending}>
+                    <button
+                      className="danger"
+                      onClick={() => handleDeleteSetting(s.key)}
+                      disabled={deleteSettingMutation.isPending}
+                    >
                       حذف
                     </button>
                   </div>
@@ -271,7 +275,9 @@ export default function SettingsPage() {
           <li className="list-item">
             <div className="list-item-info">
               <span>وضعیت API</span>
-              <span className="list-item-meta">{health?.status === 'ok' ? '✅ سالم' : '⚠️ ' + (health?.status ?? 'ناشناخته')}</span>
+              <span className="list-item-meta">
+                {health?.status === 'ok' ? '✅ سالم' : '⚠️ ' + (health?.status ?? 'ناشناخته')}
+              </span>
             </div>
           </li>
           <li className="list-item">
@@ -289,25 +295,33 @@ export default function SettingsPage() {
           <li className="list-item">
             <div className="list-item-info">
               <span>STREAK_MESSAGES</span>
-              <span className="list-item-meta">{streakConfig?.streakMessages ? '✅ روشن' : '❌ خاموش'}</span>
+              <span className="list-item-meta">
+                {streakConfig?.streakMessages ? '✅ روشن' : '❌ خاموش'}
+              </span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
               <span>STREAK_CRON_ENABLED</span>
-              <span className="list-item-meta">{streakConfig?.streakCronEnabled ? '✅ روشن' : '❌ خاموش'}</span>
+              <span className="list-item-meta">
+                {streakConfig?.streakCronEnabled ? '✅ روشن' : '❌ خاموش'}
+              </span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
               <span>USE_CONVERSATIONS</span>
-              <span className="list-item-meta" style={{ color: '#999' }}>🔒 نیاز به تغییر کد</span>
+              <span className="list-item-meta" style={{ color: '#999' }}>
+                🔒 نیاز به تغییر کد
+              </span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
               <span>PERF_LOG</span>
-              <span className="list-item-meta" style={{ color: '#999' }}>🔒 تنظیم از طریق wrangler secret</span>
+              <span className="list-item-meta" style={{ color: '#999' }}>
+                🔒 تنظیم از طریق wrangler secret
+              </span>
             </div>
           </li>
         </ul>
@@ -322,19 +336,26 @@ export default function SettingsPage() {
         <ul className="list">
           <li className="list-item">
             <div className="list-item-info">
-              <span><b>about</b> — توضیحات فروشگاه در متن هوش مصنوعی</span>
+              <span>
+                <b>about</b> — توضیحات فروشگاه در متن هوش مصنوعی
+              </span>
               <span className="list-item-meta">↑ در بالا تنظیم شده</span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
-              <span><b>ai_greeting</b> — پیام خوش‌آمدگویی اولیه</span>
+              <span>
+                <b>ai_greeting</b> — پیام خوش‌آمدگویی اولیه
+              </span>
               <span className="list-item-meta">↑ در بالا تنظیم شده</span>
             </div>
           </li>
           <li className="list-item">
             <div className="list-item-info">
-              <span><b>Products / FAQs / Branches</b> — همه داده‌های مدیریت‌شده به هوش مصنوعی داده می‌شود</span>
+              <span>
+                <b>Products / FAQs / Branches</b> — همه داده‌های مدیریت‌شده به هوش مصنوعی داده
+                می‌شود
+              </span>
               <span className="list-item-meta">↑ در صفحاتشان مدیریت می‌شود</span>
             </div>
           </li>

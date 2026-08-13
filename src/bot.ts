@@ -54,7 +54,9 @@ export function createBot(env: Env): Bot<MyContext> {
         if (isNewStreak && streakDays > 1) {
           // Defer: don't block the rest of the handler chain.
           ctx.execCtx?.waitUntil(
-            ctx.reply(`🔥 ${toPersianDigits(streakDays)} روز متوالی از رستوری بازدید کردید!`).catch(() => {}),
+            ctx
+              .reply(`🔥 ${toPersianDigits(streakDays)} روز متوالی از رستوری بازدید کردید!`)
+              .catch(() => {}),
           );
         }
       } catch (e) {
@@ -120,17 +122,21 @@ export function createBot(env: Env): Bot<MyContext> {
     // Force-overwrite Telegram's cached command list to clear stale commands
     // (e.g. a deprecated /help from an earlier deployment). Safe to call on
     // every /start — idempotent and cheap.
-    await ctx.api.setMyCommands([
-      { command: 'start', description: 'باز کردن منوی اصلی' },
-      { command: 'menu', description: '📋 مشاهده منوی کافه' },
-      { command: 'admin', description: 'پنل مدیریت (فقط ادمین)' },
-    ]).catch(() => {});
+    await ctx.api
+      .setMyCommands([
+        { command: 'start', description: 'باز کردن منوی اصلی' },
+        { command: 'menu', description: '📋 مشاهده منوی کافه' },
+        { command: 'admin', description: 'پنل مدیریت (فقط ادمین)' },
+      ])
+      .catch(() => {});
     // Set the chat menu button to show the bot command list.
     // The "/" button at the bottom of the chat opens a menu with all
     // registered commands (/start, /menu, /admin) instead of a Web App.
-    await ctx.api.setChatMenuButton({
-      menu_button: { type: 'commands' },
-    }).catch(() => {});
+    await ctx.api
+      .setChatMenuButton({
+        menu_button: { type: 'commands' },
+      })
+      .catch(() => {});
     // `ctx.conversation` is only populated when the conversations() middleware
     // is registered (see USE_CONVERSATIONS gate above). Guard so /start works
     // in both states — the framework is currently dormant.

@@ -14,19 +14,19 @@ The bot's main menu (`src/menus/mainMenu.ts`) has 11 buttons — all hardcoded v
 
 Use the existing `settings` table (key-value text store). Each menu section gets a key:
 
-| Key | Controls |
-|---|---|
-| `menu_visible_featured` | ⭐ پیشنهاد ویژه |
-| `menu_visible_seasonal` | 🌿 مخصوص فصل |
-| `menu_visible_passport` | 📖 پاسپورت قهوه |
-| `menu_visible_search` | 🔍 جستجو |
-| `menu_visible_favorites` | ⭐ منوهای من |
-| `menu_visible_about` | 🏠 درباره ما |
-| `menu_visible_drinks` | ☕ نوشیدنی‌ها |
-| `menu_visible_beans` | 🌱 دانه‌های قهوه |
-| `menu_visible_cakes` | 🍰 کیک و کوکی |
-| `menu_visible_branches` | 📍 شعب |
-| `menu_visible_faq` | ❓ سوالات متداول |
+| Key                      | Controls         |
+| ------------------------ | ---------------- |
+| `menu_visible_featured`  | ⭐ پیشنهاد ویژه  |
+| `menu_visible_seasonal`  | 🌿 مخصوص فصل     |
+| `menu_visible_passport`  | 📖 پاسپورت قهوه  |
+| `menu_visible_search`    | 🔍 جستجو         |
+| `menu_visible_favorites` | ⭐ منوهای من     |
+| `menu_visible_about`     | 🏠 درباره ما     |
+| `menu_visible_drinks`    | ☕ نوشیدنی‌ها    |
+| `menu_visible_beans`     | 🌱 دانه‌های قهوه |
+| `menu_visible_cakes`     | 🍰 کیک و کوکی    |
+| `menu_visible_branches`  | 📍 شعب           |
+| `menu_visible_faq`       | ❓ سوالات متداول |
 
 Value: `"true"` or `"false"` (text). Missing key = visible (safe default).
 
@@ -55,11 +55,11 @@ No new endpoints. The existing `GET /api/settings` and `PUT /api/settings/:key` 
 
 ## Files Modified
 
-| File | Change |
-|---|---|
-| `src/menus/mainMenu.ts` | Add visibility check per button |
+| File                                   | Change                                   |
+| -------------------------------------- | ---------------------------------------- |
+| `src/menus/mainMenu.ts`                | Add visibility check per button          |
 | `admin-app/src/pages/SettingsPage.tsx` | Add Menu Visibility card with 11 toggles |
-| `admin-app/src/api/keys.ts` | Add `menuVisibility` query key |
+| `admin-app/src/api/keys.ts`            | Add `menuVisibility` query key           |
 
 ## Out of Scope
 

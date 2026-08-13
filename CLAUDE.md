@@ -57,13 +57,15 @@ npm run check                       # typecheck + lint + format:check (all-in-on
 ```
 
 # Menu Website (Second Mini App)
+
 cd menu-app
 npm install
-npm run dev                         # vite dev server
-npm run build                       # tsc + vite build (also what CI runs)
-npm run typecheck                   # tsc --noEmit
-npm run lint                        # eslint (menu-app config: menu-app/eslint.config.mjs)
-npm run check                       # typecheck + lint + format:check (all-in-one)
+npm run dev # vite dev server
+npm run build # tsc + vite build (also what CI runs)
+npm run typecheck # tsc --noEmit
+npm run lint # eslint (menu-app config: menu-app/eslint.config.mjs)
+npm run check # typecheck + lint + format:check (all-in-one)
+
 ```
 
 CI (`.github/workflows/deploy.yml`): three parallel jobs:
@@ -144,7 +146,7 @@ React 18 + Vite 6 + HashRouter + TanStack Query v5. Public-facing, read-only men
 
 - API base: `https://azadi-coffee-bot.zahedrastgar316.workers.dev/api/public` (hardcoded in `menu-app/src/api/client.ts`). No auth header.
 - Routes: `/` (home), `/category/:id`, `/product/:id`, `/featured`, `/seasonal`, `/branches`, `/faq`.
-- React Query `staleTime: 60_000` (1 minute). `gcTime: 5 * 60_000` (5 minutes).
+- React Query `staleTime: 5 * 60_000` (5 minutes). `gcTime: 5 * 60_000` (5 minutes).
 - **RTL layout** (`dir="rtl"` on `<html>`). All UI text in Persian.
 - Deployed to `www.azadiroastery.ir` via CI (fallback: `azadi-menu.pages.dev`).
 
@@ -195,3 +197,4 @@ Filtering rules:
 ## Memory (project-scoped only — global rules live in `~/.claude/CLAUDE.md` and are loaded automatically)
 
 This project has session memory at `~/.claude/projects/-data-data-com-termux-files-home-repo-azadi/memory/`. The index in `MEMORY.md` there points to lessons about the local environment (Termux android-arm64 specifics, zsh managed-block convention) that affect how tooling around this repo is set up. Load those memories when bootstrapping a new toolchain, debugging shebang/binary errors, or appending to `~/.zshrc`. The earlier "## Memory" section at the top of this file covers the global memory + global rules paths.
+```

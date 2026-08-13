@@ -52,26 +52,26 @@ Both apps share the same Worker backend but differ in auth, data access, and UI 
 
 ## Decision Record
 
-| # | Decision | Choice | Rationale |
-|---|---|---|---|
-| 1 | Menu data access | Public API endpoints | Menu data is public by nature; no PII. Live data avoids staleness. `DataService` already implements filtering. |
-| 2 | Repo structure | Sibling Vite app (`menu-app/`) | Mirrors existing `admin-app/` pattern. Independent builds, no workspace linker overhead. |
-| 3 | Deployment | Separate Pages project (`azadi-menu.pages.dev`) | Cloudflare Pages doesn't support path-based routing across projects. Isolated deploys. |
-| 4 | Routing | HashRouter | Works in Telegram in-app browser, direct links, shared URLs. Consistent with admin app. |
-| 5 | Data freshness | React Query with `staleTime: 60_000` | 1-minute stale window. Instant re-navigation from cache, background refetch for freshness. |
-| 6 | Shared code | Copy & adapt | Zero coupling between apps. Some duplication (~6 components, CSS tokens) is acceptable for independence. |
+| #   | Decision         | Choice                                          | Rationale                                                                                                      |
+| --- | ---------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1   | Menu data access | Public API endpoints                            | Menu data is public by nature; no PII. Live data avoids staleness. `DataService` already implements filtering. |
+| 2   | Repo structure   | Sibling Vite app (`menu-app/`)                  | Mirrors existing `admin-app/` pattern. Independent builds, no workspace linker overhead.                       |
+| 3   | Deployment       | Separate Pages project (`azadi-menu.pages.dev`) | Cloudflare Pages doesn't support path-based routing across projects. Isolated deploys.                         |
+| 4   | Routing          | HashRouter                                      | Works in Telegram in-app browser, direct links, shared URLs. Consistent with admin app.                        |
+| 5   | Data freshness   | React Query with `staleTime: 60_000`            | 1-minute stale window. Instant re-navigation from cache, background refetch for freshness.                     |
+| 6   | Shared code      | Copy & adapt                                    | Zero coupling between apps. Some duplication (~6 components, CSS tokens) is acceptable for independence.       |
 
 ## Component Comparison
 
-| Aspect | Admin App | Menu Website |
-|---|---|---|
-| **Auth** | Telegram Mini App `initData` | None (public) |
-| **API base** | `/api/*` (auth-gated) | `/api/public/*` (open) |
-| **State** | AppContext (user role, toast, confirm) | Minimal — just menu data via react-query |
-| **Mutations** | CRUD on products, categories, etc. | Read-only (no mutations) |
-| **UI complexity** | Forms, tables, drag-reorder | Product cards, category browsing, branch info |
-| **Routing depth** | 5 top-level tabs, nested pages | Flat — sections → category → products |
-| **Caching** | react-query (staleTime: Infinity for user) | react-query (staleTime: 60s for menu data) |
+| Aspect            | Admin App                                  | Menu Website                                  |
+| ----------------- | ------------------------------------------ | --------------------------------------------- |
+| **Auth**          | Telegram Mini App `initData`               | None (public)                                 |
+| **API base**      | `/api/*` (auth-gated)                      | `/api/public/*` (open)                        |
+| **State**         | AppContext (user role, toast, confirm)     | Minimal — just menu data via react-query      |
+| **Mutations**     | CRUD on products, categories, etc.         | Read-only (no mutations)                      |
+| **UI complexity** | Forms, tables, drag-reorder                | Product cards, category browsing, branch info |
+| **Routing depth** | 5 top-level tabs, nested pages             | Flat — sections → category → products         |
+| **Caching**       | react-query (staleTime: Infinity for user) | react-query (staleTime: 60s for menu data)    |
 
 ## Public API Design
 
@@ -79,17 +79,17 @@ Both apps share the same Worker backend but differ in auth, data access, and UI 
 
 All public routes are prefixed with `/api/public/` and filter to visible/available/active data only.
 
-| Endpoint | Method | Response | Notes |
-|---|---|---|---|
-| `GET /api/public/menu` | GET | `{ sections: { [sectionName]: MenuSectionEntry[] } }` | Visible menuConfig entries grouped by section |
-| `GET /api/public/products` | GET | `{ products: ProductWithDetails[] }` | Available products with coffee_details + category |
-| `GET /api/public/products/:id` | GET | `{ product: ProductWithDetails }` | Single product with full details |
-| `GET /api/public/products/featured` | GET | `{ products: ProductWithDetails[] }` | Featured + available products |
-| `GET /api/public/products/seasonal` | GET | `{ products: ProductWithDetails[] }` | Seasonal + available products |
-| `GET /api/public/categories` | GET | `{ categories: Category[] }` | All categories (sorted) |
-| `GET /api/public/branches` | GET | `{ branches: Branch[] }` | Active branches only |
-| `GET /api/public/faq` | GET | `{ faqs: Faq[] }` | All FAQ items |
-| `GET /api/public/settings` | GET | `{ settings: { [key]: string } }` | Filtered settings (about, price_unit, instagram) |
+| Endpoint                            | Method | Response                                              | Notes                                             |
+| ----------------------------------- | ------ | ----------------------------------------------------- | ------------------------------------------------- |
+| `GET /api/public/menu`              | GET    | `{ sections: { [sectionName]: MenuSectionEntry[] } }` | Visible menuConfig entries grouped by section     |
+| `GET /api/public/products`          | GET    | `{ products: ProductWithDetails[] }`                  | Available products with coffee_details + category |
+| `GET /api/public/products/:id`      | GET    | `{ product: ProductWithDetails }`                     | Single product with full details                  |
+| `GET /api/public/products/featured` | GET    | `{ products: ProductWithDetails[] }`                  | Featured + available products                     |
+| `GET /api/public/products/seasonal` | GET    | `{ products: ProductWithDetails[] }`                  | Seasonal + available products                     |
+| `GET /api/public/categories`        | GET    | `{ categories: Category[] }`                          | All categories (sorted)                           |
+| `GET /api/public/branches`          | GET    | `{ branches: Branch[] }`                              | Active branches only                              |
+| `GET /api/public/faq`               | GET    | `{ faqs: Faq[] }`                                     | All FAQ items                                     |
+| `GET /api/public/settings`          | GET    | `{ settings: { [key]: string } }`                     | Filtered settings (about, price_unit, instagram)  |
 
 ### Filtering Rules
 
@@ -178,9 +178,7 @@ No `@telegram-apps/sdk` — this is a public site, not a Mini App.
 // menu-app/src/api/client.ts
 export const API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api/public';
 
-export async function apiFetch<T = unknown>(
-  path: string,
-): Promise<T> {
+export async function apiFetch<T = unknown>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`);
   if (!res.ok) {
     const errText = await res.text();
@@ -215,8 +213,8 @@ export async function apiFetch<T = unknown>(
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60_000,      // 1 minute
-      gcTime: 5 * 60_000,     // 5 minutes (was cacheTime)
+      staleTime: 60_000, // 1 minute
+      gcTime: 5 * 60_000, // 5 minutes (was cacheTime)
       refetchOnWindowFocus: false,
       retry: 1,
     },
@@ -315,10 +313,10 @@ const ALLOWED_ORIGINS = [
 
 ## Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|---|---|---|
-| Public API adds Worker load | Medium | KV caching at Worker level (already wired). 60s client staleTime reduces refetch frequency. |
-| Menu data staleness after admin edits | Low | React Query refetches every 60s. Admin can force refresh via browser. |
-| CORS mismatch if domain changes | Low | Single source of truth in `ALLOWED_ORIGINS` array. CI validates. |
-| Component drift (copied code) | Low | Acceptable tradeoff for independence. Only ~6 simple components. |
-| Telegram in-app browser quirks | Medium | HashRouter avoids most issues. Test on iOS + Android Telegram. |
+| Risk                                  | Impact | Mitigation                                                                                  |
+| ------------------------------------- | ------ | ------------------------------------------------------------------------------------------- |
+| Public API adds Worker load           | Medium | KV caching at Worker level (already wired). 60s client staleTime reduces refetch frequency. |
+| Menu data staleness after admin edits | Low    | React Query refetches every 60s. Admin can force refresh via browser.                       |
+| CORS mismatch if domain changes       | Low    | Single source of truth in `ALLOWED_ORIGINS` array. CI validates.                            |
+| Component drift (copied code)         | Low    | Acceptable tradeoff for independence. Only ~6 simple components.                            |
+| Telegram in-app browser quirks        | Medium | HashRouter avoids most issues. Test on iOS + Android Telegram.                              |

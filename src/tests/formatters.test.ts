@@ -78,7 +78,13 @@ test('formatProduct honors a custom price unit', () => {
 });
 
 test('formatProduct shows price-on-request label', () => {
-  const product = makeProduct({ name: 'Special', price: 0, priceOnRequest: true, stock: 1, unit: 'cup' });
+  const product = makeProduct({
+    name: 'Special',
+    price: 0,
+    priceOnRequest: true,
+    stock: 1,
+    unit: 'cup',
+  });
   expect(formatProduct(product)).toContain('سوال در کافه');
 });
 
@@ -118,19 +124,37 @@ test('formatBranch formats correctly', () => {
 });
 
 test('formatProduct shows calories when present', () => {
-  const product = makeProduct({ name: 'Espresso', price: 35000, stock: 10, unit: 'cup', calories: 5 });
+  const product = makeProduct({
+    name: 'Espresso',
+    price: 35000,
+    stock: 10,
+    unit: 'cup',
+    calories: 5,
+  });
   const result = formatProduct(product);
   expect(result).toContain('۵ کالری');
 });
 
 test('formatProduct shows caffeine when present', () => {
-  const product = makeProduct({ name: 'Espresso', price: 35000, stock: 10, unit: 'cup', caffeineMg: 63 });
+  const product = makeProduct({
+    name: 'Espresso',
+    price: 35000,
+    stock: 10,
+    unit: 'cup',
+    caffeineMg: 63,
+  });
   const result = formatProduct(product);
   expect(result).toContain('۶۳ میلی‌گرم');
 });
 
 test('formatProduct shows allergens when present', () => {
-  const product = makeProduct({ name: 'Latte', price: 45000, stock: 10, unit: 'cup', allergens: 'milk' });
+  const product = makeProduct({
+    name: 'Latte',
+    price: 45000,
+    stock: 10,
+    unit: 'cup',
+    allergens: 'milk',
+  });
   const result = formatProduct(product);
   expect(result).toContain('milk');
 });

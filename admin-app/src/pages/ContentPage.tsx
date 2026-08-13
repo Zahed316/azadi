@@ -99,7 +99,9 @@ export default function ContentPage() {
             />
           </Field>
           <button type="submit" className="primary" disabled={saveFaqMutation.isPending}>
-            {saveFaqMutation.isPending ? '⏳...' : (editingFaq ? 'به‌روزرسانی' : 'افزودن') + ' سوال متداول'}
+            {saveFaqMutation.isPending
+              ? '⏳...'
+              : (editingFaq ? 'به‌روزرسانی' : 'افزودن') + ' سوال متداول'}
           </button>
           {editingFaq && (
             <button type="button" className="secondary" onClick={resetFaqForm}>
@@ -124,7 +126,11 @@ export default function ContentPage() {
                   <button className="secondary" onClick={() => startEditFaq(f)}>
                     ویرایش
                   </button>
-                  <button className="danger" onClick={() => deleteFaq(f.id)} disabled={deleteFaqMutation.isPending}>
+                  <button
+                    className="danger"
+                    onClick={() => deleteFaq(f.id)}
+                    disabled={deleteFaqMutation.isPending}
+                  >
                     حذف
                   </button>
                 </div>

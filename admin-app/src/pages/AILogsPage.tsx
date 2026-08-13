@@ -24,7 +24,11 @@ export default function AILogsPage() {
   const { setError } = useAppContext();
   const [userFilter, setUserFilter] = useState('');
 
-  const { data: logs = [], isLoading, error } = useQuery({
+  const {
+    data: logs = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: [...queryKeys.aiLogs, userFilter],
     queryFn: () => {
       const params = new URLSearchParams();

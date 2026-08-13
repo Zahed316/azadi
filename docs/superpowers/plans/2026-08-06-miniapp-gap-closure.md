@@ -24,10 +24,12 @@
 ## Task 1: AI Logs API Endpoint
 
 **Files:**
+
 - Modify: `src/repositories/index.ts` — add `getAllLogs()` and `getLogsByUser()` to `AiLogRepository`
 - Modify: `src/api/router.ts` — add `GET /api/ai-logs` route
 
 **Interfaces:**
+
 - Produces: `GET /api/ai-logs?userId=&limit=` → `{ logs: Array<{ id, userId, question, response, timestamp }> }`
 - Auth: super_admin only
 
@@ -69,9 +71,7 @@ if (path === 'ai-logs' && method === 'GET') {
   const repo = new AiLogRepository(db);
   const userId = url.searchParams.get('userId');
   const limit = parseInt(url.searchParams.get('limit') || '50');
-  const logs = userId
-    ? await repo.getLogsByUser(userId, limit)
-    : await repo.getAllLogs(limit);
+  const logs = userId ? await repo.getLogsByUser(userId, limit) : await repo.getAllLogs(limit);
   return new Response(JSON.stringify({ logs }), { headers: corsHeaders });
 }
 ```
@@ -96,11 +96,13 @@ git commit -m "feat(api): add GET /api/ai-logs endpoint for admin AI log visibil
 ## Task 2: AI Logs Mini App Page
 
 **Files:**
+
 - Modify: `admin-app/src/api/keys.ts` — add `aiLogs` query key
 - Create: `admin-app/src/pages/AILogsPage.tsx`
 - Modify: `admin-app/src/App.tsx` — add route + nav tab
 
 **Interfaces:**
+
 - Consumes: `GET /api/ai-logs` → `{ logs: [...] }`
 - Produces: `/ai-logs` route, "🤖 AI Logs" nav tab (super_admin only)
 
@@ -141,7 +143,11 @@ export default function AILogsPage() {
   const { setError } = useAppContext();
   const [userFilter, setUserFilter] = useState('');
 
-  const { data: logs = [], isLoading, error } = useQuery({
+  const {
+    data: logs = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: [...queryKeys.aiLogs, userFilter],
     queryFn: () => {
       const params = new URLSearchParams();
@@ -172,14 +178,22 @@ export default function AILogsPage() {
         ) : (
           <ul className="list">
             {logs.map((log) => (
-              <li key={log.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+              <li
+                key={log.id}
+                className="list-item"
+                style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}
+              >
                 <div className="list-item-info" style={{ width: '100%' }}>
                   <span style={{ fontWeight: 600 }}>👤 {log.userId}</span>
                   <span className="list-item-meta">{formatTime(log.timestamp)}</span>
                 </div>
                 <div style={{ width: '100%' }}>
-                  <div style={{ fontSize: '0.85em', color: '#888' }}>Q: <span dir="auto">{log.question}</span></div>
-                  <div style={{ fontSize: '0.85em', marginTop: 4 }}>A: <span dir="auto">{log.response}</span></div>
+                  <div style={{ fontSize: '0.85em', color: '#888' }}>
+                    Q: <span dir="auto">{log.question}</span>
+                  </div>
+                  <div style={{ fontSize: '0.85em', marginTop: 4 }}>
+                    A: <span dir="auto">{log.response}</span>
+                  </div>
                 </div>
               </li>
             ))}
@@ -196,6 +210,7 @@ export default function AILogsPage() {
 Add import: `import AILogsPage from './pages/AILogsPage';`
 
 Add route inside `<Routes>`:
+
 ```tsx
 <Route
   path="/ai-logs"
@@ -204,6 +219,7 @@ Add route inside `<Routes>`:
 ```
 
 Add nav tab in the super_admin nav block:
+
 ```tsx
 <NavLink
   to="/ai-logs"
@@ -232,11 +248,13 @@ git commit -m "feat(admin-app): AI Logs page with user filter for super_admin"
 ## Task 3: Streak Config — Move Toggles to Settings Table
 
 **Files:**
+
 - Modify: `src/bot.ts` — read `streak_messages` and `streak_cron_enabled` from settings table (with env fallback)
 - Modify: `src/repositories/index.ts` — add `resetStreak(telegramId)` to `UserStateRepository`
 - Modify: `src/api/router.ts` — add `POST /api/streaks/reset` and `GET /api/streaks/config`
 
 **Interfaces:**
+
 - Consumes: `SettingsRepository.getValue('streak_messages')` / `getValue('streak_cron_enabled')` — returns `'true'`/`'false'`/`null`
 - Produces: `GET /api/streaks/config` → `{ streakMessages: boolean, streakCronEnabled: boolean }`
 - Produces: `POST /api/streaks/reset` body `{ telegramId: string }` → resets that user's streakDays to 0
@@ -244,6 +262,7 @@ git commit -m "feat(admin-app): AI Logs page with user filter for super_admin"
 - [ ] **Step 1: Update streak middleware in bot.ts to read from settings with env fallback**
 
 Replace the streak middleware condition at line 45:
+
 ```typescript
 // Before: if (ctx.from?.id && ctx.env.STREAK_MESSAGES === 'true') {
 // After:
@@ -273,19 +292,29 @@ async resetStreak(telegramId: string): Promise<boolean> {
 // --- Streak Config (super_admin) ---
 if (path === 'streaks/config' && method === 'GET') {
   if (!isSuperAdmin)
-    return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: corsHeaders,
+    });
   const repo = new SettingsRepository(db);
   const streakMessages = (await repo.getValue('streak_messages')) ?? env.STREAK_MESSAGES ?? 'false';
-  const streakCronEnabled = (await repo.getValue('streak_cron_enabled')) ?? env.STREAK_CRON_ENABLED ?? 'false';
-  return new Response(JSON.stringify({
-    streakMessages: streakMessages === 'true',
-    streakCronEnabled: streakCronEnabled === 'true',
-  }), { headers: corsHeaders });
+  const streakCronEnabled =
+    (await repo.getValue('streak_cron_enabled')) ?? env.STREAK_CRON_ENABLED ?? 'false';
+  return new Response(
+    JSON.stringify({
+      streakMessages: streakMessages === 'true',
+      streakCronEnabled: streakCronEnabled === 'true',
+    }),
+    { headers: corsHeaders },
+  );
 }
 
 if (path === 'streaks/config' && method === 'POST') {
   if (!isSuperAdmin)
-    return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: corsHeaders,
+    });
   const body: any = await request.json();
   const repo = new SettingsRepository(db);
   if (body.streakMessages !== undefined)
@@ -298,10 +327,16 @@ if (path === 'streaks/config' && method === 'POST') {
 // --- Streak Reset (super_admin) ---
 if (path === 'streaks/reset' && method === 'POST') {
   if (!isSuperAdmin)
-    return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: corsHeaders,
+    });
   const body: any = await request.json();
   if (!body.telegramId)
-    return new Response(JSON.stringify({ error: 'telegramId required' }), { status: 400, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'telegramId required' }), {
+      status: 400,
+      headers: corsHeaders,
+    });
   const repo = new UserStateRepository(db);
   const ok = await repo.resetStreak(String(body.telegramId));
   return new Response(JSON.stringify({ success: ok }), { headers: corsHeaders });
@@ -326,9 +361,11 @@ git commit -m "feat(api): streak config endpoints + reset; bot reads from settin
 ## Task 4: Streaks Page — Add Config Toggles and Reset Button
 
 **Files:**
+
 - Modify: `admin-app/src/pages/StreaksPage.tsx` — add config section + per-user reset
 
 **Interfaces:**
+
 - Consumes: `GET /api/streaks/config`, `POST /api/streaks/config`, `POST /api/streaks/reset`
 - Query keys: add `streakConfig` to `admin-app/src/api/keys.ts`
 
@@ -346,7 +383,8 @@ At the top of the StreaksPage component, add a config query:
 const queryClient = useQueryClient();
 const { data: config } = useQuery({
   queryKey: queryKeys.streakConfig,
-  queryFn: () => apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
+  queryFn: () =>
+    apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
 });
 ```
 
@@ -361,7 +399,10 @@ Add a config toggle section before the stat tiles:
         type="checkbox"
         checked={config?.streakMessages ?? false}
         onChange={(e) => {
-          apiFetch('/streaks/config', { method: 'POST', body: { streakMessages: e.target.checked } })
+          apiFetch('/streaks/config', {
+            method: 'POST',
+            body: { streakMessages: e.target.checked },
+          })
             .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.streakConfig }))
             .catch((err) => setError(err.message));
         }}
@@ -373,7 +414,10 @@ Add a config toggle section before the stat tiles:
         type="checkbox"
         checked={config?.streakCronEnabled ?? false}
         onChange={(e) => {
-          apiFetch('/streaks/config', { method: 'POST', body: { streakCronEnabled: e.target.checked } })
+          apiFetch('/streaks/config', {
+            method: 'POST',
+            body: { streakCronEnabled: e.target.checked },
+          })
             .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.streakConfig }))
             .catch((err) => setError(err.message));
         }}
@@ -420,9 +464,11 @@ git commit -m "feat(admin-app): streak config toggles and per-user reset button"
 ## Task 5: Settings Page — Expand with AI & About Settings
 
 **Files:**
+
 - Modify: `admin-app/src/pages/SettingsPage.tsx` — add `about` to BUILTIN_KEYS, add AI-related settings section
 
 **Interfaces:**
+
 - Consumes: existing `GET /api/settings`, `POST /api/settings`
 - No new API needed — settings already stored via key-value
 
@@ -442,21 +488,24 @@ const BUILTIN_LABELS: Record<string, string> = {
 - [ ] **Step 2: Make `about` textarea instead of input**
 
 Add a conditional render in the form:
+
 ```tsx
-{key === 'about' ? (
-  <textarea
-    value={localSettings.find((s: any) => s.key === key)?.value || ''}
-    onChange={(e) => updateSetting(key, e.target.value)}
-    dir="auto"
-    rows={4}
-  />
-) : (
-  <input
-    value={localSettings.find((s: any) => s.key === key)?.value || ''}
-    onChange={(e) => updateSetting(key, e.target.value)}
-    dir={key === 'ai_greeting' || key === 'about' ? 'auto' : undefined}
-  />
-)}
+{
+  key === 'about' ? (
+    <textarea
+      value={localSettings.find((s: any) => s.key === key)?.value || ''}
+      onChange={(e) => updateSetting(key, e.target.value)}
+      dir="auto"
+      rows={4}
+    />
+  ) : (
+    <input
+      value={localSettings.find((s: any) => s.key === key)?.value || ''}
+      onChange={(e) => updateSetting(key, e.target.value)}
+      dir={key === 'ai_greeting' || key === 'about' ? 'auto' : undefined}
+    />
+  );
+}
 ```
 
 - [ ] **Step 3: Typecheck**
@@ -477,10 +526,12 @@ git commit -m "feat(admin-app): expand settings page with about text field"
 ## Task 6: AI Chat Test Panel — API Endpoint
 
 **Files:**
+
 - Modify: `src/api/router.ts` — add `POST /api/ai-test` endpoint
 - Modify: `src/handlers/message.ts` — extract AI query logic into a shared function
 
 **Interfaces:**
+
 - Produces: `POST /api/ai-test` body `{ query: string }` → `{ response: string }`
 - Auth: super_admin only
 - The endpoint builds the same context the bot uses (products, branches, FAQs, settings, popular products) and calls `AiService.processQuery()`
@@ -533,16 +584,25 @@ export async function runAiQuery(
 // --- AI Test Panel (super_admin only) ---
 if (path === 'ai-test' && method === 'POST') {
   if (!isSuperAdmin)
-    return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: corsHeaders,
+    });
   const body: any = await request.json();
   if (!body.query || typeof body.query !== 'string')
-    return new Response(JSON.stringify({ error: 'query required' }), { status: 400, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'query required' }), {
+      status: 400,
+      headers: corsHeaders,
+    });
   try {
     const response = await runAiQuery(db, body.query);
     return new Response(JSON.stringify({ response }), { headers: corsHeaders });
   } catch (e: any) {
     console.error('ai-test error:', e);
-    return new Response(JSON.stringify({ error: 'AI query failed' }), { status: 500, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'AI query failed' }), {
+      status: 500,
+      headers: corsHeaders,
+    });
   }
 }
 ```
@@ -565,11 +625,13 @@ git commit -m "feat(api): POST /api/ai-test endpoint for admin AI testing"
 ## Task 7: AI Chat Test Panel — Mini App UI
 
 **Files:**
+
 - Modify: `admin-app/src/api/keys.ts` — no new key needed (use mutation)
 - Create: `admin-app/src/pages/AITestPage.tsx`
 - Modify: `admin-app/src/App.tsx` — add route + nav tab
 
 **Interfaces:**
+
 - Consumes: `POST /api/ai-test` body `{ query }` → `{ response }`
 - Produces: `/ai-test` route, "🧪 AI Test" nav tab (super_admin only)
 
@@ -588,7 +650,8 @@ export default function AITestPage() {
   const [history, setHistory] = useState<Array<{ q: string; a: string; ts: Date }>>([]);
 
   const testMutation = useMutation({
-    mutationFn: (q: string) => apiFetch<{ response: string }>('/ai-test', { method: 'POST', body: { query: q } }),
+    mutationFn: (q: string) =>
+      apiFetch<{ response: string }>('/ai-test', { method: 'POST', body: { query: q } }),
     onSuccess: (data, variables) => {
       setHistory((prev) => [{ q: variables, a: data.response, ts: new Date() }, ...prev]);
       setQuery('');
@@ -633,11 +696,21 @@ export default function AITestPage() {
           <h2>Results</h2>
           <ul className="list">
             {history.map((item, i) => (
-              <li key={i} className="list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+              <li
+                key={i}
+                className="list-item"
+                style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}
+              >
                 <div style={{ width: '100%' }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.9em' }}>Q: <span dir="auto">{item.q}</span></div>
-                  <div style={{ marginTop: 4, fontSize: '0.9em' }}>A: <span dir="auto">{item.a}</span></div>
-                  <div style={{ fontSize: '0.75em', color: '#aaa', marginTop: 2 }}>{item.ts.toLocaleTimeString()}</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9em' }}>
+                    Q: <span dir="auto">{item.q}</span>
+                  </div>
+                  <div style={{ marginTop: 4, fontSize: '0.9em' }}>
+                    A: <span dir="auto">{item.a}</span>
+                  </div>
+                  <div style={{ fontSize: '0.75em', color: '#aaa', marginTop: 2 }}>
+                    {item.ts.toLocaleTimeString()}
+                  </div>
                 </div>
               </li>
             ))}
@@ -671,10 +744,12 @@ git commit -m "feat(admin-app): AI Chat Test page for super_admin testing"
 ## Task 8: Feature Flags Display in Settings
 
 **Files:**
+
 - Modify: `admin-app/src/pages/SettingsPage.tsx` — add read-only feature flags section
 - Modify: `admin-app/src/api/keys.ts` — add `featureFlags` key (or reuse streakConfig)
 
 **Interfaces:**
+
 - Consumes: `GET /api/streaks/config` (already built in Task 3) + settings table
 - Produces: Read-only display of all feature flag states
 
@@ -685,7 +760,8 @@ After the Custom Settings section, add a card that queries the streak config and
 ```tsx
 const { data: streakConfig } = useQuery({
   queryKey: queryKeys.streakConfig,
-  queryFn: () => apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
+  queryFn: () =>
+    apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
 });
 
 // In the JSX:
@@ -701,23 +777,29 @@ const { data: streakConfig } = useQuery({
     <li className="list-item">
       <div className="list-item-info">
         <span>STREAK_CRON_ENABLED</span>
-        <span className="list-item-meta">{streakConfig?.streakCronEnabled ? '✅ ON' : '❌ OFF'}</span>
+        <span className="list-item-meta">
+          {streakConfig?.streakCronEnabled ? '✅ ON' : '❌ OFF'}
+        </span>
       </div>
     </li>
     <li className="list-item">
       <div className="list-item-info">
         <span>USE_CONVERSATIONS</span>
-        <span className="list-item-meta" style={{ color: '#999' }}>🔒 Requires code changes</span>
+        <span className="list-item-meta" style={{ color: '#999' }}>
+          🔒 Requires code changes
+        </span>
       </div>
     </li>
     <li className="list-item">
       <div className="list-item-info">
         <span>PERF_LOG</span>
-        <span className="list-item-meta" style={{ color: '#999' }}>🔒 Set via wrangler secret</span>
+        <span className="list-item-meta" style={{ color: '#999' }}>
+          🔒 Set via wrangler secret
+        </span>
       </div>
     </li>
   </ul>
-</div>
+</div>;
 ```
 
 - [ ] **Step 2: Typecheck**
@@ -738,9 +820,11 @@ git commit -m "feat(admin-app): feature flags display in settings page"
 ## Task 9: Webhook Health Endpoint
 
 **Files:**
+
 - Modify: `src/api/router.ts` — add `GET /api/health`
 
 **Interfaces:**
+
 - Produces: `GET /api/health` → `{ status: 'ok', db: boolean, uptime: number }`
 - No auth required (health check endpoint)
 
@@ -756,12 +840,17 @@ if (path === 'health' && method === 'GET') {
     const testDb = getDb(env.DB);
     await testDb.select().from(settings).limit(1);
     dbOk = true;
-  } catch { /* db unreachable */ }
-  return new Response(JSON.stringify({
-    status: dbOk ? 'ok' : 'degraded',
-    db: dbOk,
-    timestamp: new Date().toISOString(),
-  }), { headers: corsHeaders });
+  } catch {
+    /* db unreachable */
+  }
+  return new Response(
+    JSON.stringify({
+      status: dbOk ? 'ok' : 'degraded',
+      db: dbOk,
+      timestamp: new Date().toISOString(),
+    }),
+    { headers: corsHeaders },
+  );
 }
 ```
 
@@ -783,9 +872,11 @@ git commit -m "feat(api): GET /api/health endpoint for webhook health checks"
 ## Task 10: Mini App — Product Image Preview
 
 **Files:**
+
 - Modify: `admin-app/src/pages/ProductsPage.tsx` — add image preview in edit form
 
 **Interfaces:**
+
 - No API change — uses existing `imageUrl` field
 - Adds a clickable preview that opens the image in a new tab
 
@@ -794,18 +885,20 @@ git commit -m "feat(api): GET /api/health endpoint for webhook health checks"
 After the image URL `<Field>`, add:
 
 ```tsx
-{prodImageUrl && (
-  <div style={{ marginBottom: 8 }}>
-    <a
-      href={prodImageUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ fontSize: '0.85em', color: '#4a90d9' }}
-    >
-      🔗 Preview image in new tab
-    </a>
-  </div>
-)}
+{
+  prodImageUrl && (
+    <div style={{ marginBottom: 8 }}>
+      <a
+        href={prodImageUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ fontSize: '0.85em', color: '#4a90d9' }}
+      >
+        🔗 Preview image in new tab
+      </a>
+    </div>
+  );
+}
 ```
 
 - [ ] **Step 2: Typecheck**
@@ -826,10 +919,12 @@ git commit -m "feat(admin-app): product image preview link in edit form"
 ## Task 11: Webhook Health Display in Mini App
 
 **Files:**
+
 - Modify: `admin-app/src/api/keys.ts` — add `health` key
 - Modify: `admin-app/src/pages/SettingsPage.tsx` — add health status card
 
 **Interfaces:**
+
 - Consumes: `GET /api/health` → `{ status, db, timestamp }`
 - Produces: Health status card in Settings page
 
@@ -855,7 +950,9 @@ const { data: health } = useQuery({
     <li className="list-item">
       <div className="list-item-info">
         <span>API Status</span>
-        <span className="list-item-meta">{health?.status === 'ok' ? '✅ Healthy' : '⚠️ ' + (health?.status ?? 'Unknown')}</span>
+        <span className="list-item-meta">
+          {health?.status === 'ok' ? '✅ Healthy' : '⚠️ ' + (health?.status ?? 'Unknown')}
+        </span>
       </div>
     </li>
     <li className="list-item">
@@ -865,7 +962,7 @@ const { data: health } = useQuery({
       </div>
     </li>
   </ul>
-</div>
+</div>;
 ```
 
 - [ ] **Step 3: Typecheck**
@@ -886,9 +983,11 @@ git commit -m "feat(admin-app): system health display in settings page"
 ## Task 12: Menu Config Preview Hint
 
 **Files:**
+
 - Modify: `admin-app/src/pages/MenuConfigPage.tsx` — add a note explaining the bot menu tree
 
 **Interfaces:**
+
 - No API change — purely a UX hint
 
 - [ ] **Step 1: Add preview hint**
@@ -897,7 +996,8 @@ After the `<h2>Menu Configuration</h2>` heading, add:
 
 ```tsx
 <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 12 }}>
-  Menu order here controls the bot's inline keyboard layout. Sections: ☕ Drinks, 🌱 Beans, 🍰 Cakes, 📍 Branches. Use the bot's <code>/start</code> command to preview the result.
+  Menu order here controls the bot's inline keyboard layout. Sections: ☕ Drinks, 🌱 Beans, 🍰
+  Cakes, 📍 Branches. Use the bot's <code>/start</code> command to preview the result.
 </p>
 ```
 
@@ -919,9 +1019,11 @@ git commit -m "feat(admin-app): menu config preview hint in admin UI"
 ## Task 13: AI Personality Settings Hint
 
 **Files:**
+
 - Modify: `admin-app/src/pages/SettingsPage.tsx` — add a note about AI personality configuration
 
 **Interfaces:**
+
 - No API change — purely a UX hint
 
 - [ ] **Step 1: Add AI configuration hint card**
@@ -932,25 +1034,31 @@ After the Feature Flags section:
 <div className="card">
   <h2>🤖 AI Assistant</h2>
   <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
-    The AI assistant's personality and behavior are configured in the bot's source code (<code>AiService</code>).
-    The settings below affect the context the AI uses:
+    The AI assistant's personality and behavior are configured in the bot's source code (
+    <code>AiService</code>). The settings below affect the context the AI uses:
   </p>
   <ul className="list">
     <li className="list-item">
       <div className="list-item-info">
-        <span><b>about</b> — Shop description in AI context</span>
+        <span>
+          <b>about</b> — Shop description in AI context
+        </span>
         <span className="list-item-meta">↑ Set above</span>
       </div>
     </li>
     <li className="list-item">
       <div className="list-item-info">
-        <span><b>ai_greeting</b> — Initial greeting message</span>
+        <span>
+          <b>ai_greeting</b> — Initial greeting message
+        </span>
         <span className="list-item-meta">↑ Set above</span>
       </div>
     </li>
     <li className="list-item">
       <div className="list-item-info">
-        <span><b>Products / FAQs / Branches</b> — All managed data feeds the AI</span>
+        <span>
+          <b>Products / FAQs / Branches</b> — All managed data feeds the AI
+        </span>
         <span className="list-item-meta">↑ Managed in their pages</span>
       </div>
     </li>
@@ -1004,6 +1112,7 @@ cd /data/data/com.termux/files/home/repo/azadi && npx wrangler pages deploy admi
 ## Verification
 
 After deploy, test in Telegram and Mini App:
+
 1. Open Mini App → Settings → verify health card shows ✅
 2. Open Mini App → AI Logs → verify log list loads (empty is fine)
 3. Open Mini App → AI Test → send "what do you recommend?" → verify response

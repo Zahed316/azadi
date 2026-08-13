@@ -15,6 +15,7 @@ Micro-interactions (loading states, success feedback, empty states) are inconsis
 ## 2. Admin App Navigation Reorg
 
 ### Current State
+
 ```
 Bottom nav (super_admin): 📦Products | 🏷️Categories | ⚙️Settings | 🏠About Us | 📝Content | 👥Admins | 📋Menu | 🔥Streaks | ⭐Favorites | 🤖AI Logs | 🧪AI Test | ✉️Messages
 Bottom nav (category_admin): 📦Products | 🏷️Categories
@@ -23,20 +24,21 @@ Bottom nav (category_admin): 📦Products | 🏷️Categories
 ### Proposed State
 
 **Primary tabs** (always visible, ≤6):
+
 ```
 📦 Products | 🏷️ Categories | 📊 Insights | ⚙️ Configure | ℹ️ Info | ☰ More
 ```
 
 **Tab details:**
 
-| Tab | Icon | Pages Included | Notes |
-|-----|------|----------------|-------|
-| Products | 📦 | ProductsPage | Core — keep as-is |
-| Categories | 🏷️ | CategoriesPage | Core — keep as-is |
-| Insights | 📊 | StreaksPage, FavoritesPage, AILogsPage, AITestPage | Grouped analytics |
-| Configure | ⚙️ | SettingsPage, MenuConfigPage, AdminsPage | Super admin config |
-| Info | ℹ️ | AboutUsPage, ContentPage, MessagesPage | Content + feedback |
-| More | ☰ | Overflow menu (no dedicated page) | Shows remaining items as a dropdown/modal |
+| Tab        | Icon | Pages Included                                     | Notes                                     |
+| ---------- | ---- | -------------------------------------------------- | ----------------------------------------- |
+| Products   | 📦   | ProductsPage                                       | Core — keep as-is                         |
+| Categories | 🏷️   | CategoriesPage                                     | Core — keep as-is                         |
+| Insights   | 📊   | StreaksPage, FavoritesPage, AILogsPage, AITestPage | Grouped analytics                         |
+| Configure  | ⚙️   | SettingsPage, MenuConfigPage, AdminsPage           | Super admin config                        |
+| Info       | ℹ️   | AboutUsPage, ContentPage, MessagesPage             | Content + feedback                        |
+| More       | ☰   | Overflow menu (no dedicated page)                  | Shows remaining items as a dropdown/modal |
 
 **For category_admin**: Only Products and Categories appear in the bottom nav (same as today). The `/insights`, `/configure`, `/info` routes redirect to `/products` via the existing `<Navigate>` guards.
 
@@ -59,6 +61,7 @@ Bottom nav is better for frequent switching (products ↔ categories). The group
 ## 3. Bot Menu Visual Grouping
 
 ### Current State
+
 ```
 ⭐ پیشنهاد ویژه          (callback → paginated list)
 🌿 مخصوص فصل            (callback → paginated list)
@@ -76,6 +79,7 @@ Bottom nav is better for frequent switching (products ↔ categories). The group
 ### Proposed Grouping
 
 **"Discover" submenu** (replaces 3 separate buttons):
+
 ```
 🔍 کاوش (Discover)
   ├─ ⭐ پیشنهاد ویژه
@@ -85,6 +89,7 @@ Bottom nav is better for frequent switching (products ↔ categories). The group
 ```
 
 **Main menu after grouping** (9 buttons → 8 after merge, but visually 6 groups):
+
 ```
 🔍 کاوش                    (submenu)
 ⭐ منوهای من               (callback)
@@ -109,6 +114,7 @@ Bottom nav is better for frequent switching (products ↔ categories). The group
 Every `useMutation` in admin-app pages should show a loading indicator on the submit button.
 
 **Pattern** (already used in some places):
+
 ```tsx
 <button type="submit" className="primary" disabled={mutation.isPending}>
   {mutation.isPending ? '...' : 'Save'}
@@ -116,6 +122,7 @@ Every `useMutation` in admin-app pages should show a loading indicator on the su
 ```
 
 **Files to update** (all pages with mutations):
+
 - `ProductsPage.tsx` — add/delete/toggle mutations
 - `CategoriesPage.tsx` — add/delete mutations
 - `AdminsPage.tsx` — add/delete mutations (line 76: `disabled={addAdminMutation.isPending}`)
@@ -147,7 +154,7 @@ useMutation({
     await queryClient.cancelQueries({ queryKey: queryKeys.products });
     const prev = queryClient.getQueryData(queryKeys.products);
     queryClient.setQueryData(queryKeys.products, (old) =>
-      old?.map((p) => (p.id === id ? { ...p, [field]: !p[field] } : p))
+      old?.map((p) => (p.id === id ? { ...p, [field]: !p[field] } : p)),
     );
     return { prev };
   },
@@ -156,10 +163,11 @@ useMutation({
     setError('Failed to toggle');
   },
   onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.products }),
-})
+});
 ```
 
 **Where to apply** (high-frequency toggles only):
+
 - Product available toggle
 - Product featured toggle
 - Menu config visibility toggle
@@ -168,15 +176,15 @@ useMutation({
 
 Replace generic "No items" with helpful guidance:
 
-| Page | Current | Proposed |
-|------|---------|----------|
-| ProductsPage | "No products yet" | "No products yet. Add your first product to get started." |
-| CategoriesPage | "No categories" | "Categories help organize your menu. Add one to start." |
-| AdminsPage | "No admins yet" | "No admins yet. Add a Telegram ID to grant admin access." |
-| FavoritesPage | "No favorites" | "Users' favorited products will appear here." |
-| AILogsPage | "No logs" | "AI conversation logs will appear as users interact with the bot." |
-| MessagesPage | "No messages" | "User messages and feedback will appear here." |
-| StreaksPage | "No streak data" | "User visit streaks will appear here once tracking is enabled." |
+| Page           | Current           | Proposed                                                           |
+| -------------- | ----------------- | ------------------------------------------------------------------ |
+| ProductsPage   | "No products yet" | "No products yet. Add your first product to get started."          |
+| CategoriesPage | "No categories"   | "Categories help organize your menu. Add one to start."            |
+| AdminsPage     | "No admins yet"   | "No admins yet. Add a Telegram ID to grant admin access."          |
+| FavoritesPage  | "No favorites"    | "Users' favorited products will appear here."                      |
+| AILogsPage     | "No logs"         | "AI conversation logs will appear as users interact with the bot." |
+| MessagesPage   | "No messages"     | "User messages and feedback will appear here."                     |
+| StreaksPage    | "No streak data"  | "User visit streaks will appear here once tracking is enabled."    |
 
 ## 5. Implementation Order
 
@@ -196,9 +204,9 @@ Replace generic "No items" with helpful guidance:
 
 ## 7. Risk Assessment
 
-| Risk | Mitigation |
-|------|------------|
-| Grouped pages lose individual URL bookmarks | Keep old routes as redirects |
-| Bot menu grouping changes callback data | No — callback regexes unchanged; only menu structure changes |
-| Loading states break form submission | Disable button + show spinner, not block submission |
-| Optimistic update shows stale data | `onSettled` always invalidates query |
+| Risk                                        | Mitigation                                                   |
+| ------------------------------------------- | ------------------------------------------------------------ |
+| Grouped pages lose individual URL bookmarks | Keep old routes as redirects                                 |
+| Bot menu grouping changes callback data     | No — callback regexes unchanged; only menu structure changes |
+| Loading states break form submission        | Disable button + show spinner, not block submission          |
+| Optimistic update shows stale data          | `onSettled` always invalidates query                         |

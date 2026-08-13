@@ -75,9 +75,7 @@ export function MessagesPage() {
           </div>
 
           {selectedMessage.rating && (
-            <div className="rating">
-              {'⭐'.repeat(selectedMessage.rating)}
-            </div>
+            <div className="rating">{'⭐'.repeat(selectedMessage.rating)}</div>
           )}
 
           <div className="content" dir="auto">
@@ -88,7 +86,9 @@ export function MessagesPage() {
             <div className="reply-section">
               <h4>💬 پاسخ شما:</h4>
               <p>{selectedMessage.replyText}</p>
-              {selectedMessage.repliedAt && <span className="reply-date">{formatDate(selectedMessage.repliedAt)}</span>}
+              {selectedMessage.repliedAt && (
+                <span className="reply-date">{formatDate(selectedMessage.repliedAt)}</span>
+              )}
             </div>
           )}
         </div>
@@ -118,22 +118,14 @@ export function MessagesPage() {
     <div className="page">
       <div className="page-header">
         <h2>📬 پیام‌ها</h2>
-        {unreadCount > 0 && (
-          <span className="badge">{unreadCount} خوانده نشده</span>
-        )}
+        {unreadCount > 0 && <span className="badge">{unreadCount} خوانده نشده</span>}
       </div>
 
       <div className="filter-tabs">
-        <button
-          className={filter === 'all' ? 'active' : ''}
-          onClick={() => setFilter('all')}
-        >
+        <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>
           همه ({messages.length})
         </button>
-        <button
-          className={filter === 'unread' ? 'active' : ''}
-          onClick={() => setFilter('unread')}
-        >
+        <button className={filter === 'unread' ? 'active' : ''} onClick={() => setFilter('unread')}>
           خوانده نشده ({unreadCount})
         </button>
         <button

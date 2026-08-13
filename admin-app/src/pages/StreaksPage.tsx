@@ -36,7 +36,8 @@ export default function StreaksPage() {
 
   const { data: config } = useQuery({
     queryKey: queryKeys.streakConfig,
-    queryFn: () => apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
+    queryFn: () =>
+      apiFetch<{ streakMessages: boolean; streakCronEnabled: boolean }>('/streaks/config'),
   });
 
   const { data, isLoading, error } = useQuery({
@@ -66,13 +67,16 @@ export default function StreaksPage() {
   const ONE_DAY_MS = 24 * 60 * 60 * 1000;
   const todayKey = Math.floor(Date.now() / ONE_DAY_MS);
   const activeToday = users.filter(
-    (u) => Math.floor(toMillis(u.lastSeenAt) / ONE_DAY_MS) === todayKey
+    (u) => Math.floor(toMillis(u.lastSeenAt) / ONE_DAY_MS) === todayKey,
   ).length;
   const med = median(users.map((u) => u.visitsTotal));
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    else { setSortKey(k); setSortDir('desc'); }
+    else {
+      setSortKey(k);
+      setSortDir('desc');
+    }
   };
 
   return (
@@ -85,7 +89,10 @@ export default function StreaksPage() {
               type="checkbox"
               checked={config?.streakMessages ?? false}
               onChange={(e) => {
-                apiFetch('/streaks/config', { method: 'POST', body: { streakMessages: e.target.checked } })
+                apiFetch('/streaks/config', {
+                  method: 'POST',
+                  body: { streakMessages: e.target.checked },
+                })
                   .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.streakConfig }))
                   .catch((err) => setError(err.message));
               }}
@@ -97,7 +104,10 @@ export default function StreaksPage() {
               type="checkbox"
               checked={config?.streakCronEnabled ?? false}
               onChange={(e) => {
-                apiFetch('/streaks/config', { method: 'POST', body: { streakCronEnabled: e.target.checked } })
+                apiFetch('/streaks/config', {
+                  method: 'POST',
+                  body: { streakCronEnabled: e.target.checked },
+                })
                   .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.streakConfig }))
                   .catch((err) => setError(err.message));
               }}
@@ -125,7 +135,8 @@ export default function StreaksPage() {
                 <div className="list-item-info">
                   <span>{u.telegramId}</span>
                   <span className="list-item-meta">
-                    بازدید {u.visitsTotal} · آخرین {new Date(toMillis(u.lastSeenAt)).toLocaleDateString()}
+                    بازدید {u.visitsTotal} · آخرین{' '}
+                    {new Date(toMillis(u.lastSeenAt)).toLocaleDateString()}
                   </span>
                 </div>
                 <div className="list-item-actions">
@@ -141,7 +152,10 @@ export default function StreaksPage() {
                     className="secondary"
                     onClick={async () => {
                       if (!(await confirm(`استریک کاربر ${u.telegramId} بازنشانی شود؟`))) return;
-                      await apiFetch('/streaks/reset', { method: 'POST', body: { telegramId: u.telegramId } });
+                      await apiFetch('/streaks/reset', {
+                        method: 'POST',
+                        body: { telegramId: u.telegramId },
+                      });
                       void queryClient.invalidateQueries({ queryKey: queryKeys.streaks });
                     }}
                   >

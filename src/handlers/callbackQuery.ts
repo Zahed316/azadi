@@ -68,9 +68,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `branches:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `branches:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
-      const body = aboutText
-        ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
-        : '<b>🏠 درباره ما</b>';
+      const body = aboutText ? `<b>🏠 درباره ما</b>\n\n${aboutText}` : '<b>🏠 درباره ما</b>';
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
@@ -371,9 +369,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const productId = Number(ctx.match[1]);
       const repo = new FavoritesRepository(ctx.env.DB);
       const removed = await repo.remove(String(ctx.from.id), productId);
-      const msg = removed
-        ? '❌ از علاقمندی‌ها حذف شد.'
-        : 'ℹ️ این محصول در علاقمندی‌های شما نبود.';
+      const msg = removed ? '❌ از علاقمندی‌ها حذف شد.' : 'ℹ️ این محصول در علاقمندی‌های شما نبود.';
       await ctx.reply(msg, {
         reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
       });
@@ -395,7 +391,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const repo = new MessageRepository(ctx.env.DB);
       const message = await repo.create({
         telegramId: String(ctx.from.id),
-        senderName: flow.isAnonymous ? null : flow.name ?? null,
+        senderName: flow.isAnonymous ? null : (flow.name ?? null),
         senderEmail: null,
         content: flow.content,
         rating: flow.rating ?? null,
@@ -405,11 +401,15 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       ctx.session.messageFlow = undefined;
 
       const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-      await ctx.editMessageText('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
-        reply_markup: kb,
-      }).catch(() => ctx.reply('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
-        reply_markup: kb,
-      }));
+      await ctx
+        .editMessageText('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
+          reply_markup: kb,
+        })
+        .catch(() =>
+          ctx.reply('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
+            reply_markup: kb,
+          }),
+        );
 
       // Notify admins (best-effort, parallel)
       if (ctx.env.TELEGRAM_BOT_TOKEN) {
@@ -419,7 +419,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
           const db = getDb(ctx.env.DB);
           const allAdmins = await db.select().from(admins);
           const preview = flow.content.slice(0, 150) + (flow.content.length > 150 ? '...' : '');
-          const senderName = flow.isAnonymous ? 'ناشناس' : (flow.name || 'ناشناس');
+          const senderName = flow.isAnonymous ? 'ناشناس' : flow.name || 'ناشناس';
           const msgId = message[0]?.id;
           await Promise.allSettled(
             allAdmins.map((admin) =>
@@ -434,11 +434,13 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
             ),
           );
         } catch (e) {
-          console.error(JSON.stringify({
-            ts: new Date().toISOString(),
-            operation: 'admin-notification-failed',
-            error: e instanceof Error ? 'fetch failed' : 'unknown error',
-          }));
+          console.error(
+            JSON.stringify({
+              ts: new Date().toISOString(),
+              operation: 'admin-notification-failed',
+              error: e instanceof Error ? 'fetch failed' : 'unknown error',
+            }),
+          );
         }
       }
 
@@ -453,7 +455,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
   bot.callbackQuery('msg:cancel', async (ctx) => {
     ctx.session.messageFlow = undefined;
     const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-    await ctx.editMessageText('❌ ارسال پیام لغو شد.', { reply_markup: kb })
+    await ctx
+      .editMessageText('❌ ارسال پیام لغو شد.', { reply_markup: kb })
       .catch(() => ctx.reply('❌ ارسال پیام لغو شد.', { reply_markup: kb }));
     await ctx.answerCallbackQuery();
   });
@@ -469,7 +472,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       flow.isAnonymous = true;
       flow.step = 'content';
       const kb = new InlineKeyboard().text('❌ انصراف', 'msg:cancel');
-      await ctx.editMessageText('پیام خود را بنویسید:', { reply_markup: kb })
+      await ctx
+        .editMessageText('پیام خود را بنویسید:', { reply_markup: kb })
         .catch(() => ctx.reply('پیام خود را بنویسید:', { reply_markup: kb }));
       await ctx.answerCallbackQuery();
       return;
@@ -480,10 +484,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     flow.step = 'confirm';
     const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
     const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ بدون امتیاز\n\n📝 ${flow.content}`;
-    const kb = new InlineKeyboard()
-      .text('✅ ارسال', 'msg:confirm')
-      .text('❌ انصراف', 'msg:cancel');
-    await ctx.editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
+    const kb = new InlineKeyboard().text('✅ ارسال', 'msg:confirm').text('❌ انصراف', 'msg:cancel');
+    await ctx
+      .editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
       .catch(() => ctx.reply(preview, { parse_mode: 'HTML', reply_markup: kb }));
     await ctx.answerCallbackQuery();
   });
@@ -505,7 +508,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const kb = new InlineKeyboard()
         .text('✅ ارسال', 'msg:confirm')
         .text('❌ انصراف', 'msg:cancel');
-      await ctx.editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
+      await ctx
+        .editMessageText(preview, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(preview, { parse_mode: 'HTML', reply_markup: kb }));
     }
     await ctx.answerCallbackQuery();

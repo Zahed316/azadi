@@ -148,7 +148,11 @@ export default function AboutUsPage() {
             placeholder="متنی که در ربات نمایش داده می‌شود..."
           />
         </Field>
-        <button className="primary" onClick={handleSaveAbout} disabled={saveAboutMutation.isPending}>
+        <button
+          className="primary"
+          onClick={handleSaveAbout}
+          disabled={saveAboutMutation.isPending}
+        >
           {saveAboutMutation.isPending ? '⏳...' : 'ذخیره متن درباره ما'}
         </button>
       </div>
@@ -188,7 +192,9 @@ export default function AboutUsPage() {
             />
           </Field>
           <button type="submit" className="primary" disabled={saveBranchMutation.isPending}>
-            {saveBranchMutation.isPending ? '⏳...' : (editingBranch ? 'به‌روزرسانی' : 'افزودن') + ' مکان'}
+            {saveBranchMutation.isPending
+              ? '⏳...'
+              : (editingBranch ? 'به‌روزرسانی' : 'افزودن') + ' مکان'}
           </button>
           {editingBranch && (
             <button type="button" className="secondary" onClick={resetBranchForm}>
@@ -216,7 +222,11 @@ export default function AboutUsPage() {
                   <button className="secondary" onClick={() => startEditBranch(b)}>
                     ویرایش
                   </button>
-                  <button className="danger" onClick={() => deleteBranch(b.id)} disabled={deleteBranchMutation.isPending}>
+                  <button
+                    className="danger"
+                    onClick={() => deleteBranch(b.id)}
+                    disabled={deleteBranchMutation.isPending}
+                  >
                     حذف
                   </button>
                 </div>

@@ -20,21 +20,23 @@
 
 ## File Structure
 
-| File | Change |
-|------|--------|
-| `src/menus/mainMenu.ts` | Add visibility check at top of each button callback; convert `.submenu()` calls to `.text()` with visibility + dynamic submenu |
-| `admin-app/src/pages/SettingsPage.tsx` | Add "Menu Visibility" card with 11 toggle switches |
-| `admin-app/src/api/keys.ts` | Add `menuVisibility` query key |
+| File                                   | Change                                                                                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `src/menus/mainMenu.ts`                | Add visibility check at top of each button callback; convert `.submenu()` calls to `.text()` with visibility + dynamic submenu |
+| `admin-app/src/pages/SettingsPage.tsx` | Add "Menu Visibility" card with 11 toggle switches                                                                             |
+| `admin-app/src/api/keys.ts`            | Add `menuVisibility` query key                                                                                                 |
 
 ---
 
 ### Task 1: Add menu visibility helper and bot-side checks
 
 **Files:**
+
 - Modify: `src/menus/mainMenu.ts`
 - Test: `npm test` (existing tests should still pass)
 
 **Interfaces:**
+
 - Consumes: `SettingsRepository.getValue(key)` — returns `Promise<string | null>`
 - Produces: Each button callback checks `menu_visible_*` before rendering content
 
@@ -143,15 +145,17 @@ async (ctx, range) => {
   // Check if drinks section is visible
   const visible = await isMenuVisible(ctx, 'drinks');
   if (!visible) {
-    range.text('☕ نوشیدنی‌ها (غیرفعال)', async (ctx) => {
-      await ctx.reply(HIDDEN_MESSAGE, {
-        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-      });
-    }).row();
+    range
+      .text('☕ نوشیدنی‌ها (غیرفعال)', async (ctx) => {
+        await ctx.reply(HIDDEN_MESSAGE, {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+      })
+      .row();
     return;
   }
   // ... existing dynamic button generation
-}
+};
 ```
 
 Wait — `isMenuVisible` needs `env`, not `ctx`. The dynamic callback receives `ctx` which has `ctx.env`. So:
@@ -161,6 +165,7 @@ const visible = await isMenuVisible(ctx.env, 'drinks');
 ```
 
 But `isMenuVisible` is defined in `mainMenu.ts`. We need to either:
+
 1. Export it from `mainMenu.ts` and import in submenu files
 2. Move it to a shared utility (e.g. `src/utils/menuVisibility.ts`)
 3. Inline the check in each submenu file
@@ -214,6 +219,7 @@ if (!(await isMenuVisible(ctx.env, 'SECTION_KEY'))) {
 ```
 
 Section keys for each button:
+
 - `⭐ پیشنهاد ویژه` → `featured`
 - `🌿 مخصوص فصل` → `seasonal`
 - `📖 پاسپورت قهوه` → `passport`
@@ -225,26 +231,32 @@ Section keys for each button:
 - [ ] **Step 5: Add visibility checks to submenu entry callbacks**
 
 In `src/menus/drinksNavMenu.ts`:
+
 - Import `isMenuVisible` and `HIDDEN_MESSAGE` from `../utils/menuVisibility`
 - At the top of the `.dynamic()` callback, before the `try` block:
+
 ```ts
 const visible = await isMenuVisible(ctx.env, 'drinks');
 if (!visible) {
-  range.text(HIDDEN_MESSAGE, async (ctx) => {
-    await ctx.reply(HIDDEN_MESSAGE, {
-      reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-    });
-  }).row();
+  range
+    .text(HIDDEN_MESSAGE, async (ctx) => {
+      await ctx.reply(HIDDEN_MESSAGE, {
+        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+      });
+    })
+    .row();
   return;
 }
 ```
 
 In `src/menus/productsMenu.ts`:
+
 - Import `isMenuVisible` and `HIDDEN_MESSAGE` from `../utils/menuVisibility`
 - For `beansMenu`: add visibility check at top of the `.text()` callback
 - For `cakesMenu`: add visibility check at top of the `.text()` callback
 
 In `src/menus/branchesMenu.ts`:
+
 - Import `isMenuVisible` and `HIDDEN_MESSAGE` from `../utils/menuVisibility`
 - Add visibility check at top of the `.text()` callback
 
@@ -265,10 +277,12 @@ git commit -m "feat(bot): add per-section menu visibility checks via settings ta
 ### Task 2: Add Menu Visibility card to SettingsPage
 
 **Files:**
+
 - Modify: `admin-app/src/pages/SettingsPage.tsx`
 - Modify: `admin-app/src/api/keys.ts`
 
 **Interfaces:**
+
 - Consumes: `queryKeys.settings` (existing) — returns `{ key: string; value: string }[]`
 - Produces: Toggle switches that call `PUT /api/settings/:key` with `{ value: "true" | "false" }`
 
@@ -362,16 +376,15 @@ Add the new card BEFORE the existing "Bot Settings" card (so it appears at the t
 <div className="card">
   <h2>🔘 Menu Visibility</h2>
   <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
-    Show or hide top-level bot menu sections. Hidden sections show an "unavailable" message to users.
+    Show or hide top-level bot menu sections. Hidden sections show an "unavailable" message to
+    users.
   </p>
   <ul className="list">
     {MENU_VISIBILITY_KEYS.map((key) => (
       <li key={key} className="list-item">
         <div className="list-item-info">
           <span>{MENU_VISIBILITY_LABELS[key]}</span>
-          <span className="list-item-meta">
-            {menuVis[key] ? '✅ Visible' : '❌ Hidden'}
-          </span>
+          <span className="list-item-meta">{menuVis[key] ? '✅ Visible' : '❌ Hidden'}</span>
         </div>
         <div className="list-item-actions">
           <button
@@ -404,6 +417,7 @@ git commit -m "feat(admin-app): add Menu Visibility card with per-section toggle
 ### Task 3: Verify end-to-end and update docs
 
 **Files:**
+
 - Verify: `npm run typecheck` (root)
 - Verify: `npm test` (root)
 - Verify: `cd admin-app && npm run build` (admin-app)

@@ -4,7 +4,10 @@ import { getDb } from '../database/client';
 import { admins } from '../database/schema';
 import { eq } from 'drizzle-orm';
 
-export async function getAdminRole(userId: number, d1Binding: any): Promise<typeof admins.$inferSelect | null> {
+export async function getAdminRole(
+  userId: number,
+  d1Binding: any,
+): Promise<typeof admins.$inferSelect | null> {
   const db = getDb(d1Binding);
   const result = await db.select().from(admins).where(eq(admins.telegramId, userId));
   return result[0] || null;

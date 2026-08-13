@@ -32,24 +32,24 @@ Before defining tasks, here is the complete file map for this plan.
 
 ### New files (4)
 
-| Path | Responsibility |
-|---|---|
-| `admin-app/src/components/StatTile.tsx` | Reusable presentational stat tile (label + value + hint) |
-| `admin-app/src/pages/StreaksPage.tsx` | Streaks page: 4 tiles + sortable user table |
+| Path                                    | Responsibility                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------- |
+| `admin-app/src/components/StatTile.tsx` | Reusable presentational stat tile (label + value + hint)                |
+| `admin-app/src/pages/StreaksPage.tsx`   | Streaks page: 4 tiles + sortable user table                             |
 | `admin-app/src/pages/FavoritesPage.tsx` | Favorites page: 3 tiles + "group by" toggle + table with per-row remove |
-| `src/tests/router-engagement.test.ts` | 6 router test cases for the 3 new endpoints |
+| `src/tests/router-engagement.test.ts`   | 6 router test cases for the 3 new endpoints                             |
 
 ### Modified files (7)
 
-| Path | Change |
-|---|---|
-| `src/repositories/index.ts` | +2 methods (`UserStateRepository.listAll`, `FavoritesRepository.listAllGrouped`) |
-| `src/api/router.ts` | +3 routes (`GET /api/streaks`, `GET /api/favorites`, `DELETE /api/favorites/:tg/:pid`) |
-| `src/tests/phase-5-repos.test.ts` | +2 new test cases for the new repo methods |
-| `admin-app/src/api/keys.ts` | +2 query keys (`streaks`, `favorites`) |
-| `admin-app/src/App.tsx` | +2 `<Route>` elements, +2 `<NavLink>` elements in the super-admin fragment |
-| `admin-app/src/index.css` | +1 class (`.stat-tile`) |
-| (none) | No new package.json entries, no wrangler.toml changes, no schema/migration files |
+| Path                              | Change                                                                                 |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/repositories/index.ts`       | +2 methods (`UserStateRepository.listAll`, `FavoritesRepository.listAllGrouped`)       |
+| `src/api/router.ts`               | +3 routes (`GET /api/streaks`, `GET /api/favorites`, `DELETE /api/favorites/:tg/:pid`) |
+| `src/tests/phase-5-repos.test.ts` | +2 new test cases for the new repo methods                                             |
+| `admin-app/src/api/keys.ts`       | +2 query keys (`streaks`, `favorites`)                                                 |
+| `admin-app/src/App.tsx`           | +2 `<Route>` elements, +2 `<NavLink>` elements in the super-admin fragment             |
+| `admin-app/src/index.css`         | +1 class (`.stat-tile`)                                                                |
+| (none)                            | No new package.json entries, no wrangler.toml changes, no schema/migration files       |
 
 ### Files this plan does NOT touch (and you must not touch)
 
@@ -77,10 +77,12 @@ The chunks correspond to logical Opus subagent dispatches if executing via the w
 ### Task 1: Add `UserStateRepository.listAll()`
 
 **Files:**
+
 - Modify: `src/repositories/index.ts:384-467` (the `UserStateRepository` class)
 - Test: `src/tests/phase-5-repos.test.ts` (extend existing file)
 
 **Interfaces:**
+
 - Consumes: existing `userState` schema (from `src/database/schema.ts:107-114`), existing `getDb` factory.
 - Produces: `UserStateRepository.listAll(): Promise<Array<typeof userState.$inferSelect>>` — returns every row ordered by `streakDays DESC, lastSeenAt DESC`.
 
@@ -94,9 +96,27 @@ describe('UserStateRepository.listAll', () => {
 
   it('returns all user_state rows ordered by streakDays DESC then lastSeenAt DESC', async () => {
     seedTable(userState, [
-      { telegramId: 'u1', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-01'), visitsTotal: 5, streakDays: 3 },
-      { telegramId: 'u2', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-05'), visitsTotal: 10, streakDays: 7 },
-      { telegramId: 'u3', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-03'), visitsTotal: 2, streakDays: 7 },
+      {
+        telegramId: 'u1',
+        firstSeenAt: new Date('2026-01-01'),
+        lastSeenAt: new Date('2026-08-01'),
+        visitsTotal: 5,
+        streakDays: 3,
+      },
+      {
+        telegramId: 'u2',
+        firstSeenAt: new Date('2026-01-01'),
+        lastSeenAt: new Date('2026-08-05'),
+        visitsTotal: 10,
+        streakDays: 7,
+      },
+      {
+        telegramId: 'u3',
+        firstSeenAt: new Date('2026-01-01'),
+        lastSeenAt: new Date('2026-08-03'),
+        visitsTotal: 2,
+        streakDays: 7,
+      },
     ]);
     const repo = new UserStateRepository(makeMockD1());
     const rows = await repo.listAll();
@@ -116,9 +136,11 @@ If `makeMockD1` is not already exported from the test file, the test file's `cle
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run from repo root:
+
 ```bash
 npx vitest run src/tests/phase-5-repos.test.ts
 ```
+
 Expected: FAIL with `TypeError: repo.listAll is not a function` (or similar). If it fails for a different reason (e.g. import error), fix the test scaffolding first.
 
 - [ ] **Step 3: Add the `listAll` method to `UserStateRepository`**
@@ -146,6 +168,7 @@ Add `desc` to the existing `import { eq, and, desc, lt, sql } from 'drizzle-orm'
 ```bash
 npx vitest run src/tests/phase-5-repos.test.ts
 ```
+
 Expected: PASS for both new cases, and all pre-existing tests in the file still pass.
 
 - [ ] **Step 5: Commit**
@@ -160,10 +183,12 @@ git commit -m "feat(repo): UserStateRepository.listAll for admin read surface"
 ### Task 2: Add `FavoritesRepository.listAllGrouped()`
 
 **Files:**
+
 - Modify: `src/repositories/index.ts:471-555` (the `FavoritesRepository` class)
 - Test: `src/tests/phase-5-repos.test.ts` (extend existing file)
 
 **Interfaces:**
+
 - Consumes: existing `favorites` and `products` schemas, existing `getDb` factory.
 - Produces: `FavoritesRepository.listAllGrouped(): Promise<Array<{ telegramId: string; productId: number; productName: string | null; favoritedAt: Date }>>` — flat list, `LEFT JOIN` to products (so orphan favorites appear with `productName: null`), ordered by `favorites.createdAt DESC`. The "grouped" name reflects client-side aggregation in the page; the repo itself returns a flat list.
 
@@ -177,8 +202,28 @@ describe('FavoritesRepository.listAllGrouped', () => {
 
   it('returns all favorites joined with their product name, ordered by createdAt DESC', async () => {
     seedTable(products, [
-      { id: 10, name: 'Espresso', categoryId: 1, price: 0, stock: 0, unit: 'cup', available: true, createdAt: new Date('2026-01-01'), updatedAt: new Date('2026-01-01') },
-      { id: 20, name: 'Latte',    categoryId: 1, price: 0, stock: 0, unit: 'cup', available: true, createdAt: new Date('2026-01-01'), updatedAt: new Date('2026-01-01') },
+      {
+        id: 10,
+        name: 'Espresso',
+        categoryId: 1,
+        price: 0,
+        stock: 0,
+        unit: 'cup',
+        available: true,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+      },
+      {
+        id: 20,
+        name: 'Latte',
+        categoryId: 1,
+        price: 0,
+        stock: 0,
+        unit: 'cup',
+        available: true,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+      },
     ]);
     seedTable(favorites, [
       { telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-01') },
@@ -206,6 +251,7 @@ If the file already has `FavoritesRepository` tests, follow the local pattern fo
 ```bash
 npx vitest run src/tests/phase-5-repos.test.ts
 ```
+
 Expected: FAIL with `TypeError: repo.listAllGrouped is not a function`.
 
 - [ ] **Step 3: Add the `listAllGrouped` method to `FavoritesRepository`**
@@ -242,6 +288,7 @@ async listAllGrouped() {
 ```bash
 npx vitest run src/tests/phase-5-repos.test.ts
 ```
+
 Expected: PASS for the new cases, and all pre-existing tests still pass.
 
 - [ ] **Step 5: Commit**
@@ -256,10 +303,12 @@ git commit -m "feat(repo): FavoritesRepository.listAllGrouped for admin read sur
 ### Task 3: Add the 3 router endpoints + 6 test cases
 
 **Files:**
+
 - Modify: `src/api/router.ts`
 - Create: `src/tests/router-engagement.test.ts`
 
 **Interfaces:**
+
 - Consumes: `UserStateRepository.listAll` (from Task 1), `FavoritesRepository.listAllGrouped` (from Task 2), existing `FavoritesRepository.remove` (already in `src/repositories/index.ts:496-504`).
 - Produces:
   - `GET /api/streaks` → `{ users: UserStateRow[] }`, 200 on success, 401/403 on auth failure.
@@ -269,6 +318,7 @@ git commit -m "feat(repo): FavoritesRepository.listAllGrouped for admin read sur
 **Pre-flight check (read this first):**
 
 Open `src/api/router.ts` and identify:
+
 1. How routes are registered (look for `handleApiRequest`).
 2. Whether `adminAuth` is applied per-route or as a top-level middleware.
 3. Whether `requireSuperAdmin` exists as a named middleware or whether the super-admin check is done inline per handler.
@@ -297,7 +347,13 @@ describe('Engagement routes', () => {
 
   it('GET /api/streaks returns 200 with users array for super_admin', async () => {
     seedTable(userState, [
-      { telegramId: 'u1', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-05'), visitsTotal: 10, streakDays: 7 },
+      {
+        telegramId: 'u1',
+        firstSeenAt: new Date('2026-01-01'),
+        lastSeenAt: new Date('2026-08-05'),
+        visitsTotal: 10,
+        streakDays: 7,
+      },
     ]);
     const res = await makeRequest('GET', '/api/streaks'); // see helper note below
     expect(res.status).toBe(200);
@@ -316,11 +372,19 @@ describe('Engagement routes', () => {
 
   it('GET /api/favorites?groupBy=user returns 200 with favorites array for super_admin', async () => {
     seedTable(products, [
-      { id: 10, name: 'Espresso', categoryId: 1, price: 0, stock: 0, unit: 'cup', available: true, createdAt: new Date('2026-01-01'), updatedAt: new Date('2026-01-01') },
+      {
+        id: 10,
+        name: 'Espresso',
+        categoryId: 1,
+        price: 0,
+        stock: 0,
+        unit: 'cup',
+        available: true,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+      },
     ]);
-    seedTable(favorites, [
-      { telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') },
-    ]);
+    seedTable(favorites, [{ telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') }]);
     const res = await makeRequest('GET', '/api/favorites?groupBy=user');
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -334,9 +398,7 @@ describe('Engagement routes', () => {
   });
 
   it('DELETE /api/favorites/:tg/:pid returns 200 with {ok:true} when the pair exists', async () => {
-    seedTable(favorites, [
-      { telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') },
-    ]);
+    seedTable(favorites, [{ telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') }]);
     const res = await makeRequest('DELETE', '/api/favorites/u1/10');
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -359,6 +421,7 @@ describe('Engagement routes', () => {
 ```bash
 npx vitest run src/tests/router-engagement.test.ts
 ```
+
 Expected: All 6 tests FAIL. The most common failure will be 404 (route not registered) or 500 (handler throws because the method doesn't exist). The exact failure doesn't matter — what matters is that they all fail.
 
 - [ ] **Step 3: Add the 3 endpoints to `src/api/router.ts`**
@@ -419,6 +482,7 @@ The `corsHeaders` constant and the existing 401/403 patterns are the references 
 ```bash
 npx vitest run src/tests/router-engagement.test.ts
 ```
+
 Expected: All 6 tests PASS.
 
 - [ ] **Step 5: Run the full test suite to confirm no regressions**
@@ -426,6 +490,7 @@ Expected: All 6 tests PASS.
 ```bash
 npm test
 ```
+
 Expected: All pre-existing tests still pass.
 
 - [ ] **Step 6: Run typecheck**
@@ -433,6 +498,7 @@ Expected: All pre-existing tests still pass.
 ```bash
 npm run typecheck
 ```
+
 Expected: 0 errors.
 
 - [ ] **Step 7: Commit**
@@ -456,9 +522,11 @@ This completes Chunk A (server foundation).
 ### Task 4: Add the 2 new query keys
 
 **Files:**
+
 - Modify: `admin-app/src/api/keys.ts`
 
 **Interfaces:**
+
 - Consumes: the existing 8 query keys.
 - Produces: adds `streaks: ['streaks'] as const` and `favorites: ['favorites'] as const` to the `queryKeys` object. (The `Favorites` query key in React Query will be `['favorites', groupBy]` — the base key is `favorites`, the page extends it.)
 
@@ -486,6 +554,7 @@ export const queryKeys = {
 ```bash
 cd admin-app && npm run typecheck && cd ..
 ```
+
 Expected: 0 errors.
 
 - [ ] **Step 3: Commit**
@@ -500,10 +569,12 @@ git commit -m "feat(admin-app): add streaks and favorites query keys"
 ### Task 5: Create the `StatTile` component + its CSS class
 
 **Files:**
+
 - Create: `admin-app/src/components/StatTile.tsx`
 - Modify: `admin-app/src/index.css` (add one class)
 
 **Interfaces:**
+
 - Consumes: nothing — it's a presentational component.
 - Produces: a default-exported React component `StatTile` that takes `{ label: string, value: number | string, hint?: string }` and renders a small card with the label muted on top, the value large and bold (Persian digits via inline conversion), and the hint muted below.
 
@@ -568,6 +639,7 @@ If `admin-app/src/index.css` uses CSS variables for theming, use them; otherwise
 ```bash
 cd admin-app && npm run typecheck && npm run build && cd ..
 ```
+
 Expected: typecheck 0 errors; build succeeds. (The `StatTile` is unused so far — TypeScript will warn but the build will succeed. The pages in Tasks 6–7 import it.)
 
 - [ ] **Step 4: Commit**
@@ -584,9 +656,11 @@ This completes Chunk B (mini app foundation).
 ### Task 6: Create the `StreaksPage`
 
 **Files:**
+
 - Create: `admin-app/src/pages/StreaksPage.tsx`
 
 **Interfaces:**
+
 - Consumes: `useAppContext` (for `setError`), `apiFetch`, `queryKeys`, `StatTile`, `EmptyState`, `LoadingScreen`.
 - Produces: a default-exported `StreaksPage` component that fetches `/api/streaks`, renders 4 stat tiles + a sortable user table, with an `EmptyState` when the array is empty.
 
@@ -659,7 +733,10 @@ export default function StreaksPage() {
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    else { setSortKey(k); setSortDir('desc'); }
+    else {
+      setSortKey(k);
+      setSortDir('desc');
+    }
   };
 
   return (
@@ -683,7 +760,8 @@ export default function StreaksPage() {
                 <div className="list-item-info">
                   <span>{u.telegramId}</span>
                   <span className="list-item-meta">
-                    visits {u.visitsTotal} · last {new Date(toMillis(u.lastSeenAt)).toLocaleDateString()}
+                    visits {u.visitsTotal} · last{' '}
+                    {new Date(toMillis(u.lastSeenAt)).toLocaleDateString()}
                   </span>
                 </div>
                 <div className="list-item-actions">
@@ -713,6 +791,7 @@ export default function StreaksPage() {
 ```
 
 **Notes for the implementer:**
+
 - The two sort buttons on each row are deliberate — they make the sort affordance visible without taking up column space. The `toggleSort` mutates the page-level sort state.
 - The `EmptyState` message is in Persian because the operator is Iranian and the diagnostic points to a Persian env var. This matches the `formatPersianPrice` precedent (Persian text where it serves the operator).
 - The "Active today" tile uses UTC math, mirroring the server's `utcDayKey`. Don't "fix" it to local time.
@@ -723,6 +802,7 @@ export default function StreaksPage() {
 ```bash
 cd admin-app && npm run typecheck && npm run build && cd ..
 ```
+
 Expected: 0 typecheck errors; build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -737,9 +817,11 @@ git commit -m "feat(admin-app): StreaksPage with tiles and sortable user table"
 ### Task 7: Create the `FavoritesPage`
 
 **Files:**
+
 - Create: `admin-app/src/pages/FavoritesPage.tsx`
 
 **Interfaces:**
+
 - Consumes: `useAppContext` (for `setError`, `showToast`, `confirm`, `currentUser`), `apiFetch`, `queryKeys`, `StatTile`, `EmptyState`, `LoadingScreen`.
 - Produces: a default-exported `FavoritesPage` component that fetches `/api/favorites?groupBy=<groupBy>`, renders 3 stat tiles + a "group by" segmented control + a table, with a per-row "Remove" button in the `product` group that calls `DELETE /api/favorites/:tg/:pid` and logs to `console.info`.
 
@@ -812,18 +894,27 @@ export default function FavoritesPage() {
         const ts = toMillis(f.favoritedAt);
         const cur = map.get(f.telegramId);
         if (!cur) map.set(f.telegramId, { count: 1, lastFavorited: ts });
-        else { cur.count++; cur.lastFavorited = Math.max(cur.lastFavorited, ts); }
+        else {
+          cur.count++;
+          cur.lastFavorited = Math.max(cur.lastFavorited, ts);
+        }
       }
       return Array.from(map.entries())
         .map(([telegramId, v]) => ({ telegramId, ...v }))
         .sort((a, b) => b.lastFavorited - a.lastFavorited);
     } else {
-      const map = new Map<number, { productName: string | null; count: number; lastFavorited: number }>();
+      const map = new Map<
+        number,
+        { productName: string | null; count: number; lastFavorited: number }
+      >();
       for (const f of data) {
         const ts = toMillis(f.favoritedAt);
         const cur = map.get(f.productId);
         if (!cur) map.set(f.productId, { productName: f.productName, count: 1, lastFavorited: ts });
-        else { cur.count++; cur.lastFavorited = Math.max(cur.lastFavorited, ts); }
+        else {
+          cur.count++;
+          cur.lastFavorited = Math.max(cur.lastFavorited, ts);
+        }
       }
       return Array.from(map.entries())
         .map(([productId, v]) => ({ productId, ...v }))
@@ -883,7 +974,8 @@ export default function FavoritesPage() {
                 <div className="list-item-info">
                   <span>{g.telegramId}</span>
                   <span className="list-item-meta">
-                    {g.count} favorite{g.count === 1 ? '' : 's'} · last {new Date(g.lastFavorited).toLocaleDateString()}
+                    {g.count} favorite{g.count === 1 ? '' : 's'} · last{' '}
+                    {new Date(g.lastFavorited).toLocaleDateString()}
                   </span>
                 </div>
               </li>
@@ -896,7 +988,8 @@ export default function FavoritesPage() {
                 <div className="list-item-info">
                   <span dir="auto">{g.productName ?? `(deleted #${g.productId})`}</span>
                   <span className="list-item-meta">
-                    {g.count} favorite{g.count === 1 ? '' : 's'} · last {new Date(g.lastFavorited).toLocaleDateString()}
+                    {g.count} favorite{g.count === 1 ? '' : 's'} · last{' '}
+                    {new Date(g.lastFavorited).toLocaleDateString()}
                   </span>
                 </div>
                 <div className="list-item-actions">
@@ -964,6 +1057,7 @@ The product-group table is a flat list (no client-side aggregation in the produc
 ```bash
 cd admin-app && npm run typecheck && npm run build && cd ..
 ```
+
 Expected: 0 typecheck errors; build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -978,9 +1072,11 @@ git commit -m "feat(admin-app): FavoritesPage with group-by toggle and per-row r
 ### Task 8: Wire routes + nav links in `App.tsx` + run the final verification gates
 
 **Files:**
+
 - Modify: `admin-app/src/App.tsx`
 
 **Interfaces:**
+
 - Consumes: the existing routes in `App.tsx`, the new `StreaksPage` and `FavoritesPage` exports, the `isSuperAdmin` derivation.
 - Produces: two new `<Route>` elements (super-admin-only, with `<Navigate to="/products" replace />` fallback for non-super-admins) and two new `<NavLink>` elements in the super-admin fragment.
 
@@ -1032,30 +1128,39 @@ Inside the super-admin fragment of the `.bottom-nav` (after the existing `<NavLi
 - [ ] **Step 4: Run all five verification gates (in order)**
 
 **Gate 1 — typecheck (root):**
+
 ```bash
 npm run typecheck
 ```
+
 Expected: 0 errors.
 
 **Gate 2 — typecheck (admin-app):**
+
 ```bash
 cd admin-app && npm run typecheck && cd ..
 ```
+
 Expected: 0 errors.
 
 **Gate 3 — tests:**
+
 ```bash
 npm test
 ```
+
 Expected: All pre-existing tests pass. The 2 new repo tests (Tasks 1, 2) and the 6 new router tests (Task 3) all pass. **Total: 8 new tests, all green.**
 
 **Gate 4 — admin-app build:**
+
 ```bash
 cd admin-app && npm run build && cd ..
 ```
+
 Expected: Build succeeds. `admin-app/dist/assets/index-*.js` and `index-*.css` are produced.
 
 **Gate 5 — lint count check (no increase):**
+
 ```bash
 # Capture current counts BEFORE this work for comparison (these are the
 # baseline values from project memory subagent-brief-lint-baseline-language):
@@ -1101,30 +1206,31 @@ This completes Chunk C and the plan.
 
 **1. Spec coverage:**
 
-| Spec section | Implemented in |
-|---|---|
-| §Architecture — repo `UserStateRepository.listAll` | Task 1 |
-| §Architecture — repo `FavoritesRepository.listAllGrouped` | Task 2 |
-| §Architecture — 3 REST endpoints | Task 3 |
-| §Architecture — 2 query keys | Task 4 |
-| §Architecture — `StatTile` component | Task 5 |
-| §Architecture — `StreaksPage` | Task 6 |
-| §Architecture — `FavoritesPage` | Task 7 |
-| §Architecture — `App.tsx` routes + nav links | Task 8 |
-| §Components — 4 tiles, sortable table, UTC math, EmptyState | Task 6 |
-| §Components — 3 tiles, groupBy toggle, per-row remove, console.info audit | Task 7 |
-| §Data flow — streaks read | Task 3 (endpoint) + Task 6 (page) |
-| §Data flow — favorites read | Task 3 (endpoint) + Task 7 (page) |
-| §Data flow — favorites delete | Task 3 (endpoint) + Task 7 (page) |
-| §Error handling — 401/403/400/404/500 | Task 3 (server) + Tasks 6/7 (client toasts) |
-| §Testing — 2 repo + 6 router tests | Tasks 1, 2, 3 |
-| §Testing — verification gates | Task 8 |
+| Spec section                                                              | Implemented in                              |
+| ------------------------------------------------------------------------- | ------------------------------------------- |
+| §Architecture — repo `UserStateRepository.listAll`                        | Task 1                                      |
+| §Architecture — repo `FavoritesRepository.listAllGrouped`                 | Task 2                                      |
+| §Architecture — 3 REST endpoints                                          | Task 3                                      |
+| §Architecture — 2 query keys                                              | Task 4                                      |
+| §Architecture — `StatTile` component                                      | Task 5                                      |
+| §Architecture — `StreaksPage`                                             | Task 6                                      |
+| §Architecture — `FavoritesPage`                                           | Task 7                                      |
+| §Architecture — `App.tsx` routes + nav links                              | Task 8                                      |
+| §Components — 4 tiles, sortable table, UTC math, EmptyState               | Task 6                                      |
+| §Components — 3 tiles, groupBy toggle, per-row remove, console.info audit | Task 7                                      |
+| §Data flow — streaks read                                                 | Task 3 (endpoint) + Task 6 (page)           |
+| §Data flow — favorites read                                               | Task 3 (endpoint) + Task 7 (page)           |
+| §Data flow — favorites delete                                             | Task 3 (endpoint) + Task 7 (page)           |
+| §Error handling — 401/403/400/404/500                                     | Task 3 (server) + Tasks 6/7 (client toasts) |
+| §Testing — 2 repo + 6 router tests                                        | Tasks 1, 2, 3                               |
+| §Testing — verification gates                                             | Task 8                                      |
 
 All sections covered. ✅
 
 **2. Placeholder scan:** No "TBD", "TODO", "implement later", "fill in details", or generic "add tests" steps. Every code block contains the actual code to write. ✅
 
 **3. Type consistency:**
+
 - `UserStateRepository.listAll(): Promise<Array<typeof userState.$inferSelect>>` is referenced in Task 1 and used in Task 3 — same shape.
 - `FavoritesRepository.listAllGrouped(): Promise<Array<{ telegramId, productId, productName, favoritedAt }>>` — same shape referenced in Task 2 and used in Task 3.
 - `queryKeys.streaks` defined in Task 4, consumed in Task 6.

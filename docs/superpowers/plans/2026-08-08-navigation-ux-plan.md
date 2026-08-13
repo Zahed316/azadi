@@ -27,49 +27,49 @@
 
 ### Admin App — New Files
 
-| File | Purpose |
-|------|---------|
-| `admin-app/src/pages/InsightsPage.tsx` | Composes StreaksPage, FavoritesPage, AILogsPage, AITestPage as vertical cards |
-| `admin-app/src/pages/ConfigurePage.tsx` | Composes SettingsPage, MenuConfigPage, AdminsPage as vertical cards |
-| `admin-app/src/pages/InfoPage.tsx` | Composes AboutUsPage, ContentPage, MessagesPage as vertical cards |
+| File                                    | Purpose                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
+| `admin-app/src/pages/InsightsPage.tsx`  | Composes StreaksPage, FavoritesPage, AILogsPage, AITestPage as vertical cards |
+| `admin-app/src/pages/ConfigurePage.tsx` | Composes SettingsPage, MenuConfigPage, AdminsPage as vertical cards           |
+| `admin-app/src/pages/InfoPage.tsx`      | Composes AboutUsPage, ContentPage, MessagesPage as vertical cards             |
 
 ### Admin App — Modified Files
 
-| File | Changes |
-|------|---------|
-| `admin-app/src/App.tsx:113-201` | Replace 11 NavLink items with 6 grouped tabs |
-| `admin-app/src/App.tsx:66-109` | Add `/insights`, `/configure`, `/info` routes; keep old routes as redirects |
-| `admin-app/src/pages/ProductsPage.tsx` | Add loading states on mutation buttons, success toasts |
-| `admin-app/src/pages/CategoriesPage.tsx` | Add loading states on mutation buttons, success toasts |
-| `admin-app/src/pages/AdminsPage.tsx` | Add `disabled` to submit button during mutation, success toasts |
-| `admin-app/src/pages/SettingsPage.tsx` | Add loading state on save button, success toast |
-| `admin-app/src/pages/MenuConfigPage.tsx` | Add loading states, success toasts |
-| `admin-app/src/pages/AboutUsPage.tsx` | Add loading states, success toasts |
-| `admin-app/src/pages/ContentPage.tsx` | Add loading states, success toasts |
-| `admin-app/src/pages/MessagesPage.tsx` | Add loading states on reply button, success toast |
-| `admin-app/src/pages/ProductsPage.tsx` | Add optimistic updates for toggle mutations |
-| `admin-app/src/pages/MenuConfigPage.tsx` | Add optimistic update for visibility toggle |
-| `admin-app/src/pages/ProductsPage.tsx` | Improve empty state message |
-| `admin-app/src/pages/CategoriesPage.tsx` | Improve empty state message |
-| `admin-app/src/pages/AdminsPage.tsx` | Improve empty state message |
-| `admin-app/src/pages/FavoritesPage.tsx` | Improve empty state message |
-| `admin-app/src/pages/AILogsPage.tsx` | Improve empty state message |
-| `admin-app/src/pages/MessagesPage.tsx` | Improve empty state message |
-| `admin-app/src/pages/StreaksPage.tsx` | Improve empty state message |
+| File                                     | Changes                                                                     |
+| ---------------------------------------- | --------------------------------------------------------------------------- |
+| `admin-app/src/App.tsx:113-201`          | Replace 11 NavLink items with 6 grouped tabs                                |
+| `admin-app/src/App.tsx:66-109`           | Add `/insights`, `/configure`, `/info` routes; keep old routes as redirects |
+| `admin-app/src/pages/ProductsPage.tsx`   | Add loading states on mutation buttons, success toasts                      |
+| `admin-app/src/pages/CategoriesPage.tsx` | Add loading states on mutation buttons, success toasts                      |
+| `admin-app/src/pages/AdminsPage.tsx`     | Add `disabled` to submit button during mutation, success toasts             |
+| `admin-app/src/pages/SettingsPage.tsx`   | Add loading state on save button, success toast                             |
+| `admin-app/src/pages/MenuConfigPage.tsx` | Add loading states, success toasts                                          |
+| `admin-app/src/pages/AboutUsPage.tsx`    | Add loading states, success toasts                                          |
+| `admin-app/src/pages/ContentPage.tsx`    | Add loading states, success toasts                                          |
+| `admin-app/src/pages/MessagesPage.tsx`   | Add loading states on reply button, success toast                           |
+| `admin-app/src/pages/ProductsPage.tsx`   | Add optimistic updates for toggle mutations                                 |
+| `admin-app/src/pages/MenuConfigPage.tsx` | Add optimistic update for visibility toggle                                 |
+| `admin-app/src/pages/ProductsPage.tsx`   | Improve empty state message                                                 |
+| `admin-app/src/pages/CategoriesPage.tsx` | Improve empty state message                                                 |
+| `admin-app/src/pages/AdminsPage.tsx`     | Improve empty state message                                                 |
+| `admin-app/src/pages/FavoritesPage.tsx`  | Improve empty state message                                                 |
+| `admin-app/src/pages/AILogsPage.tsx`     | Improve empty state message                                                 |
+| `admin-app/src/pages/MessagesPage.tsx`   | Improve empty state message                                                 |
+| `admin-app/src/pages/StreaksPage.tsx`    | Improve empty state message                                                 |
 
 ### Bot — New Files
 
-| File | Purpose |
-|------|---------|
+| File                        | Purpose                                                            |
+| --------------------------- | ------------------------------------------------------------------ |
 | `src/menus/discoverMenu.ts` | Discover submenu: Featured, Seasonal, Passport, Search (4 buttons) |
-| `src/menus/infoMenu.ts` | Info submenu: About Us + FAQ (2 buttons) |
+| `src/menus/infoMenu.ts`     | Info submenu: About Us + FAQ (2 buttons)                           |
 
 ### Bot — Modified Files
 
-| File | Changes |
-|------|---------|
+| File                           | Changes                                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `src/menus/mainMenu.ts:18-148` | Replace Featured, Seasonal, Passport, Search buttons with `discoverMenu` submenu; replace About, FAQ buttons with `infoMenu` submenu |
-| `src/bot.ts:4-7,106-112` | Import and register `discoverMenu` and `infoMenu` |
+| `src/bot.ts:4-7,106-112`       | Import and register `discoverMenu` and `infoMenu`                                                                                    |
 
 ---
 
@@ -78,11 +78,13 @@
 ### Task 1: Create Admin Wrapper Pages (Insights, Configure, Info)
 
 **Files:**
+
 - Create: `admin-app/src/pages/InsightsPage.tsx`
 - Create: `admin-app/src/pages/ConfigurePage.tsx`
 - Create: `admin-app/src/pages/InfoPage.tsx`
 
 **Interfaces:**
+
 - Consumes: Existing page components (StreaksPage, FavoritesPage, AILogsPage, AITestPage, SettingsPage, MenuConfigPage, AdminsPage, AboutUsPage, ContentPage, MessagesPage) — all default exports except MessagesPage (named export)
 - Produces: 3 new default-export React components that render existing pages as sections within a `<div className="card">` wrapper
 
@@ -226,10 +228,12 @@ git commit -m "feat: add grouped wrapper pages for admin navigation reorg"
 ### Task 2: Reorganize Admin Bottom Nav + Routing
 
 **Files:**
+
 - Modify: `admin-app/src/App.tsx:66-109` (routes)
 - Modify: `admin-app/src/App.tsx:113-201` (bottom nav)
 
 **Interfaces:**
+
 - Consumes: InsightsPage, ConfigurePage, InfoPage (from Task 1)
 - Produces: Updated routing table with 6 grouped routes + redirect routes for old URLs; updated bottom nav with 6 NavLink items
 
@@ -254,8 +258,14 @@ Replace the route block in `App.tsx:66-109` with:
   <Route path="/products" element={<ProductsPage />} />
   <Route path="/categories" element={<CategoriesPage />} />
   {/* Grouped tabs */}
-  <Route path="/insights" element={isSuperAdmin ? <InsightsPage /> : <Navigate to="/products" replace />} />
-  <Route path="/configure" element={isSuperAdmin ? <ConfigurePage /> : <Navigate to="/products" replace />} />
+  <Route
+    path="/insights"
+    element={isSuperAdmin ? <InsightsPage /> : <Navigate to="/products" replace />}
+  />
+  <Route
+    path="/configure"
+    element={isSuperAdmin ? <ConfigurePage /> : <Navigate to="/products" replace />}
+  />
   <Route path="/info" element={isSuperAdmin ? <InfoPage /> : <Navigate to="/products" replace />} />
   {/* Redirect old routes to grouped pages */}
   <Route path="/settings" element={<Navigate to="/configure" replace />} />
@@ -342,9 +352,11 @@ git commit -m "feat: reorganize admin bottom nav from 11 tabs to 6 grouped tabs"
 ### Task 3: Create Bot Discover Menu
 
 **Files:**
+
 - Create: `src/menus/discoverMenu.ts`
 
 **Interfaces:**
+
 - Consumes: `isMenuVisible`, `HIDDEN_MESSAGE` from `../utils/menuVisibility`; `ProductRepository`, `SettingsRepository` from `../repositories`; `formatProduct`, `DEFAULT_PRICE_UNIT` from `../utils/formatters`; `buildListPage` from `../utils/faqPagination`; `mainMenu` from `./mainMenu`; `MyContext` from `../types/context`
 - Produces: `discoverMenu` — a grammY Menu with 4 buttons (Featured, Seasonal, Passport, Search) that gets registered on mainMenu
 
@@ -393,7 +405,9 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری پیشنهاد ویژه ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری پیشنهاد ویژه ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .text('🌿 مخصوص فصل', async (ctx: any) => {
@@ -420,7 +434,9 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات فصلی ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری محصولات فصلی ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .text('📖 پاسپورت قهوه', async (ctx: any) => {
@@ -458,7 +474,9 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری پاسپورت قهوه ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری پاسپورت قهوه ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .text('🔍 جستجو', async (ctx: MyContext) => {
@@ -505,9 +523,11 @@ git commit -m "feat: add Discover submenu to consolidate Featured/Seasonal/Passp
 ### Task 4: Create Bot Info Menu
 
 **Files:**
+
 - Create: `src/menus/infoMenu.ts`
 
 **Interfaces:**
+
 - Consumes: `isMenuVisible`, `HIDDEN_MESSAGE` from `../utils/menuVisibility`; `BranchRepository`, `FaqRepository`, `SettingsRepository` from `../repositories`; `formatFaq`, `DEFAULT_PRICE_UNIT` from `../utils/formatters`; `buildListPage` from `../utils/faqPagination`; `mainMenu` from `./mainMenu`; `MyContext` from `../types/context`
 - Produces: `infoMenu` — a grammY Menu with 2 buttons (About Us, FAQ) that gets registered on mainMenu
 
@@ -611,10 +631,12 @@ git commit -m "feat: add Info submenu to consolidate About Us and FAQ"
 ### Task 5: Update Bot Main Menu and Registration
 
 **Files:**
+
 - Modify: `src/menus/mainMenu.ts:18-215` — remove Featured, Seasonal, Passport, Search, About, FAQ buttons; replace with submenu references
 - Modify: `src/bot.ts:4-7,106-112` — import and register discoverMenu, infoMenu
 
 **Interfaces:**
+
 - Consumes: `discoverMenu` from `./discoverMenu` (Task 3), `infoMenu` from `./infoMenu` (Task 4)
 - Produces: Updated mainMenu with 8 buttons (Discover, Favorites, Drinks, Beans, Cakes, Info, Messages); updated bot.ts with 6 registered menus
 
@@ -746,6 +768,7 @@ git commit -m "refactor: reorganize bot main menu with Discover and Info submenu
 ### Task 6: Add Loading States + Success Toasts to Admin Mutation Pages
 
 **Files:**
+
 - Modify: `admin-app/src/pages/AdminsPage.tsx`
 - Modify: `admin-app/src/pages/SettingsPage.tsx`
 - Modify: `admin-app/src/pages/MenuConfigPage.tsx`
@@ -810,7 +833,11 @@ In `admin-app/src/pages/AdminsPage.tsx`:
    ```
 5. Add `disabled` to delete button (line 95):
    ```tsx
-   <button className="danger" onClick={() => deleteAdmin(a.id)} disabled={deleteAdminMutation.isPending}>
+   <button
+     className="danger"
+     onClick={() => deleteAdmin(a.id)}
+     disabled={deleteAdminMutation.isPending}
+   >
      Remove
    </button>
    ```
@@ -860,6 +887,7 @@ git commit -m "feat: add loading states and success toasts to all admin mutation
 ### Task 7: Add Optimistic Updates for Toggle Operations
 
 **Files:**
+
 - Modify: `admin-app/src/pages/ProductsPage.tsx` — available/featured/seasonal toggle mutations
 - Modify: `admin-app/src/pages/MenuConfigPage.tsx` — visibility toggle mutation
 
@@ -872,7 +900,7 @@ useMutation({
     await queryClient.cancelQueries({ queryKey: queryKeys.products });
     const prev = queryClient.getQueryData(queryKeys.products);
     queryClient.setQueryData(queryKeys.products, (old: any[] | undefined) =>
-      old?.map((p) => (p.id === id ? { ...p, [field]: !p[field] } : p))
+      old?.map((p) => (p.id === id ? { ...p, [field]: !p[field] } : p)),
     );
     return { prev };
   },
@@ -881,7 +909,7 @@ useMutation({
     showToast('❌ Toggle failed', 'error');
   },
   onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.products }),
-})
+});
 ```
 
 **Steps:**
@@ -911,6 +939,7 @@ git commit -m "feat: add optimistic updates for product and menu config toggles"
 ### Task 8: Improve Empty State Messages
 
 **Files:**
+
 - Modify: All pages with `<EmptyState>` components (see file list below)
 
 **Pattern:**

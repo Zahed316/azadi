@@ -52,8 +52,7 @@ export function setupAdminCommands(bot: Bot<MyContext>, _env: Env): void {
       });
 
       await ctx.reply(
-        '✅ دستورات با موفقیت ثبت شدند.\n' +
-        '📋 دکمه منوی پایین چت به وب‌اپ منو وصل شد.',
+        '✅ دستورات با موفقیت ثبت شدند.\n' + '📋 دکمه منوی پایین چت به وب‌اپ منو وصل شد.',
       );
     } catch (e: any) {
       await ctx.reply('❌ خطا در ثبت دستورات. لطفاً بعداً تلاش کنید.');

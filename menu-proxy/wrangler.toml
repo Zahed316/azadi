@@ -1,0 +1,9 @@
+name = "menu-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-08-12"
+
+# Custom domain: www.azadiroastery.ir
+routes = [
+  { pattern = "www.azadiroastery.ir/*", custom_domain = true },
+  { pattern = "menu.azadiroastery.ir/*", custom_domain = true },
+]

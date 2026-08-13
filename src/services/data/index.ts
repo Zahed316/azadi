@@ -48,7 +48,10 @@ export class DataService implements IDataService {
   private messages: MessageRepository;
   private db: ReturnType<typeof getDb>;
 
-  constructor(d1Binding: any, private cache?: ICacheService) {
+  constructor(
+    d1Binding: any,
+    private cache?: ICacheService,
+  ) {
     this.db = getDb(d1Binding);
     this.products = new ProductRepository(d1Binding);
     this.categories = new CategoryRepository(d1Binding);
@@ -108,9 +111,7 @@ export class DataService implements IDataService {
   }
 
   async getPopularProducts(limit: number = 5) {
-    return this.cached(CACHE_KEYS.products.popular, () =>
-      this.products.getPopularProducts(limit),
-    );
+    return this.cached(CACHE_KEYS.products.popular, () => this.products.getPopularProducts(limit));
   }
 
   async getByFlag(flag: 'featured' | 'isSeasonal') {
@@ -149,9 +150,7 @@ export class DataService implements IDataService {
   // ---------------------------------------------------------------------------
 
   async getActiveBranches() {
-    return this.cached(CACHE_KEYS.branches.active, () =>
-      this.branchesRepo.getActiveBranches(),
-    );
+    return this.cached(CACHE_KEYS.branches.active, () => this.branchesRepo.getActiveBranches());
   }
 
   // ---------------------------------------------------------------------------
@@ -302,10 +301,7 @@ export class DataService implements IDataService {
       this.db.select().from(faq),
 
       // [3] Visible menu config
-      this.db
-        .select()
-        .from(menuConfig)
-        .where(eq(menuConfig.isVisible, true)),
+      this.db.select().from(menuConfig).where(eq(menuConfig.isVisible, true)),
 
       // [4] About setting
       this.db.select().from(settings).where(eq(settings.key, 'about')),

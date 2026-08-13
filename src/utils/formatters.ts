@@ -14,7 +14,10 @@ const unitMap: Record<string, string> = {
   item: 'عدد',
 };
 
-export function formatProduct(p: typeof products.$inferSelect, priceUnit: string = DEFAULT_PRICE_UNIT): string {
+export function formatProduct(
+  p: typeof products.$inferSelect,
+  priceUnit: string = DEFAULT_PRICE_UNIT,
+): string {
   let text = `📦 <b>${p.name}</b>\n`;
   if (p.description) text += `\n${p.description}\n`;
   if (p.priceOnRequest || p.price == null) {

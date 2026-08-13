@@ -116,12 +116,20 @@ export default function ProductsPage() {
   });
 
   const saveProductMutation = useMutation({
-    mutationFn: async (data: { method: string; id?: number; body: any; imageUrl?: string | null }) => {
+    mutationFn: async (data: {
+      method: string;
+      id?: number;
+      body: any;
+      imageUrl?: string | null;
+    }) => {
       // Save the product
-      const result = await apiFetch<{ success: boolean }>(data.id ? `/products/${data.id}` : '/products', {
-        method: data.method,
-        body: data.body,
-      });
+      const result = await apiFetch<{ success: boolean }>(
+        data.id ? `/products/${data.id}` : '/products',
+        {
+          method: data.method,
+          body: data.body,
+        },
+      );
       // If editing and image URL changed, update it via the image endpoint
       if (data.id && data.imageUrl !== undefined) {
         if (data.imageUrl) {
@@ -416,7 +424,9 @@ export default function ProductsPage() {
                   src={prodImageUrl}
                   alt="Preview"
                   style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
               </div>
             )}
@@ -533,7 +543,9 @@ export default function ProductsPage() {
               </>
             )}
             <button type="submit" className="primary" disabled={saveProductMutation.isPending}>
-              {saveProductMutation.isPending ? '⏳...' : (editingProduct ? 'به‌روزرسانی' : 'افزودن') + ' محصول'}
+              {saveProductMutation.isPending
+                ? '⏳...'
+                : (editingProduct ? 'به‌روزرسانی' : 'افزودن') + ' محصول'}
             </button>
             {editingProduct && (
               <button type="button" className="secondary" onClick={resetProductForm}>
@@ -583,7 +595,13 @@ export default function ProductsPage() {
                   <div className="list-item-actions">
                     <button
                       className="secondary"
-                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'available', value: !p.available })}
+                      onClick={() =>
+                        toggleProductField.mutate({
+                          id: p.id,
+                          field: 'available',
+                          value: !p.available,
+                        })
+                      }
                       disabled={toggleProductField.isPending}
                       title={p.available ? 'موجود' : 'ناموجود'}
                     >
@@ -591,7 +609,13 @@ export default function ProductsPage() {
                     </button>
                     <button
                       className="secondary"
-                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'featured', value: !p.featured })}
+                      onClick={() =>
+                        toggleProductField.mutate({
+                          id: p.id,
+                          field: 'featured',
+                          value: !p.featured,
+                        })
+                      }
                       disabled={toggleProductField.isPending}
                       title={p.featured ? 'پیشنهاد ویژه' : 'پیشنهاد ویژه نیست'}
                     >
@@ -599,7 +623,13 @@ export default function ProductsPage() {
                     </button>
                     <button
                       className="secondary"
-                      onClick={() => toggleProductField.mutate({ id: p.id, field: 'isSeasonal', value: !p.isSeasonal })}
+                      onClick={() =>
+                        toggleProductField.mutate({
+                          id: p.id,
+                          field: 'isSeasonal',
+                          value: !p.isSeasonal,
+                        })
+                      }
                       disabled={toggleProductField.isPending}
                       title={p.isSeasonal ? 'مخصوص فصل' : 'مخصوص فصل نیست'}
                     >
@@ -608,7 +638,11 @@ export default function ProductsPage() {
                     <button className="secondary" onClick={() => startEditProduct(p)}>
                       ویرایش
                     </button>
-                    <button className="danger" onClick={() => deleteProduct(p.id)} disabled={deleteProductMutation.isPending}>
+                    <button
+                      className="danger"
+                      onClick={() => deleteProduct(p.id)}
+                      disabled={deleteProductMutation.isPending}
+                    >
                       حذف
                     </button>
                   </div>
@@ -642,7 +676,11 @@ export default function ProductsPage() {
               <option value="false">ناموجود</option>
             </select>
           )}
-          <button className="primary" onClick={handleBatchExecute} disabled={batchMutation.isPending}>
+          <button
+            className="primary"
+            onClick={handleBatchExecute}
+            disabled={batchMutation.isPending}
+          >
             {batchMutation.isPending ? '⏳...' : `اعمال روی ${selectedProductIds.length} محصول`}
           </button>
         </div>

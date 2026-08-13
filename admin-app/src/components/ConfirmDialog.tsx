@@ -68,7 +68,9 @@ export function useConfirm() {
         aria-labelledby="confirm-message"
         onClick={(e) => e.stopPropagation()}
       >
-        <p id="confirm-message" className="confirm-message">{confirmState.message}</p>
+        <p id="confirm-message" className="confirm-message">
+          {confirmState.message}
+        </p>
         <div className="confirm-actions">
           <button
             ref={cancelRef}

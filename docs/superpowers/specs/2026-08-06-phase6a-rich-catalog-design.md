@@ -12,17 +12,17 @@ Enrich the product catalog with images (R2 upload + external URL fallback), nutr
 
 ### New columns on `products`
 
-| Column | Type | Default | Description |
-|--------|------|---------|-------------|
-| `calories` | `integer` | `null` | kcal per serving |
-| `allergens` | `text` | `null` | Comma-separated list (e.g., `"milk,gluten,nuts"`) |
-| `caffeineMg` | `integer` | `null` | Caffeine in milligrams |
+| Column       | Type      | Default | Description                                       |
+| ------------ | --------- | ------- | ------------------------------------------------- |
+| `calories`   | `integer` | `null`  | kcal per serving                                  |
+| `allergens`  | `text`    | `null`  | Comma-separated list (e.g., `"milk,gluten,nuts"`) |
+| `caffeineMg` | `integer` | `null`  | Caffeine in milligrams                            |
 
 ### New column on `coffee_details`
 
-| Column | Type | Default | Description |
-|--------|------|---------|-------------|
-| `brewGuide` | `text` | `null` | Brewing instructions (Persian text) |
+| Column      | Type   | Default | Description                         |
+| ----------- | ------ | ------- | ----------------------------------- |
+| `brewGuide` | `text` | `null`  | Brewing instructions (Persian text) |
 
 ### Image storage
 
@@ -46,10 +46,10 @@ Zero-downtime, no renames, fully backward-compatible.
 
 ### New
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `PUT` | `/api/products/{id}/image` | category_admin (scoped) | Upload image to R2. `multipart/form-data` with `file` field. Returns `{ imageUrl }` |
-| `DELETE` | `/api/products/{id}/image` | category_admin (scoped) | Remove image from R2, clear `imageUrl` |
+| Method   | Path                       | Auth                    | Description                                                                         |
+| -------- | -------------------------- | ----------------------- | ----------------------------------------------------------------------------------- |
+| `PUT`    | `/api/products/{id}/image` | category_admin (scoped) | Upload image to R2. `multipart/form-data` with `file` field. Returns `{ imageUrl }` |
+| `DELETE` | `/api/products/{id}/image` | category_admin (scoped) | Remove image from R2, clear `imageUrl`                                              |
 
 ### Modified
 
@@ -175,12 +175,12 @@ Add `PRODUCT_IMAGES: R2Bucket` to Worker env interface.
 
 ## 6. Testing
 
-| Test file | Coverage |
-|-----------|----------|
+| Test file                           | Coverage                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
 | `src/tests/router-products.test.ts` | Image upload (valid/invalid types, size limit, product not found) |
-| `src/tests/router-products.test.ts` | Image delete |
-| `src/tests/router-products.test.ts` | Nutritional fields in POST/PUT/GET |
-| New or existing repo test | ProductRepository methods for new fields |
+| `src/tests/router-products.test.ts` | Image delete                                                      |
+| `src/tests/router-products.test.ts` | Nutritional fields in POST/PUT/GET                                |
+| New or existing repo test           | ProductRepository methods for new fields                          |
 
 ## 7. Out of Scope (Phase6b)
 

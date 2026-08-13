@@ -22,31 +22,33 @@
 
 ## File Structure
 
-| Action | File | Responsibility |
-|--------|------|---------------|
-| Create | `drizzle/0006_add_nutritional_and_brew_guide.sql` | Migration: 3 columns on products, 1 on coffee_details |
-| Modify | `src/database/schema.ts` | Add `calories`, `allergens`, `caffeineMg` to products; `brewGuide` to coffeeDetails |
-| Modify | `src/bot.ts` (Env interface) | Add `PRODUCT_IMAGES: R2Bucket` binding |
-| Modify | `wrangler.toml` | Add `[[r2_buckets]]` section |
-| Create | `src/services/imageService.ts` | R2 upload/delete/getUrl operations |
-| Modify | `src/api/router.ts` | Add image upload/delete endpoints; pass nutritional fields in GET/POST/PUT |
-| Modify | `src/utils/formatters.ts` | Add nutritional display to `formatProduct`; add `formatNutrition()` helper |
-| Modify | `src/handlers/callbackQuery.ts` | Switch `product:` callback to `sendPhoto` when image exists; add brewGuide to passport |
-| Modify | `admin-app/src/api/client.ts` | Add `apiUpload()` function for multipart FormData |
-| Modify | `admin-app/src/pages/ProductsPage.tsx` | Image upload widget + nutritional fields + brewGuide textarea |
-| Modify | `src/tests/_helpers/routerHarness.ts` | Add `callRouterFormData()` helper for multipart tests |
-| Modify | `src/tests/router-products.test.ts` | Tests for image upload/delete and nutritional fields |
-| Modify | `src/tests/formatters.test.ts` | Tests for nutritional display in formatProduct |
+| Action | File                                              | Responsibility                                                                         |
+| ------ | ------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Create | `drizzle/0006_add_nutritional_and_brew_guide.sql` | Migration: 3 columns on products, 1 on coffee_details                                  |
+| Modify | `src/database/schema.ts`                          | Add `calories`, `allergens`, `caffeineMg` to products; `brewGuide` to coffeeDetails    |
+| Modify | `src/bot.ts` (Env interface)                      | Add `PRODUCT_IMAGES: R2Bucket` binding                                                 |
+| Modify | `wrangler.toml`                                   | Add `[[r2_buckets]]` section                                                           |
+| Create | `src/services/imageService.ts`                    | R2 upload/delete/getUrl operations                                                     |
+| Modify | `src/api/router.ts`                               | Add image upload/delete endpoints; pass nutritional fields in GET/POST/PUT             |
+| Modify | `src/utils/formatters.ts`                         | Add nutritional display to `formatProduct`; add `formatNutrition()` helper             |
+| Modify | `src/handlers/callbackQuery.ts`                   | Switch `product:` callback to `sendPhoto` when image exists; add brewGuide to passport |
+| Modify | `admin-app/src/api/client.ts`                     | Add `apiUpload()` function for multipart FormData                                      |
+| Modify | `admin-app/src/pages/ProductsPage.tsx`            | Image upload widget + nutritional fields + brewGuide textarea                          |
+| Modify | `src/tests/_helpers/routerHarness.ts`             | Add `callRouterFormData()` helper for multipart tests                                  |
+| Modify | `src/tests/router-products.test.ts`               | Tests for image upload/delete and nutritional fields                                   |
+| Modify | `src/tests/formatters.test.ts`                    | Tests for nutritional display in formatProduct                                         |
 
 ---
 
 ### Task 1: Migration + Schema Update
 
 **Files:**
+
 - Create: `drizzle/0006_add_nutritional_and_brew_guide.sql`
 - Modify: `src/database/schema.ts:21-57`
 
 **Interfaces:**
+
 - Consumes: none (foundation task)
 - Produces: `products.calories`, `products.allergens`, `products.caffeineMg`, `coffeeDetails.brewGuide` columns available to all downstream tasks
 
@@ -100,10 +102,12 @@ git commit -m "feat(db): add nutritional columns + brewGuide migration"
 ### Task 2: R2 Binding + Environment Type
 
 **Files:**
+
 - Modify: `wrangler.toml` (add R2 section)
 - Modify: `src/bot.ts:18-29` (add PRODUCT_IMAGES to Env)
 
 **Interfaces:**
+
 - Consumes: none
 - Produces: `env.PRODUCT_IMAGES` (R2Bucket) available to ImageService and router
 
@@ -155,9 +159,11 @@ git commit -m "feat(r2): add R2 bucket binding for product images"
 ### Task 3: Image Service
 
 **Files:**
+
 - Create: `src/services/imageService.ts`
 
 **Interfaces:**
+
 - Consumes: `env.PRODUCT_IMAGES` (R2Bucket from Task 2)
 - Produces: `ImageService.uploadImage(bucket, productId, file, contentType)`, `ImageService.deleteImage(bucket, productId)`, `ImageService.getImageUrl(bucket, productId)` — used by router (Task 4) and callback handler (Task 7)
 
@@ -278,11 +284,13 @@ git commit -m "feat(api): ImageService for R2 product image CRUD"
 ### Task4: API — Image Upload/Delete Endpoints
 
 **Files:**
+
 - Modify: `src/api/router.ts:327-376` (add routes after existing products/:id PUT/DELETE)
 - Modify: `src/tests/_helpers/routerHarness.ts` (add FormData support)
 - Modify: `src/tests/router-products.test.ts` (add image endpoint tests)
 
 **Interfaces:**
+
 - Consumes: `ImageService` from Task3, `env.PRODUCT_IMAGES` from Task2
 - Produces: `PUT /api/products/{id}/image` and `DELETE /api/products/{id}/image` endpoints used by admin app (Task9)
 
@@ -344,20 +352,20 @@ export async function callRouterFormData({
 Also update the existing `callRouter` to include the mock `PRODUCT_IMAGES` in `fakeEnv`:
 
 ```typescript
-  const fakeEnv: Env = {
-    TELEGRAM_BOT_TOKEN: 'test-token',
-    SECRET_TOKEN: 'test-secret',
-    DB: fakeDb as unknown as import('@cloudflare/workers-types').D1Database,
-    AI: null,
-    PRODUCT_IMAGES: {
-      put: vi.fn().mockResolvedValue({}),
-      delete: vi.fn().mockResolvedValue({}),
-      list: vi.fn().mockResolvedValue({ objects: [] }),
-      get: vi.fn().mockResolvedValue(null),
-      head: vi.fn().mockResolvedValue(null),
-    } as any,
-    ...envOverrides,
-  };
+const fakeEnv: Env = {
+  TELEGRAM_BOT_TOKEN: 'test-token',
+  SECRET_TOKEN: 'test-secret',
+  DB: fakeDb as unknown as import('@cloudflare/workers-types').D1Database,
+  AI: null,
+  PRODUCT_IMAGES: {
+    put: vi.fn().mockResolvedValue({}),
+    delete: vi.fn().mockResolvedValue({}),
+    list: vi.fn().mockResolvedValue({ objects: [] }),
+    get: vi.fn().mockResolvedValue(null),
+    head: vi.fn().mockResolvedValue(null),
+  } as any,
+  ...envOverrides,
+};
 ```
 
 - [ ] **Step 2: Write failing tests for image upload**
@@ -447,100 +455,100 @@ Expected: FAIL (endpoints don't exist yet)
 In `src/api/router.ts`, add after the existing `products/:id` PUT/DELETE block (around line 376), before the `products/:id/stock` block:
 
 ```typescript
-    // Image upload: PUT /products/:id/image (multipart/form-data)
-    if (path.startsWith('products/') && path.endsWith('/image') && method === 'PUT') {
-      const id = parseInt(path.split('/')[1]);
-      const repo = new ProductRepository(db);
-      const product = await repo.getProductById(id);
+// Image upload: PUT /products/:id/image (multipart/form-data)
+if (path.startsWith('products/') && path.endsWith('/image') && method === 'PUT') {
+  const id = parseInt(path.split('/')[1]);
+  const repo = new ProductRepository(db);
+  const product = await repo.getProductById(id);
 
-      if (!product)
-        return new Response(JSON.stringify({ error: 'Not found' }), {
-          status: 404,
-          headers: corsHeaders,
-        });
-      if (!isSuperAdmin && product.categoryId !== allowedCategoryId) {
-        return new Response(JSON.stringify({ error: 'Forbidden: Cannot modify this product' }), {
-          status: 403,
-          headers: corsHeaders,
-        });
-      }
+  if (!product)
+    return new Response(JSON.stringify({ error: 'Not found' }), {
+      status: 404,
+      headers: corsHeaders,
+    });
+  if (!isSuperAdmin && product.categoryId !== allowedCategoryId) {
+    return new Response(JSON.stringify({ error: 'Forbidden: Cannot modify this product' }), {
+      status: 403,
+      headers: corsHeaders,
+    });
+  }
 
-      try {
-        const contentType = request.headers.get('Content-Type') || '';
-        if (!contentType.includes('multipart/form-data')) {
-          return new Response(
-            JSON.stringify({ error: 'فقط فایل‌های JPG، PNG و WebP پشتیبانی می‌شوند' }),
-            { status: 400, headers: corsHeaders },
-          );
-        }
-
-        const formData = await request.formData();
-        const file = formData.get('file');
-        if (!file || !(file instanceof Blob)) {
-          return new Response(JSON.stringify({ error: 'No file provided' }), {
-            status: 400,
-            headers: corsHeaders,
-          });
-        }
-
-        const fileContentType = file.type;
-        const arrayBuffer = await file.arrayBuffer();
-        const { ImageService } = await import('../services/imageService');
-        const imageUrl = await ImageService.uploadImage(
-          env.PRODUCT_IMAGES,
-          id,
-          arrayBuffer,
-          fileContentType,
-        );
-
-        await repo.updateProduct(id, { imageUrl });
-        return new Response(JSON.stringify({ success: true, imageUrl }), { headers: corsHeaders });
-      } catch (e: any) {
-        if (e.name === 'ImageError') {
-          return new Response(JSON.stringify({ error: e.message }), {
-            status: 400,
-            headers: corsHeaders,
-          });
-        }
-        console.error(e);
-        return new Response(JSON.stringify({ error: 'خطا در آپلود تصویر' }), {
-          status: 500,
-          headers: corsHeaders,
-        });
-      }
+  try {
+    const contentType = request.headers.get('Content-Type') || '';
+    if (!contentType.includes('multipart/form-data')) {
+      return new Response(
+        JSON.stringify({ error: 'فقط فایل‌های JPG، PNG و WebP پشتیبانی می‌شوند' }),
+        { status: 400, headers: corsHeaders },
+      );
     }
 
-    // Image delete: DELETE /products/:id/image
-    if (path.startsWith('products/') && path.endsWith('/image') && method === 'DELETE') {
-      const id = parseInt(path.split('/')[1]);
-      const repo = new ProductRepository(db);
-      const product = await repo.getProductById(id);
-
-      if (!product)
-        return new Response(JSON.stringify({ error: 'Not found' }), {
-          status: 404,
-          headers: corsHeaders,
-        });
-      if (!isSuperAdmin && product.categoryId !== allowedCategoryId) {
-        return new Response(JSON.stringify({ error: 'Forbidden: Cannot modify this product' }), {
-          status: 403,
-          headers: corsHeaders,
-        });
-      }
-
-      try {
-        const { ImageService } = await import('../services/imageService');
-        await ImageService.deleteImage(env.PRODUCT_IMAGES, id);
-        await repo.updateProduct(id, { imageUrl: null });
-        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-      } catch (e) {
-        console.error(e);
-        return new Response(JSON.stringify({ error: 'خطا در حذف تصویر' }), {
-          status: 500,
-          headers: corsHeaders,
-        });
-      }
+    const formData = await request.formData();
+    const file = formData.get('file');
+    if (!file || !(file instanceof Blob)) {
+      return new Response(JSON.stringify({ error: 'No file provided' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
+
+    const fileContentType = file.type;
+    const arrayBuffer = await file.arrayBuffer();
+    const { ImageService } = await import('../services/imageService');
+    const imageUrl = await ImageService.uploadImage(
+      env.PRODUCT_IMAGES,
+      id,
+      arrayBuffer,
+      fileContentType,
+    );
+
+    await repo.updateProduct(id, { imageUrl });
+    return new Response(JSON.stringify({ success: true, imageUrl }), { headers: corsHeaders });
+  } catch (e: any) {
+    if (e.name === 'ImageError') {
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
+    console.error(e);
+    return new Response(JSON.stringify({ error: 'خطا در آپلود تصویر' }), {
+      status: 500,
+      headers: corsHeaders,
+    });
+  }
+}
+
+// Image delete: DELETE /products/:id/image
+if (path.startsWith('products/') && path.endsWith('/image') && method === 'DELETE') {
+  const id = parseInt(path.split('/')[1]);
+  const repo = new ProductRepository(db);
+  const product = await repo.getProductById(id);
+
+  if (!product)
+    return new Response(JSON.stringify({ error: 'Not found' }), {
+      status: 404,
+      headers: corsHeaders,
+    });
+  if (!isSuperAdmin && product.categoryId !== allowedCategoryId) {
+    return new Response(JSON.stringify({ error: 'Forbidden: Cannot modify this product' }), {
+      status: 403,
+      headers: corsHeaders,
+    });
+  }
+
+  try {
+    const { ImageService } = await import('../services/imageService');
+    await ImageService.deleteImage(env.PRODUCT_IMAGES, id);
+    await repo.updateProduct(id, { imageUrl: null });
+    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+  } catch (e) {
+    console.error(e);
+    return new Response(JSON.stringify({ error: 'خطا در حذف تصویر' }), {
+      status: 500,
+      headers: corsHeaders,
+    });
+  }
+}
 ```
 
 **Important:** These routes must be placed BEFORE the `products/:id/stock` and `products/:id/toggle` routes, because `path.endsWith('/image')` would otherwise match the more general `products/:id` pattern. The existing code checks `path.split('/').length === 2` for the PUT/DELETE block, so the `/image` suffix routes won't conflict — but order matters for readability.
@@ -562,9 +570,11 @@ git commit -m "feat(api): image upload/delete endpoints with R2 integration"
 ### Task 5: API — Nutritional Fields in Product Endpoints
 
 **Files:**
+
 - Modify: `src/api/router.ts:260-376` (update GET/POST/PUT products)
 
 **Interfaces:**
+
 - Consumes: schema columns from Task1 (`calories`, `allergens`, `caffeineMg`, `brewGuide`)
 - Produces: nutritional fields returned in GET responses and accepted in POST/PUT bodies
 
@@ -635,19 +645,19 @@ Expected: FAIL (fields not passed through)
 In `src/api/router.ts`, in the `POST /products` handler (around line 281), add the nutritional fields to the `addProduct` call:
 
 ```typescript
-        const result = await repo.addProduct({
-          ...body,
-          unit: body.unit || 'item',
-          available: body.available ?? true,
-          featured: body.featured ?? false,
-          priceOnRequest: body.priceOnRequest ?? false,
-          isSeasonal: body.isSeasonal ?? false,
-          calories: body.calories ?? null,
-          allergens: body.allergens ?? null,
-          caffeineMg: body.caffeineMg ?? null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+const result = await repo.addProduct({
+  ...body,
+  unit: body.unit || 'item',
+  available: body.available ?? true,
+  featured: body.featured ?? false,
+  priceOnRequest: body.priceOnRequest ?? false,
+  isSeasonal: body.isSeasonal ?? false,
+  calories: body.calories ?? null,
+  allergens: body.allergens ?? null,
+  caffeineMg: body.caffeineMg ?? null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
 ```
 
 - [ ] **Step 4: Update PUT /products to pass nutritional fields**
@@ -655,18 +665,18 @@ In `src/api/router.ts`, in the `POST /products` handler (around line 281), add t
 In `src/api/router.ts`, in the `PUT /products/:id` handler (around line 358), add nutritional fields to the `updateProduct` call:
 
 ```typescript
-        await repo.updateProduct(id, {
-          name: body.name,
-          price: body.price,
-          stock: body.stock,
-          categoryId: body.categoryId !== undefined ? parseInt(body.categoryId) : undefined,
-          description: body.description !== undefined ? body.description : null,
-          unit: body.unit || 'item',
-          available: body.available !== undefined ? body.available : true,
-          calories: body.calories !== undefined ? body.calories : undefined,
-          allergens: body.allergens !== undefined ? body.allergens : undefined,
-          caffeineMg: body.caffeineMg !== undefined ? body.caffeineMg : undefined,
-        });
+await repo.updateProduct(id, {
+  name: body.name,
+  price: body.price,
+  stock: body.stock,
+  categoryId: body.categoryId !== undefined ? parseInt(body.categoryId) : undefined,
+  description: body.description !== undefined ? body.description : null,
+  unit: body.unit || 'item',
+  available: body.available !== undefined ? body.available : true,
+  calories: body.calories !== undefined ? body.calories : undefined,
+  allergens: body.allergens !== undefined ? body.allergens : undefined,
+  caffeineMg: body.caffeineMg !== undefined ? body.caffeineMg : undefined,
+});
 ```
 
 - [ ] **Step 5: Update setCoffeeDetails to accept brewGuide**
@@ -709,10 +719,12 @@ git commit -m "feat(api): nutritional fields in product CRUD endpoints"
 ### Task 6: Bot — formatProduct with Nutritional Display
 
 **Files:**
+
 - Modify: `src/utils/formatters.ts:15-33`
 - Modify: `src/tests/formatters.test.ts`
 
 **Interfaces:**
+
 - Consumes: `products.calories`, `products.allergens`, `products.caffeineMg` from Task1
 - Produces: enhanced `formatProduct()` output used by callback handler (Task7)
 
@@ -800,9 +812,11 @@ git commit -m "feat(bot): nutritional info display in formatProduct"
 ### Task 7: Bot — Product Detail with sendPhoto
 
 **Files:**
+
 - Modify: `src/handlers/callbackQuery.ts:183-217` (product callback handler)
 
 **Interfaces:**
+
 - Consumes: `formatProduct()` from Task6, `product.imageUrl` (set by Task4 upload or existing external URL)
 - Produces: product detail view now shows image when available
 
@@ -811,50 +825,50 @@ git commit -m "feat(bot): nutritional info display in formatProduct"
 In `src/handlers/callbackQuery.ts`, replace the `product:` callback handler (lines 183-217) with:
 
 ```typescript
-  bot.callbackQuery(/^product:(\d+)$/, async (ctx) => {
-    try {
-      await ctx.answerCallbackQuery({ text: '⏳ در حال بارگذاری...' });
-      const id = parseInt(ctx.match[1]);
-      const repo = new ProductRepository(ctx.env.DB);
-      const product = await repo.getProductById(id);
-      if (product) {
-        const priceUnit =
-          (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
-        const kb = backKeyboard();
-        // Phase 5.2: favorite toggle
-        if (ctx.from?.id) {
-          const isFav = await new FavoritesRepository(ctx.env.DB).isFavorited(
-            String(ctx.from.id),
-            id,
-          );
-          if (isFav) {
-            kb.row().text('💔 حذف از علاقمندی‌ها', `fav:remove:${id}`);
-          } else {
-            kb.row().text('⭐ ذخیره', `fav:add:${id}`);
-          }
-        }
-        const caption = formatProduct(product, priceUnit);
-        if (product.imageUrl) {
-          await ctx.replyWithPhoto(product.imageUrl, {
-            caption,
-            parse_mode: 'HTML',
-            reply_markup: kb,
-          });
+bot.callbackQuery(/^product:(\d+)$/, async (ctx) => {
+  try {
+    await ctx.answerCallbackQuery({ text: '⏳ در حال بارگذاری...' });
+    const id = parseInt(ctx.match[1]);
+    const repo = new ProductRepository(ctx.env.DB);
+    const product = await repo.getProductById(id);
+    if (product) {
+      const priceUnit =
+        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const kb = backKeyboard();
+      // Phase 5.2: favorite toggle
+      if (ctx.from?.id) {
+        const isFav = await new FavoritesRepository(ctx.env.DB).isFavorited(
+          String(ctx.from.id),
+          id,
+        );
+        if (isFav) {
+          kb.row().text('💔 حذف از علاقمندی‌ها', `fav:remove:${id}`);
         } else {
-          await ctx.reply(caption, {
-            parse_mode: 'HTML',
-            reply_markup: kb,
-          });
+          kb.row().text('⭐ ذخیره', `fav:add:${id}`);
         }
-      } else {
-        await ctx.reply('محصول مورد نظر یافت نشد.');
       }
-    } catch (e) {
-      console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
-      await ctx.reply('❌ خطایی در دریافت اطلاعات محصول رخ داد.');
+      const caption = formatProduct(product, priceUnit);
+      if (product.imageUrl) {
+        await ctx.replyWithPhoto(product.imageUrl, {
+          caption,
+          parse_mode: 'HTML',
+          reply_markup: kb,
+        });
+      } else {
+        await ctx.reply(caption, {
+          parse_mode: 'HTML',
+          reply_markup: kb,
+        });
+      }
+    } else {
+      await ctx.reply('محصول مورد نظر یافت نشد.');
     }
-  });
+  } catch (e) {
+    console.error(e);
+    await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
+    await ctx.reply('❌ خطایی در دریافت اطلاعات محصول رخ داد.');
+  }
+});
 ```
 
 - [ ] **Step 2: Verify compilation**
@@ -874,9 +888,11 @@ git commit -m "feat(bot): product detail shows image via sendPhoto when availabl
 ### Task 8: Bot — Coffee Passport brewGuide Display
 
 **Files:**
+
 - Modify: `src/handlers/callbackQuery.ts` (passport callback handler)
 
 **Interfaces:**
+
 - Consumes: `coffeeDetails.brewGuide` from Task1
 - Produces: brewGuide section in passport detail view
 
@@ -889,6 +905,7 @@ We need to check if the product has coffee_details and display brewGuide. The si
 Actually, looking at the code more carefully: the `product:` callback handler already shows `formatProduct()` which doesn't include brewGuide. The passport list (`passport:page:N`) links to `product:{id}` — so the same handler shows both regular products and passport products.
 
 The brewGuide should only show for products that have coffee_details. We need to:
+
 1. In the `product:` callback, fetch coffee_details if they exist
 2. Append brewGuide to the caption if present
 
@@ -955,55 +972,55 @@ In `src/repositories/index.ts`, add after `setCoffeeDetails`:
 Now update the `product:` callback handler:
 
 ```typescript
-  bot.callbackQuery(/^product:(\d+)$/, async (ctx) => {
-    try {
-      await ctx.answerCallbackQuery({ text: '⏳ در حال بارگذاری...' });
-      const id = parseInt(ctx.match[1]);
-      const repo = new ProductRepository(ctx.env.DB);
-      const product = await repo.getProductById(id);
-      if (product) {
-        const priceUnit =
-          (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
-        const kb = backKeyboard();
-        // Phase 5.2: favorite toggle
-        if (ctx.from?.id) {
-          const isFav = await new FavoritesRepository(ctx.env.DB).isFavorited(
-            String(ctx.from.id),
-            id,
-          );
-          if (isFav) {
-            kb.row().text('💔 حذف از علاقمندی‌ها', `fav:remove:${id}`);
-          } else {
-            kb.row().text('⭐ ذخیره', `fav:add:${id}`);
-          }
-        }
-        let caption = formatProduct(product, priceUnit);
-        // Show brew guide for coffee beans with details
-        const details = await repo.getCoffeeDetails(id);
-        if (details?.brewGuide) {
-          caption += `\n\n📋 <b>راهنمای دم‌آوری:</b>\n${details.brewGuide}`;
-        }
-        if (product.imageUrl) {
-          await ctx.replyWithPhoto(product.imageUrl, {
-            caption,
-            parse_mode: 'HTML',
-            reply_markup: kb,
-          });
+bot.callbackQuery(/^product:(\d+)$/, async (ctx) => {
+  try {
+    await ctx.answerCallbackQuery({ text: '⏳ در حال بارگذاری...' });
+    const id = parseInt(ctx.match[1]);
+    const repo = new ProductRepository(ctx.env.DB);
+    const product = await repo.getProductById(id);
+    if (product) {
+      const priceUnit =
+        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const kb = backKeyboard();
+      // Phase 5.2: favorite toggle
+      if (ctx.from?.id) {
+        const isFav = await new FavoritesRepository(ctx.env.DB).isFavorited(
+          String(ctx.from.id),
+          id,
+        );
+        if (isFav) {
+          kb.row().text('💔 حذف از علاقمندی‌ها', `fav:remove:${id}`);
         } else {
-          await ctx.reply(caption, {
-            parse_mode: 'HTML',
-            reply_markup: kb,
-          });
+          kb.row().text('⭐ ذخیره', `fav:add:${id}`);
         }
-      } else {
-        await ctx.reply('محصول مورد نظر یافت نشد.');
       }
-    } catch (e) {
-      console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
-      await ctx.reply('❌ خطایی در دریافت اطلاعات محصول رخ داد.');
+      let caption = formatProduct(product, priceUnit);
+      // Show brew guide for coffee beans with details
+      const details = await repo.getCoffeeDetails(id);
+      if (details?.brewGuide) {
+        caption += `\n\n📋 <b>راهنمای دم‌آوری:</b>\n${details.brewGuide}`;
+      }
+      if (product.imageUrl) {
+        await ctx.replyWithPhoto(product.imageUrl, {
+          caption,
+          parse_mode: 'HTML',
+          reply_markup: kb,
+        });
+      } else {
+        await ctx.reply(caption, {
+          parse_mode: 'HTML',
+          reply_markup: kb,
+        });
+      }
+    } else {
+      await ctx.reply('محصول مورد نظر یافت نشد.');
     }
-  });
+  } catch (e) {
+    console.error(e);
+    await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
+    await ctx.reply('❌ خطایی در دریافت اطلاعات محصول رخ داد.');
+  }
+});
 ```
 
 - [ ] **Step5: Verify compilation**
@@ -1023,10 +1040,12 @@ git commit -m "feat(bot): brewGuide display in product detail + passport view"
 ### Task 9: Admin App — Image Upload Widget
 
 **Files:**
+
 - Modify: `admin-app/src/api/client.ts` (add apiUpload function)
 - Modify: `admin-app/src/pages/ProductsPage.tsx` (add image upload UI)
 
 **Interfaces:**
+
 - Consumes: `PUT /api/products/{id}/image` from Task4
 - Produces: image upload/remove UI in admin app
 
@@ -1035,10 +1054,7 @@ git commit -m "feat(bot): brewGuide display in product detail + passport view"
 In `admin-app/src/api/client.ts`, add after `apiFetch`:
 
 ```typescript
-export async function apiUpload<T = unknown>(
-  path: string,
-  file: File,
-): Promise<T> {
+export async function apiUpload<T = unknown>(path: string, file: File): Promise<T> {
   const formData = new FormData();
   formData.append('file', file);
   const res = await fetch(`${API_BASE}${path}`, {
@@ -1060,6 +1076,7 @@ export async function apiUpload<T = unknown>(
 In `admin-app/src/pages/ProductsPage.tsx`, add imports and state:
 
 At the top, add import:
+
 ```typescript
 import { apiFetch, apiUpload } from '../api/client';
 ```
@@ -1067,70 +1084,70 @@ import { apiFetch, apiUpload } from '../api/client';
 In the component, add state (after the existing coffee details state):
 
 ```typescript
-  // Image
-  const [productImage, setProductImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
+// Image
+const [productImage, setProductImage] = useState<File | null>(null);
+const [imagePreview, setImagePreview] = useState<string>('');
 ```
 
 Add image upload handler:
 
 ```typescript
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !editingProduct) return;
-    setProductImage(file);
-    setImagePreview(URL.createObjectURL(file));
-  };
+const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file || !editingProduct) return;
+  setProductImage(file);
+  setImagePreview(URL.createObjectURL(file));
+};
 
-  const uploadImage = async (productId: number) => {
-    if (!productImage) return;
-    try {
-      await apiUpload(`/products/${productId}/image`, productImage);
-      showToast('Image uploaded ✓');
-      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
-    } catch (err: any) {
-      setError(err.message);
-      showToast(err.message, 'error');
-    }
-  };
+const uploadImage = async (productId: number) => {
+  if (!productImage) return;
+  try {
+    await apiUpload(`/products/${productId}/image`, productImage);
+    showToast('Image uploaded ✓');
+    void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+  } catch (err: any) {
+    setError(err.message);
+    showToast(err.message, 'error');
+  }
+};
 
-  const removeImage = async (productId: number) => {
-    try {
-      await apiFetch(`/products/${productId}/image`, { method: 'DELETE' });
-      setProductImage(null);
-      setImagePreview('');
-      showToast('Image removed ✓');
-      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
-    } catch (err: any) {
-      setError(err.message);
-      showToast(err.message, 'error');
-    }
-  };
+const removeImage = async (productId: number) => {
+  try {
+    await apiFetch(`/products/${productId}/image`, { method: 'DELETE' });
+    setProductImage(null);
+    setImagePreview('');
+    showToast('Image removed ✓');
+    void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+  } catch (err: any) {
+    setError(err.message);
+    showToast(err.message, 'error');
+  }
+};
 ```
 
 Update `handleSaveProduct` to upload image after save:
 
 ```typescript
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    saveProductMutation.mutate({
-      method: editingProduct ? 'PUT' : 'POST',
-      id: editingProduct?.id,
-      body: {
-        name: prodName,
-        price: parseFloat(prodPrice),
-        stock: parseInt(prodStock),
-        categoryId: parseInt(prodCatId),
-        description: prodDesc,
-        available: prodAvailable,
-        calories: prodCalories ? parseInt(prodCalories) : null,
-        allergens: prodAllergens || null,
-        caffeineMg: prodCaffeine ? parseInt(prodCaffeine) : null,
-        coffeeDetails: buildCoffeeDetails(),
-      },
-    });
-    // Image upload happens after save completes (via onSuccess)
-  };
+const handleSaveProduct = async (e: React.FormEvent) => {
+  e.preventDefault();
+  saveProductMutation.mutate({
+    method: editingProduct ? 'PUT' : 'POST',
+    id: editingProduct?.id,
+    body: {
+      name: prodName,
+      price: parseFloat(prodPrice),
+      stock: parseInt(prodStock),
+      categoryId: parseInt(prodCatId),
+      description: prodDesc,
+      available: prodAvailable,
+      calories: prodCalories ? parseInt(prodCalories) : null,
+      allergens: prodAllergens || null,
+      caffeineMg: prodCaffeine ? parseInt(prodCaffeine) : null,
+      coffeeDetails: buildCoffeeDetails(),
+    },
+  });
+  // Image upload happens after save completes (via onSuccess)
+};
 ```
 
 Actually, we need to trigger the image upload after the product is created/updated. The simplest approach: use the `onSuccess` callback of `saveProductMutation` to upload the image if one is selected.
@@ -1140,31 +1157,31 @@ Actually, we need to trigger the image upload after the product is created/updat
 In `admin-app/src/pages/ProductsPage.tsx`, update the `saveProductMutation`:
 
 ```typescript
-  const saveProductMutation = useMutation({
-    mutationFn: (data: { method: string; id?: number; body: any }) =>
-      apiFetch(data.id ? `/products/${data.id}` : '/products', {
-        method: data.method,
-        body: data.body,
-      }),
-    onSuccess: async (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
-      // Upload image if one was selected
-      if (productImage && variables.id) {
-        await uploadImage(variables.id);
-      } else if (productImage && !variables.id) {
-        // For new products, we need the product ID — but the API doesn't return it
-        // We'll need to handle this differently
-        // For now, skip image upload on create (user can add image after creating)
-        showToast('Product added. Add image via Edit.', 'info');
-      }
-      resetProductForm();
-      showToast(variables.id ? 'Product updated ✓' : 'Product added ✓');
-    },
-    onError: (err: Error) => {
-      setError(err.message);
-      showToast(err.message, 'error');
-    },
-  });
+const saveProductMutation = useMutation({
+  mutationFn: (data: { method: string; id?: number; body: any }) =>
+    apiFetch(data.id ? `/products/${data.id}` : '/products', {
+      method: data.method,
+      body: data.body,
+    }),
+  onSuccess: async (_, variables) => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+    // Upload image if one was selected
+    if (productImage && variables.id) {
+      await uploadImage(variables.id);
+    } else if (productImage && !variables.id) {
+      // For new products, we need the product ID — but the API doesn't return it
+      // We'll need to handle this differently
+      // For now, skip image upload on create (user can add image after creating)
+      showToast('Product added. Add image via Edit.', 'info');
+    }
+    resetProductForm();
+    showToast(variables.id ? 'Product updated ✓' : 'Product added ✓');
+  },
+  onError: (err: Error) => {
+    setError(err.message);
+    showToast(err.message, 'error');
+  },
+});
 ```
 
 - [ ] **Step 4: Add image upload UI to the form**
@@ -1227,9 +1244,11 @@ git commit -m "feat(admin): image upload widget on products page"
 ### Task 10: Admin App — Nutritional Fields
 
 **Files:**
+
 - Modify: `admin-app/src/pages/ProductsPage.tsx` (add form fields)
 
 **Interfaces:**
+
 - Consumes: nutritional fields in POST/PUT body from Task5
 - Produces: calories, allergens, caffeineMg form inputs
 
@@ -1238,10 +1257,10 @@ git commit -m "feat(admin): image upload widget on products page"
 In `admin-app/src/pages/ProductsPage.tsx`, add state variables (after existing coffee details state):
 
 ```typescript
-  // Nutritional info
-  const [prodCalories, setProdCalories] = useState('');
-  const [prodAllergens, setProdAllergens] = useState('');
-  const [prodCaffeine, setProdCaffeine] = useState('');
+// Nutritional info
+const [prodCalories, setProdCalories] = useState('');
+const [prodAllergens, setProdAllergens] = useState('');
+const [prodCaffeine, setProdCaffeine] = useState('');
 ```
 
 - [ ] **Step 2: Update startEditProduct to populate nutritional fields**
@@ -1249,9 +1268,9 @@ In `admin-app/src/pages/ProductsPage.tsx`, add state variables (after existing c
 In the `startEditProduct` function, add:
 
 ```typescript
-    setProdCalories(p.calories?.toString() || '');
-    setProdAllergens(p.allergens || '');
-    setProdCaffeine(p.caffeineMg?.toString() || '');
+setProdCalories(p.calories?.toString() || '');
+setProdAllergens(p.allergens || '');
+setProdCaffeine(p.caffeineMg?.toString() || '');
 ```
 
 - [ ] **Step3: Update resetProductForm to clear nutritional fields**
@@ -1259,9 +1278,9 @@ In the `startEditProduct` function, add:
 In the `resetProductForm` function, add:
 
 ```typescript
-    setProdCalories('');
-    setProdAllergens('');
-    setProdCaffeine('');
+setProdCalories('');
+setProdAllergens('');
+setProdCaffeine('');
 ```
 
 - [ ] **Step4: Update handleSaveProduct to include nutritional fields**
@@ -1319,31 +1338,31 @@ In the form, add after the "Nutritional Information" divider (from Task9):
 In the product list JSX, add nutritional info display after the price:
 
 ```tsx
-                <div className="list-item-info">
-                  {(isSuperAdmin || allowedCatId) && (
-                    <input
-                      type="checkbox"
-                      checked={selectedProductIds.includes(p.id)}
-                      onChange={() => toggleProductSelect(p.id)}
-                    />
-                  )}
-                  {p.imageUrl && (
-                    <img
-                      src={p.imageUrl}
-                      alt=""
-                      style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px' }}
-                    />
-                  )}
-                  <span dir="auto">{p.name}</span>
-                  <span className="list-item-meta">{p.price}</span>
-                  {(p.calories || p.caffeineMg) && (
-                    <span className="list-item-meta" style={{ fontSize: '0.8em' }}>
-                      {p.calories ? `${p.calories} kcal` : ''}
-                      {p.calories && p.caffeineMg ? ' · ' : ''}
-                      {p.caffeineMg ? `${p.caffeineMg}mg caf` : ''}
-                    </span>
-                  )}
-                </div>
+<div className="list-item-info">
+  {(isSuperAdmin || allowedCatId) && (
+    <input
+      type="checkbox"
+      checked={selectedProductIds.includes(p.id)}
+      onChange={() => toggleProductSelect(p.id)}
+    />
+  )}
+  {p.imageUrl && (
+    <img
+      src={p.imageUrl}
+      alt=""
+      style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px' }}
+    />
+  )}
+  <span dir="auto">{p.name}</span>
+  <span className="list-item-meta">{p.price}</span>
+  {(p.calories || p.caffeineMg) && (
+    <span className="list-item-meta" style={{ fontSize: '0.8em' }}>
+      {p.calories ? `${p.calories} kcal` : ''}
+      {p.calories && p.caffeineMg ? ' · ' : ''}
+      {p.caffeineMg ? `${p.caffeineMg}mg caf` : ''}
+    </span>
+  )}
+</div>
 ```
 
 - [ ] **Step7: Verify compilation**
@@ -1363,9 +1382,11 @@ git commit -m "feat(admin): nutritional info fields on products page"
 ### Task 11: Admin App — brewGuide in Coffee Details
 
 **Files:**
+
 - Modify: `admin-app/src/pages/ProductsPage.tsx` (add brewGuide textarea)
 
 **Interfaces:**
+
 - Consumes: `coffeeDetails.brewGuide` field from Task1
 - Produces: brewGuide textarea in coffee details form
 
@@ -1374,7 +1395,7 @@ git commit -m "feat(admin): nutritional info fields on products page"
 In `admin-app/src/pages/ProductsPage.tsx`, add state:
 
 ```typescript
-  const [coffeeBrewGuide, setCoffeeBrewGuide] = useState('');
+const [coffeeBrewGuide, setCoffeeBrewGuide] = useState('');
 ```
 
 - [ ] **Step2: Update startEditProduct to populate brewGuide**
@@ -1382,7 +1403,7 @@ In `admin-app/src/pages/ProductsPage.tsx`, add state:
 In `startEditProduct`, add:
 
 ```typescript
-    setCoffeeBrewGuide(cd?.brewGuide || '');
+setCoffeeBrewGuide(cd?.brewGuide || '');
 ```
 
 - [ ] **Step3: Update resetProductForm to clear brewGuide**
@@ -1390,7 +1411,7 @@ In `startEditProduct`, add:
 In `resetProductForm`, add:
 
 ```typescript
-    setCoffeeBrewGuide('');
+setCoffeeBrewGuide('');
 ```
 
 - [ ] **Step4: Update buildCoffeeDetails to include brewGuide**
@@ -1398,19 +1419,19 @@ In `resetProductForm`, add:
 In `buildCoffeeDetails`, add `brewGuide` to the fields array:
 
 ```typescript
-    const fields = [
-      ['origin', coffeeOrigin],
-      ['farm', coffeeFarm],
-      ['altitude', coffeeAltitude],
-      ['processing', coffeeProcessing],
-      ['variety', coffeeVariety],
-      ['roastLevel', coffeeRoastLevel],
-      ['flavorNotes', coffeeFlavorNotes],
-      ['recommendedBrew', coffeeRecommendedBrew],
-      ['acidity', coffeeAcidity],
-      ['body', coffeeBody],
-      ['brewGuide', coffeeBrewGuide],
-    ] as const;
+const fields = [
+  ['origin', coffeeOrigin],
+  ['farm', coffeeFarm],
+  ['altitude', coffeeAltitude],
+  ['processing', coffeeProcessing],
+  ['variety', coffeeVariety],
+  ['roastLevel', coffeeRoastLevel],
+  ['flavorNotes', coffeeFlavorNotes],
+  ['recommendedBrew', coffeeRecommendedBrew],
+  ['acidity', coffeeAcidity],
+  ['body', coffeeBody],
+  ['brewGuide', coffeeBrewGuide],
+] as const;
 ```
 
 - [ ] **Step5: Add brewGuide textarea to coffee details form**
@@ -1418,14 +1439,14 @@ In `buildCoffeeDetails`, add `brewGuide` to the fields array:
 In the coffee details form JSX, add after the "Body" field:
 
 ```tsx
-                <Field label="Brew Guide">
-                  <textarea
-                    value={coffeeBrewGuide}
-                    onChange={(e) => setCoffeeBrewGuide(e.target.value)}
-                    placeholder=" Brewing instructions in Persian"
-                    dir="auto"
-                  />
-                </Field>
+<Field label="Brew Guide">
+  <textarea
+    value={coffeeBrewGuide}
+    onChange={(e) => setCoffeeBrewGuide(e.target.value)}
+    placeholder=" Brewing instructions in Persian"
+    dir="auto"
+  />
+</Field>
 ```
 
 - [ ] **Step6: Verify compilation**
@@ -1445,10 +1466,12 @@ git commit -m "feat(admin): brewGuide textarea in coffee details form"
 ### Task 12: Integration Tests + Final Verification
 
 **Files:**
+
 - Modify: `src/tests/formatters.test.ts` (verify all nutritional tests pass)
 - Modify: `src/tests/router-products.test.ts` (verify all image + nutritional tests pass)
 
 **Interfaces:**
+
 - Consumes: all previous tasks
 - Produces: full test suite green
 

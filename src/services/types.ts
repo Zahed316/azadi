@@ -43,9 +43,9 @@ export interface AIContext {
     categories: typeof categories.$inferSelect | null;
   }>;
   /** Active branches */
-  branches: typeof branches.$inferSelect[];
+  branches: (typeof branches.$inferSelect)[];
   /** FAQ entries */
-  faqs: typeof faq.$inferSelect[];
+  faqs: (typeof faq.$inferSelect)[];
   /** Set of category IDs visible in bot menus */
   visibleCategoryIds: Set<number>;
   /** Shop identity and settings */
@@ -216,47 +216,53 @@ export interface MenuSectionEntry {
  */
 export interface IDataService {
   // -- Products --
-  getAllProducts(): Promise<typeof products.$inferSelect[]>;
-  getAllProductsWithDetails(): Promise<Array<{
-    products: typeof products.$inferSelect;
-    coffee_details: typeof coffeeDetails.$inferSelect | null;
-    categories: typeof categories.$inferSelect | null;
-  }>>;
+  getAllProducts(): Promise<(typeof products.$inferSelect)[]>;
+  getAllProductsWithDetails(): Promise<
+    Array<{
+      products: typeof products.$inferSelect;
+      coffee_details: typeof coffeeDetails.$inferSelect | null;
+      categories: typeof categories.$inferSelect | null;
+    }>
+  >;
   getProductById(id: number): Promise<typeof products.$inferSelect | undefined>;
-  getProductsByCategory(categoryId: number): Promise<typeof products.$inferSelect[]>;
-  getPopularProducts(limit?: number): Promise<Array<{
-    name: string;
-    category: string;
-    favoritedCount: number;
-  }>>;
+  getProductsByCategory(categoryId: number): Promise<(typeof products.$inferSelect)[]>;
+  getPopularProducts(limit?: number): Promise<
+    Array<{
+      name: string;
+      category: string;
+      favoritedCount: number;
+    }>
+  >;
 
   /**
    * Get all available products with a given boolean flag set to true.
    * Used by the bot's "featured" and "seasonal" menu surfaces.
    * @param flag - The boolean column to filter on
    */
-  getByFlag(flag: 'featured' | 'isSeasonal'): Promise<typeof products.$inferSelect[]>;
+  getByFlag(flag: 'featured' | 'isSeasonal'): Promise<(typeof products.$inferSelect)[]>;
 
   /**
    * Get all available beans with their coffee details joined.
    * Used by the "coffee passport" menu surface.
    */
-  getBeansWithCoffeeDetails(): Promise<Array<{
-    product: typeof products.$inferSelect;
-    details: typeof coffeeDetails.$inferSelect;
-  }>>;
+  getBeansWithCoffeeDetails(): Promise<
+    Array<{
+      product: typeof products.$inferSelect;
+      details: typeof coffeeDetails.$inferSelect;
+    }>
+  >;
 
   // -- Coffee Details --
   getCoffeeDetails(productId: number): Promise<typeof coffeeDetails.$inferSelect | null>;
 
   // -- Categories --
-  getAllCategories(): Promise<typeof categories.$inferSelect[]>;
+  getAllCategories(): Promise<(typeof categories.$inferSelect)[]>;
 
   // -- Branches --
-  getActiveBranches(): Promise<typeof branches.$inferSelect[]>;
+  getActiveBranches(): Promise<(typeof branches.$inferSelect)[]>;
 
   // -- FAQs --
-  getAllFaqs(): Promise<typeof faq.$inferSelect[]>;
+  getAllFaqs(): Promise<(typeof faq.$inferSelect)[]>;
 
   // -- Menu Config --
   getVisibleCategoryIds(): Promise<Set<number>>;
@@ -273,11 +279,16 @@ export interface IDataService {
   setSetting(key: string, value: string): Promise<void>;
 
   // -- AI Logs --
-  getRecentLogs(userId: string, limit?: number): Promise<Array<{
-    question: string;
-    response: string;
-    timestamp: Date;
-  }>>;
+  getRecentLogs(
+    userId: string,
+    limit?: number,
+  ): Promise<
+    Array<{
+      question: string;
+      response: string;
+      timestamp: Date;
+    }>
+  >;
 
   // -- Favorites --
   getUserFavorites(telegramId: string): Promise<string[]>;
@@ -309,5 +320,5 @@ export interface IDataService {
     senderName?: string;
     rating?: number;
     isAnonymous?: boolean;
-  }): Promise<typeof messages.$inferSelect[]>;
+  }): Promise<(typeof messages.$inferSelect)[]>;
 }

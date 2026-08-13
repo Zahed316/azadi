@@ -65,9 +65,7 @@ test('GET /api/favorites?groupBy=user returns 200 with favorites for super_admin
       updatedAt: new Date('2026-01-01'),
     },
   ]);
-  seedTable(favorites, [
-    { telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') },
-  ]);
+  seedTable(favorites, [{ telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') }]);
   const res = await callRouter({ method: 'GET', path: 'favorites?groupBy=user' });
   expect(res.status).toBe(200);
   expect(res.body.favorites).toHaveLength(1);
@@ -93,9 +91,7 @@ test('GET /api/favorites?groupBy=foo returns 400', async () => {
 
 test('DELETE /api/favorites/u1/10 returns 204 when pair exists', async () => {
   setAdminRole(superAdmin);
-  seedTable(favorites, [
-    { telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') },
-  ]);
+  seedTable(favorites, [{ telegramId: 'u1', productId: 10, createdAt: new Date('2026-08-05') }]);
   const res = await callRouter({ method: 'DELETE', path: 'favorites/u1/10' });
   expect(res.status).toBe(204);
 });

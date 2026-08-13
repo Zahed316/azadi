@@ -81,12 +81,17 @@ export async function handleApiRequest(
       const testDb = getDb(env.DB);
       await testDb.select().from(settings).limit(1);
       dbOk = true;
-    } catch { /* db unreachable */ }
-    return new Response(JSON.stringify({
-      status: dbOk ? 'ok' : 'degraded',
-      db: dbOk,
-      timestamp: new Date().toISOString(),
-    }), { headers: corsHeaders });
+    } catch {
+      /* db unreachable */
+    }
+    return new Response(
+      JSON.stringify({
+        status: dbOk ? 'ok' : 'degraded',
+        db: dbOk,
+        timestamp: new Date().toISOString(),
+      }),
+      { headers: corsHeaders },
+    );
   }
 
   const authHeader = request.headers.get('Authorization');
@@ -149,14 +154,16 @@ export async function handleApiRequest(
     });
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error(JSON.stringify({
-      ts: new Date().toISOString(),
-      operation: 'api-error',
-      method,
-      path,
-      error: errMsg,
-      stack: error instanceof Error ? error.stack : undefined,
-    }));
+    console.error(
+      JSON.stringify({
+        ts: new Date().toISOString(),
+        operation: 'api-error',
+        method,
+        path,
+        error: errMsg,
+        stack: error instanceof Error ? error.stack : undefined,
+      }),
+    );
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: corsHeaders,

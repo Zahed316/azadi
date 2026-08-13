@@ -40,7 +40,9 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری پیشنهاد ویژه ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری پیشنهاد ویژه ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .text('🌿 محصول فصلی', async (ctx: any) => {
@@ -70,7 +72,9 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری محصولات فصلی ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری محصولات فصلی ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .text('📖 پاسپورت', async (ctx: any) => {
@@ -109,7 +113,9 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
       await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
     } catch (e) {
       console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ بارگذاری پاسپورت قهوه ناموفق بود.' }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: '❌ بارگذاری پاسپورت قهوه ناموفق بود.' })
+        .catch(() => {});
     }
   })
   .row()

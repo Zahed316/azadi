@@ -103,7 +103,9 @@ export default function CategoriesPage() {
               <input type="number" value={catSort} onChange={(e) => setCatSort(e.target.value)} />
             </Field>
             <button type="submit" className="primary" disabled={saveCategoryMutation.isPending}>
-              {saveCategoryMutation.isPending ? '⏳...' : (editingCategory ? 'به‌روزرسانی' : 'افزودن') + ' دسته‌بندی'}
+              {saveCategoryMutation.isPending
+                ? '⏳...'
+                : (editingCategory ? 'به‌روزرسانی' : 'افزودن') + ' دسته‌بندی'}
             </button>
             {editingCategory && (
               <button type="button" className="secondary" onClick={resetCategoryForm}>
@@ -132,7 +134,11 @@ export default function CategoriesPage() {
                     <button className="secondary" onClick={() => startEditCategory(c)}>
                       ویرایش
                     </button>
-                    <button className="danger" onClick={() => deleteCategory(c.id)} disabled={deleteCategoryMutation.isPending}>
+                    <button
+                      className="danger"
+                      onClick={() => deleteCategory(c.id)}
+                      disabled={deleteCategoryMutation.isPending}
+                    >
                       حذف
                     </button>
                   </div>

@@ -150,9 +150,27 @@ test('listAll: returns all user_state rows (ordered by streakDays DESC then last
   // The in-memory harness does not support orderBy; seed in the expected
   // production order so the mock returns them in that sequence.
   seedTable(userState, [
-    { telegramId: 'u2', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-05'), visitsTotal: 10, streakDays: 7 },
-    { telegramId: 'u3', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-03'), visitsTotal: 2, streakDays: 7 },
-    { telegramId: 'u1', firstSeenAt: new Date('2026-01-01'), lastSeenAt: new Date('2026-08-01'), visitsTotal: 5, streakDays: 3 },
+    {
+      telegramId: 'u2',
+      firstSeenAt: new Date('2026-01-01'),
+      lastSeenAt: new Date('2026-08-05'),
+      visitsTotal: 10,
+      streakDays: 7,
+    },
+    {
+      telegramId: 'u3',
+      firstSeenAt: new Date('2026-01-01'),
+      lastSeenAt: new Date('2026-08-03'),
+      visitsTotal: 2,
+      streakDays: 7,
+    },
+    {
+      telegramId: 'u1',
+      firstSeenAt: new Date('2026-01-01'),
+      lastSeenAt: new Date('2026-08-01'),
+      visitsTotal: 5,
+      streakDays: 3,
+    },
   ]);
   const repo = new UserStateRepository(FAKE_D1);
   const rows = await repo.listAll();
@@ -196,8 +214,28 @@ test('FavoritesRepository.listAllGrouped returns all favorites in production-D1 
   // We seed in the harness's table order (matching expected production ORDER BY
   // desc(favorites.createdAt)) so the returned count and order are assertable.
   seedTable(products, [
-    { id: 10, name: 'Espresso', categoryId: 1, price: 0, stock: 0, unit: 'cup', available: true, createdAt: new Date('2026-01-01'), updatedAt: new Date('2026-01-01') },
-    { id: 20, name: 'Latte', categoryId: 1, price: 0, stock: 0, unit: 'cup', available: true, createdAt: new Date('2026-01-01'), updatedAt: new Date('2026-01-01') },
+    {
+      id: 10,
+      name: 'Espresso',
+      categoryId: 1,
+      price: 0,
+      stock: 0,
+      unit: 'cup',
+      available: true,
+      createdAt: new Date('2026-01-01'),
+      updatedAt: new Date('2026-01-01'),
+    },
+    {
+      id: 20,
+      name: 'Latte',
+      categoryId: 1,
+      price: 0,
+      stock: 0,
+      unit: 'cup',
+      available: true,
+      createdAt: new Date('2026-01-01'),
+      updatedAt: new Date('2026-01-01'),
+    },
   ]);
   // Seed favorites in production ORDER BY desc(createdAt) order so the
   // harness (which does not support ORDER BY) returns them in the right sequence.

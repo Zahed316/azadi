@@ -94,7 +94,11 @@ export default function AdminsPage() {
                   <span className="list-item-meta">{a.role}</span>
                 </div>
                 <div className="list-item-actions">
-                  <button className="danger" onClick={() => deleteAdmin(a.id)} disabled={deleteAdminMutation.isPending}>
+                  <button
+                    className="danger"
+                    onClick={() => deleteAdmin(a.id)}
+                    disabled={deleteAdminMutation.isPending}
+                  >
                     حذف
                   </button>
                 </div>

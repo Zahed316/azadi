@@ -343,4 +343,3 @@ export async function callRouter({
 
   return { status: response.status, body: responseBody, headers: response.headers };
 }
-
