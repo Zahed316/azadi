@@ -5,6 +5,7 @@ dist/
 *.log
 .wrangler/
 .claude/
+.codegraph/
 .superpowers/
 wrangler-dry/
 screenshot-analysis.jpg
