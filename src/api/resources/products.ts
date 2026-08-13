@@ -69,7 +69,9 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
     }
 
     // Batch fetch all products in one query
-    const allProducts = await Promise.all(body.ids.map((id) => repo.getProductById(id)));
+    const fetchedProducts = await repo.getProductsByIds(body.ids);
+    const productMap = new Map(fetchedProducts.map((p) => [p.id, p]));
+    const allProducts = body.ids.map((id) => productMap.get(id) ?? null);
     const results: { id: number; status: string }[] = [];
 
     await Promise.allSettled(

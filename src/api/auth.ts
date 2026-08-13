@@ -1,3 +1,5 @@
+import { timingSafeEqual } from '../utils/crypto';
+
 export interface TelegramUser {
   id: number;
   first_name: string;
@@ -44,42 +46,32 @@ export async function validateInitData(
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 
-  // Constant-time hex comparison. `===` on strings short-circuits on the first
-  // mismatched char, leaking the index of the first byte difference through
-  // timing. Workers jitter dominates the side channel in practice, but the
-  // canonical Telegram-spec validation is constant-time — match it.
-  if (hash.length !== signatureHex.length) {
+  // Constant-time hex comparison — see src/utils/crypto.ts.
+  if (!timingSafeEqual(hash, signatureHex)) {
     return null;
   }
-  {
-    let diff = 0;
-    for (let i = 0; i < signatureHex.length; i++) {
-      diff |= signatureHex.charCodeAt(i) ^ hash.charCodeAt(i);
-    }
-    if (diff === 0) {
-      // AUTH-001: Validate auth_date is present and fresh to prevent replay attacks.
-      // Telegram's spec requires checking that auth_date is within a reasonable
-      // window (5 minutes) to limit token replay. Without this check, a stolen
-      // initData works indefinitely.
-      const authDateStr = urlParams.get('auth_date');
-      if (!authDateStr) {
-        return null;
-      }
-      const authDate = parseInt(authDateStr, 10);
-      const now = Math.floor(Date.now() / 1000);
-      const MAX_AGE_SECONDS = 300; // 5 minutes
-      if (Number.isNaN(authDate) || Math.abs(now - authDate) > MAX_AGE_SECONDS) {
-        return null;
-      }
 
-      const userStr = urlParams.get('user');
-      if (userStr) {
-        try {
-          return JSON.parse(userStr);
-        } catch (_e) {
-          return null;
-        }
-      }
+  // AUTH-001: Validate auth_date is present and fresh to prevent replay attacks.
+  // Telegram's spec requires checking that auth_date is within a reasonable
+  // window (5 minutes) to limit token replay. Without this check, a stolen
+  // initData works indefinitely.
+  const authDateStr = urlParams.get('auth_date');
+  if (!authDateStr) {
+    return null;
+  }
+  const authDate = parseInt(authDateStr, 10);
+  const now = Math.floor(Date.now() / 1000);
+  const MAX_AGE_SECONDS = 300; // 5 minutes
+  if (Number.isNaN(authDate) || Math.abs(now - authDate) > MAX_AGE_SECONDS) {
+    return null;
+  }
+
+  const userStr = urlParams.get('user');
+  if (userStr) {
+    try {
+      return JSON.parse(userStr);
+    } catch (_e) {
+      return null;
     }
   }
 

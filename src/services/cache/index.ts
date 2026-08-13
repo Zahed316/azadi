@@ -76,10 +76,11 @@ export class CacheService implements ICacheService {
   }
 
   /**
-   * Check whether a key exists in the cache without fetching its value.
+   * Check whether a key exists in the cache.
    *
-   * KV `getMetadata()` is used instead of `get()` to avoid transferring
-   * the full value payload.
+   * Uses `getWithMetadata()` to retrieve the value and metadata together;
+   * the value body is small (JSON-serialized cached data) so the overhead
+   * is negligible compared to a separate metadata-only call.
    */
   async has(key: string): Promise<boolean> {
     try {

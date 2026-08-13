@@ -13,7 +13,7 @@ import {
   favorites,
   messages,
 } from '../database/schema';
-import { eq, and, desc, lt, sql } from 'drizzle-orm';
+import { eq, and, desc, lt, sql, inArray } from 'drizzle-orm';
 
 export class ProductRepository {
   private db: ReturnType<typeof getDb>;
@@ -43,6 +43,11 @@ export class ProductRepository {
   async getProductById(id: number): Promise<typeof products.$inferSelect | undefined> {
     const result = await this.db.select().from(products).where(eq(products.id, id));
     return result[0];
+  }
+
+  async getProductsByIds(ids: number[]): Promise<(typeof products.$inferSelect)[]> {
+    if (ids.length === 0) return [];
+    return await this.db.select().from(products).where(inArray(products.id, ids));
   }
 
   async addProduct(

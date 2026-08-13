@@ -24,7 +24,37 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     const repo = new SettingsRepository(db);
-    const body: any = await request.json(); // Array of { key, value }
+    const body: any = await request.json();
+    if (!body || !Array.isArray(body.settings)) {
+      return new Response(JSON.stringify({ error: 'settings must be an array' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
+    if (body.settings.length === 0) {
+      return new Response(JSON.stringify({ error: 'settings array is empty' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
+    if (body.settings.length > 100) {
+      return new Response(JSON.stringify({ error: 'settings array too large (max 100)' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
+    // Validate each item has required fields
+    for (const item of body.settings) {
+      if (!item || typeof item.key !== 'string' || typeof item.value !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'each setting must have string key and value' }),
+          {
+            status: 400,
+            headers: corsHeaders,
+          },
+        );
+      }
+    }
     for (const item of body.settings) {
       await repo.setValue(item.key, item.value);
     }

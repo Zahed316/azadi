@@ -47,12 +47,16 @@ export async function handlePublicApiRequest(
   try {
     // --- GET /api/public/menu ---
     if (path === 'menu') {
-      const sections = ['drinks', 'beans', 'cakes', 'extras'];
-      const menuData: Record<string, any[]> = {};
-      for (const section of sections) {
-        const entries = await dataService.getBySection(section);
-        menuData[section] = entries.filter((e) => e.isVisible);
-      }
+      const sections = ['drinks', 'beans', 'cakes', 'extras'] as const;
+      const sectionEntries = await Promise.all(
+        sections.map(async (section) => ({
+          section,
+          entries: (await dataService.getBySection(section)).filter((e: any) => e.isVisible),
+        })),
+      );
+      const menuData: Record<string, any[]> = Object.fromEntries(
+        sectionEntries.map(({ section, entries }) => [section, entries]),
+      );
       return new Response(JSON.stringify({ sections: menuData }), { headers: CORS_HEADERS });
     }
 
@@ -86,14 +90,16 @@ export async function handlePublicApiRequest(
     const productMatch = path.match(/^products\/(\d+)$/);
     if (productMatch) {
       const id = parseInt(productMatch[1], 10);
-      const product = await dataService.getProductById(id);
+      const [product, details] = await Promise.all([
+        dataService.getProductById(id),
+        dataService.getCoffeeDetails(id),
+      ]);
       if (!product || !product.available) {
         return new Response(JSON.stringify({ error: 'Product not found' }), {
           status: 404,
           headers: CORS_HEADERS,
         });
       }
-      const details = await dataService.getCoffeeDetails(id);
       const categories = await dataService.getAllCategories();
       const category = categories.find((c) => c.id === product.categoryId);
       return new Response(

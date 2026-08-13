@@ -65,15 +65,24 @@ function extractEq(condition: unknown): EqCondition | null {
   // (camelCase, e.g. `telegramId`). Convert snake→camel so the WHERE clause
   // finds the matching key.
   const camel = String(left.name).replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
+  // Detect inArray: chunk[2].value is [" in "] instead of [" = "]
+  const operator = c.queryChunks[2]?.value;
+  const isInArray = Array.isArray(operator) && operator[0] === ' in ';
   return {
     column: camel,
     tableName: tableNameOf(left.table),
-    value: right.value ?? right,
+    value: isInArray ? Object.values(right).map((v: any) => v?.value ?? v) : (right.value ?? right),
   };
 }
 
 function matchesCondition(row: TableRow, eqs: EqCondition[]): boolean {
-  return eqs.every((eq) => row[eq.column] === eq.value);
+  return eqs.every((eq) => {
+    const cell = row[eq.column];
+    if (Array.isArray(eq.value)) {
+      return eq.value.includes(cell);
+    }
+    return cell === eq.value;
+  });
 }
 
 // ---------------------------------------------------------------------------

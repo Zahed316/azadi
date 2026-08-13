@@ -4,6 +4,7 @@ import { setRequestContext } from './requestContext';
 import { handleApiRequest } from './api/router';
 import { handlePublicApiRequest } from './api/public';
 import { sweepStreaks } from './scripts/streaks';
+import { timingSafeEqual } from './utils/crypto';
 
 let botInstance: ReturnType<typeof createBot> | null = null;
 
@@ -51,7 +52,7 @@ export default {
       }
 
       const secret = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
-      if (secret !== env.SECRET_TOKEN) {
+      if (!secret || !timingSafeEqual(secret, env.SECRET_TOKEN)) {
         console.log(
           JSON.stringify({
             ts: new Date().toISOString(),
