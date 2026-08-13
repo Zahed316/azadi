@@ -35,13 +35,16 @@ const MENU_VISIBILITY_LABELS: Record<string, string> = {
   menu_visible_faq: '❓ سوالات متداول',
 };
 
-const BUILTIN_KEYS = ['instagram', 'phone', 'price_unit', 'ai_greeting', 'about'];
+const BUILTIN_KEYS = ['instagram', 'phone', 'price_unit', 'ai_greeting', 'about', 'welcome_message', 'vat_note', 'announcement'];
 const BUILTIN_LABELS: Record<string, string> = {
   instagram: 'آدرس اینستاگرام',
   phone: 'تلفن تماس',
   price_unit: 'واحد قیمت',
   ai_greeting: 'پیام خوش‌آمدگویی هوش مصنوعی',
   about: 'متن درباره ما (نمایش در «درباره ما» و متن هوش مصنوعی)',
+  welcome_message: 'پیام خوش‌آمدگویی منوی اصلی ربات (/start)',
+  vat_note: 'یادداشت مالیات بر ارزش افزوده (زیر لیست محصولات)',
+  announcement: 'اعلان سایت (نمایش در صفحه اصلی منو)',
 };
 
 export default function SettingsPage() {
@@ -197,7 +200,7 @@ export default function SettingsPage() {
         <form onSubmit={handleSaveSettings}>
           {BUILTIN_KEYS.map((key) => (
             <Field key={key} label={BUILTIN_LABELS[key] || key}>
-              {key === 'about' ? (
+              {key === 'about' || key === 'welcome_message' || key === 'vat_note' || key === 'announcement' ? (
                 <textarea
                   value={localSettings.find((s: any) => s.key === key)?.value || ''}
                   onChange={(e) => updateSetting(key, e.target.value)}
@@ -208,7 +211,7 @@ export default function SettingsPage() {
                 <input
                   value={localSettings.find((s: any) => s.key === key)?.value || ''}
                   onChange={(e) => updateSetting(key, e.target.value)}
-                  dir={key === 'ai_greeting' || key === 'about' ? 'auto' : undefined}
+                  dir={key === 'ai_greeting' ? 'auto' : undefined}
                 />
               )}
             </Field>

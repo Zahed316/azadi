@@ -2,10 +2,11 @@ import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { ProductRepository, MenuConfigRepository, SettingsRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
-import { VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
+import { DEFAULT_VAT_NOTE, DEFAULT_PRICE_UNIT } from '../utils/formatters';
 import { formatPersianPrice } from '../utils/numbers';
 import { buildListPage } from '../utils/faqPagination';
-import { mainMenu, MAIN_MENU_TEXT } from './mainMenu';
+import { escapeHtml } from '../utils/htmlEscape';
+import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
 
 /**
@@ -34,6 +35,7 @@ export async function buildCategoryPage(
   items: any[],
   idx: number,
   priceUnit: string,
+  vatNote: string = DEFAULT_VAT_NOTE,
 ): Promise<void> {
   const page = buildListPage(items, idx, DRINKS_PAGE_SIZE);
   const kb = new InlineKeyboard();
@@ -55,7 +57,7 @@ export async function buildCategoryPage(
 
   const name = config.categoryName ?? 'بدون نام';
   const header = `<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${name}</b> (${page.pageLabel})`;
-  const text = `${header}${VAT_NOTE}`;
+  const text = `${header}${vatNote}`;
   await ctx
     .editMessageText(text, { parse_mode: 'HTML', reply_markup: kb })
     .catch(() => ctx.reply(text, { parse_mode: 'HTML', reply_markup: kb }));
@@ -104,7 +106,10 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
               const priceUnit =
                 (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) ||
                 DEFAULT_PRICE_UNIT;
-              await buildCategoryPage(ctx, config, items, 0, priceUnit);
+              const vatNoteRaw =
+                await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+              const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
+              await buildCategoryPage(ctx, config, items, 0, priceUnit, vatNote);
             } catch (e) {
               console.error(e);
               await ctx
@@ -121,7 +126,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   })
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = MAIN_MENU_TEXT;
+    const body = await getWelcomeText(ctx.env);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

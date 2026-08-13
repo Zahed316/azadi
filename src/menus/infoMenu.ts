@@ -4,7 +4,8 @@ import { BranchRepository, FaqRepository, SettingsRepository } from '../reposito
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { formatFaq } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
-import { mainMenu, MAIN_MENU_TEXT } from './mainMenu';
+import { escapeHtml } from '../utils/htmlEscape';
+import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
 
 export const infoMenu = new Menu<MyContext>('info-menu')
@@ -27,7 +28,7 @@ export const infoMenu = new Menu<MyContext>('info-menu')
         if (i % 2 === 1 || i === activeBranches.length - 1) kb.row();
       }
       const body = aboutText
-        ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
+        ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
         : '<b>🏠 درباره ما</b>\n\nاطلاعاتی ثبت نشده است.';
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
@@ -69,7 +70,7 @@ export const infoMenu = new Menu<MyContext>('info-menu')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = MAIN_MENU_TEXT;
+    const body = await getWelcomeText(ctx.env);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

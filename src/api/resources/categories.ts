@@ -31,7 +31,8 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
     });
     if (ctx.cache) {
       await ctx.cache.deleteByPrefix('cache:menu:');
-      await ctx.cache.deleteByPrefix('cache:visible-categories');
+      await ctx.cache.delete('cache:visible-categories');
+      await ctx.cache.delete('cache:settings:categories');
     }
     return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
@@ -57,6 +58,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
     if (ctx.cache) {
       await ctx.cache.deleteByPrefix('cache:menu:');
       await ctx.cache.deleteByPrefix('cache:visible-categories');
+      await ctx.cache.delete('cache:settings:categories');
     }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
@@ -76,6 +78,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
     if (ctx.cache) {
       await ctx.cache.deleteByPrefix('cache:menu:');
       await ctx.cache.deleteByPrefix('cache:visible-categories');
+      await ctx.cache.delete('cache:settings:categories');
     }
     return new Response(null, { status: 204, headers: corsHeaders });
   }

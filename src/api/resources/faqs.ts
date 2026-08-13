@@ -28,6 +28,9 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
       });
     }
     await repo.add(body.question, body.answer);
+    if (ctx.cache) {
+      await ctx.cache.delete('cache:faq:all');
+    }
     return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
@@ -50,6 +53,9 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
       });
     }
     await repo.update(id, body.question, body.answer);
+    if (ctx.cache) {
+      await ctx.cache.delete('cache:faq:all');
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 
@@ -65,6 +71,9 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
     const id = idResult;
     const repo = new FaqRepository(db);
     await repo.delete(id);
+    if (ctx.cache) {
+      await ctx.cache.delete('cache:faq:all');
+    }
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 

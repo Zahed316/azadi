@@ -8,10 +8,11 @@ import {
   FavoritesRepository,
   MessageRepository,
 } from '../repositories';
-import { formatBranch, formatProduct, formatFaq, DEFAULT_PRICE_UNIT } from '../utils/formatters';
+import { formatBranch, formatProduct, formatFaq, DEFAULT_PRICE_UNIT, DEFAULT_VAT_NOTE } from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
+import { escapeHtml } from '../utils/htmlEscape';
 import { buildCategoryPage } from '../menus/drinksNavMenu';
-import { mainMenu, MAIN_MENU_TEXT } from '../menus/mainMenu';
+import { mainMenu, getWelcomeText } from '../menus/mainMenu';
 import { MyContext } from '../types/context';
 
 const backKeyboard = () => new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
@@ -20,7 +21,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
   bot.callbackQuery('back:main', async (ctx) => {
     try {
       await ctx.answerCallbackQuery();
-      const body = MAIN_MENU_TEXT;
+      const body = await getWelcomeText(ctx.env);
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
@@ -68,7 +69,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `branches:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `branches:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
-      const body = aboutText ? `<b>🏠 درباره ما</b>\n\n${aboutText}` : '<b>🏠 درباره ما</b>';
+      const body = aboutText ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}` : '<b>🏠 درباره ما</b>';
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
@@ -164,7 +165,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         }
         return;
       }
-      const priceUnit = priceUnitRaw || DEFAULT_PRICE_UNIT;
+      const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
       await buildCategoryPage(ctx, config, items, idx, priceUnit);
     } catch (e) {
       console.error(e);
@@ -199,8 +200,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const repo = new ProductRepository(ctx.env.DB);
       const product = await repo.getProductById(id);
       if (product) {
-        const priceUnit =
-          (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+        const priceUnitRaw =
+          await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+        const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
+        const vatNoteRaw =
+          await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+        const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
         const kb = backKeyboard();
         // Phase 5.2: favorite toggle
         if (ctx.from?.id) {
@@ -214,7 +219,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
             kb.row().text('⭐ ذخیره', `fav:add:${id}`);
           }
         }
-        let caption = formatProduct(product, priceUnit);
+        let caption = formatProduct(product, priceUnit, vatNote);
         // Show brew guide for coffee beans with details
         const details = await repo.getCoffeeDetails(id);
         if (details?.brewGuide) {
@@ -249,8 +254,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const items = await new ProductRepository(ctx.env.DB).getByFlag('featured');
-      const priceUnit =
-        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const priceUnitRaw =
+        await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
+      const vatNoteRaw =
+        await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
       for (let i = 0; i < page.items.length; i++) {
@@ -263,7 +272,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const body =
         page.items.length === 0
           ? `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})`
-          : `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
+          : `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
@@ -278,8 +287,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const items = await new ProductRepository(ctx.env.DB).getByFlag('isSeasonal');
-      const priceUnit =
-        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const priceUnitRaw =
+        await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
+      const vatNoteRaw =
+        await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
       for (let i = 0; i < page.items.length; i++) {
@@ -292,7 +305,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const body =
         page.items.length === 0
           ? `<b>🌿 مخصوص فصل</b> (${page.pageLabel})`
-          : `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit)).join('\n\n')}`;
+          : `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: any) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
@@ -307,8 +320,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const rows = await new ProductRepository(ctx.env.DB).getBeansWithCoffeeDetails();
-      const priceUnit =
-        (await new SettingsRepository(ctx.env.DB).getValue('price_unit')) || DEFAULT_PRICE_UNIT;
+      const priceUnitRaw =
+        await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
+      const vatNoteRaw =
+        await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(rows, idx, 5);
       const kb = new InlineKeyboard();
       for (let i = 0; i < page.items.length; i++) {
@@ -330,7 +347,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const body =
         page.items.length === 0
           ? `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})`
-          : `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit)).join('\n\n')}`;
+          : `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: any) => formatProduct(r.product, priceUnit, vatNote)).join('\n\n')}`;
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));

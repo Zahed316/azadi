@@ -58,6 +58,9 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
     for (const item of body.settings) {
       await repo.setValue(item.key, item.value);
     }
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:settings:');
+    }
     return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
   }
 
@@ -71,6 +74,9 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
     const key = decodeURIComponent(path.split('/')[1]);
     const repo = new SettingsRepository(db);
     await repo.deleteSetting(key);
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:settings:');
+    }
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
@@ -90,6 +96,9 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
       });
     const repo = new SettingsRepository(db);
     await repo.setValue(key, body.value);
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:settings:');
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 

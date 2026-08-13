@@ -34,6 +34,10 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
       createdAt: now,
       updatedAt: now,
     });
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:menu:');
+      await ctx.cache.delete('cache:visible-categories');
+    }
     return new Response(JSON.stringify({ success: true, menuConfig: result[0] }), {
       status: 201,
       headers: corsHeaders,
@@ -71,6 +75,10 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     }
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:menu:');
+      await ctx.cache.delete('cache:visible-categories');
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 
@@ -93,6 +101,10 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
       buttonLabel: body.buttonLabel ?? null,
       specialMessage: body.specialMessage ?? null,
     });
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:menu:');
+      await ctx.cache.delete('cache:visible-categories');
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 
@@ -108,6 +120,10 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
     const id = idResult;
     const repo = new MenuConfigRepository(db);
     await repo.delete(id);
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:menu:');
+      await ctx.cache.delete('cache:visible-categories');
+    }
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 

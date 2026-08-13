@@ -1,7 +1,7 @@
 import { Bot, session } from 'grammy';
 import { conversations } from '@grammyjs/conversations';
 import { D1Database, KVNamespace } from '@cloudflare/workers-types';
-import { mainMenu, MAIN_MENU_TEXT } from './menus/mainMenu';
+import { mainMenu, getWelcomeText } from './menus/mainMenu';
 import { discoverMenu } from './menus/discoverMenu';
 import { infoMenu } from './menus/infoMenu';
 import { beansMenu, cakesMenu } from './menus/productsMenu';
@@ -141,7 +141,7 @@ export function createBot(env: Env): Bot<MyContext> {
     // is registered (see USE_CONVERSATIONS gate above). Guard so /start works
     // in both states — the framework is currently dormant.
     await ctx.conversation?.exitAll();
-    return ctx.reply(MAIN_MENU_TEXT, { reply_markup: mainMenu, parse_mode: 'HTML' });
+    return ctx.reply(await getWelcomeText(env), { reply_markup: mainMenu, parse_mode: 'HTML' });
   });
 
   setupAdminCommands(bot, env);

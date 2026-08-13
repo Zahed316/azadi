@@ -25,7 +25,6 @@ export default function ProductPage() {
   if (!product) return <div className="empty-state">محصول یافت نشد</div>;
 
   const d = product.coffee_details;
-  if (!d) return null;
   const hasDetails =
     d &&
     (d.origin ||

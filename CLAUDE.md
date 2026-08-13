@@ -8,6 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-home-repo-azadi/memory/` (index in `MEMORY.md`). Load it when a question matches a slug — these are non-obvious lessons with re-discovery risk, not duplicates of facts already here.
 
+- [cacheservice-test-spy-on-prototype](memory/cacheservice-test-spy-on-prototype.md) — spy on `CacheService.prototype` in tests, not the KV mock
+- [vitest-mock-class-no-fn-wrap](memory/vitest-mock-class-no-fn-wrap.md) — pass class directly in `vi.mock()`, wrapping in `vi.fn()` breaks constructor
+
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 
 **Global rules are binding.** The rules in `~/.claude/CLAUDE.md` (the user's global instructions) take precedence over any project-specific guidance in this file or in `AGENTS.md`. If they conflict, the global rules win — and this file should be updated to reconcile.
@@ -172,7 +175,9 @@ Filtering rules:
 - **Registered bot commands**: only `/start` and `/admin` (plus `/setup_bot` for the bot owner to push them). Do not add more without updating `setMyCommands` in `src/commands/admin.ts`.
 - **Menu navigation**: lists use `editMessageText(...).catch(() => ctx.reply(...))` to edit in place with fresh-reply fallback. Detail replies carry a `back:main` inline button handled in `src/handlers/callbackQuery.ts`.
 - **Mini App UX**: toast notifications via `showToast()` (never `alert()`), form fields wrapped in `<Field label>` (placeholder is a hint, not a label), every list renders an `.empty-state` block when empty, Persian data elements get `dir="auto"` while chrome stays English.
-- **Tests**: `src/tests/*.test.ts`, vitest (`import { expect, test } from 'vitest'`). `vitest.config.ts` at root sets a 30s timeout for dynamic imports. The Worker API tests in `src/tests/router-*.test.ts` share a harness at `src/tests/_helpers/routerHarness.ts` that mocks Drizzle, `validateInitData`, and `getAdminRole` to exercise `handleApiRequest` end-to-end. **Caveat**: the harness's `extractEq()` parser only matches Drizzle's `eq()` shape; any other predicate (`and`/`or`/`gt`/etc.) silently no-ops, so tests pass without actually filtering — see the global memory `permissive-where-parsers-mask-sql-bugs`.
+- **Tests**: `src/tests/*.test.ts`, vitest (`import { expect, test } from 'vitest'`). `vitest.config.ts` at root sets a 30s timeout for dynamic imports. The Worker API tests in `src/tests/router-*.test.ts` share a harness at `src/tests/_helpers/routerHarness.ts` that mocks Drizzle, `validateInitData`, and `getAdminRole` to exercise `handleApiRequest` end-to-end. **Caveat**: the harness's `extractEq()` parser only matches Drizzle's `eq()` shape; any other predicate (`and`//`or`/`gt`/etc.) silently no-ops, so tests pass without actually filtering — see the global memory `permissive-where-parsers-mask-sql-bugs`.
+  - **Cache tests**: spy on `CacheService.prototype` methods, not the KV mock directly — `CacheService.deleteByPrefix` pages through `kv.list()` internally; mocking KV makes it silently no-op. See `src/tests/router-cache.test.ts`.
+  - **Mocking classes**: pass the class directly in `vi.mock()` — wrapping in `vi.fn().mockImplementation()` returns a non-constructable mock. See project memory `vitest-mock-class-no-fn-wrap`.
 - **Errors**: catch blocks log to `console.error`, reply with Persian error messages to users.
 - **Delete ordering**: when deleting resources with cross-store references (D1 + external), update D1 first then the external store. A dangling URL is less harmful than a missing resource with a live reference. See [[db-first-delete-ordering]].
 

@@ -1,9 +1,29 @@
 import { formatPersianPrice, toPersianDigits } from './numbers';
 import { products, branches, faq } from '../database/schema';
+import { SettingsRepository } from '../repositories';
+import { escapeHtml } from './htmlEscape';
+import type { Env } from '../bot';
 
-export const VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
+export const DEFAULT_VAT_NOTE =
+  '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
+
+/** @deprecated Use getVatNote(env) instead. Kept for backward compatibility. */
+export const VAT_NOTE = DEFAULT_VAT_NOTE;
 
 export const DEFAULT_PRICE_UNIT = 'تومان';
+
+/** Read VAT note from settings, falling back to the hardcoded default. */
+export async function getVatNote(env: Env): Promise<string> {
+  try {
+    const repo = new SettingsRepository(env.DB);
+    const value = await repo.getValue('vat_note');
+    // Escape admin-supplied text so HTML tags in the note don't break parse_mode: 'HTML'.
+    // The hardcoded default is trusted and does not need escaping.
+    return value ? escapeHtml(value) : DEFAULT_VAT_NOTE;
+  } catch {
+    return DEFAULT_VAT_NOTE;
+  }
+}
 
 const unitMap: Record<string, string> = {
   cup: 'فنجان',
@@ -17,6 +37,7 @@ const unitMap: Record<string, string> = {
 export function formatProduct(
   p: typeof products.$inferSelect,
   priceUnit: string = DEFAULT_PRICE_UNIT,
+  vatNote: string = DEFAULT_VAT_NOTE,
 ): string {
   let text = `📦 <b>${p.name}</b>\n`;
   if (p.description) text += `\n${p.description}\n`;
@@ -37,7 +58,7 @@ export function formatProduct(
   if (p.calories != null) text += `\n🔥 ${toPersianDigits(p.calories)} کالری`;
   if (p.caffeineMg != null) text += `\n⚡ کافئین: ${toPersianDigits(p.caffeineMg)} میلی‌گرم`;
   if (p.allergens) text += `\n⚠️ آلرژن‌ها: ${p.allergens}`;
-  text += VAT_NOTE;
+  text += vatNote;
   return text;
 }
 

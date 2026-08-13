@@ -3,7 +3,7 @@ import { InlineKeyboard } from 'grammy';
 import { ProductRepository, MenuConfigRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
-import { mainMenu, MAIN_MENU_TEXT } from './mainMenu';
+import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
 
 /**
@@ -59,7 +59,7 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = MAIN_MENU_TEXT;
+    const body = await getWelcomeText(ctx.env);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
@@ -109,7 +109,7 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = MAIN_MENU_TEXT;
+    const body = await getWelcomeText(ctx.env);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

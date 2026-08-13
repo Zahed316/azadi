@@ -55,6 +55,9 @@ export const handleStreaks: ResourceHandler = async (method, path, ctx) => {
       await repo.setValue('streak_messages', body.streakMessages ? 'true' : 'false');
     if (body.streakCronEnabled !== undefined)
       await repo.setValue('streak_cron_enabled', body.streakCronEnabled ? 'true' : 'false');
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:settings:');
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 

@@ -30,6 +30,14 @@ export default function ProductsPage() {
   // Editing
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
+  // Search and filter
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCatId, setFilterCatId] = useState('');
+
+  // Collapsible form sections
+  const [showNutrition, setShowNutrition] = useState(false);
+  const [showCoffeeDetails, setShowCoffeeDetails] = useState(false);
+
   // Form
   const [prodName, setProdName] = useState('');
   const [prodPrice, setProdPrice] = useState('');
@@ -196,6 +204,13 @@ export default function ProductsPage() {
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
+
+  // Client-side search and category filter
+  const filteredProducts = products.filter((p: any) => {
+    const matchesSearch = !searchQuery || p.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCat = !filterCatId || p.categoryId?.toString() === filterCatId;
+    return matchesSearch && matchesCat;
+  });
 
   const handleBatchExecute = async () => {
     if (!batchAction || selectedProductIds.length === 0) return;
@@ -451,7 +466,15 @@ export default function ProductsPage() {
               </div>
             )}
 
-            <div className="section-divider">اطلاعات تغذیه‌ای</div>
+            <div
+              className="section-divider"
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => setShowNutrition(!showNutrition)}
+            >
+              {showNutrition ? '▼' : '▶'} اطلاعات تغذیه‌ای
+            </div>
+            {showNutrition && (
+              <>
             <Field label="کالری (کیلوکالری)">
               <input
                 type="number"
@@ -476,8 +499,18 @@ export default function ProductsPage() {
                 dir="auto"
               />
             </Field>
+              </>
+            )}
 
-            <div className="section-divider">جزئیات قهوه (اختیاری)</div>
+            <div
+              className="section-divider"
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => setShowCoffeeDetails(!showCoffeeDetails)}
+            >
+              {showCoffeeDetails ? '▼' : '▶'} جزئیات قهوه (اختیاری)
+            </div>
+            {showCoffeeDetails && (
+            <>
             <Field label="دانه قهوه است؟">
               <input
                 type="checkbox"
@@ -542,6 +575,8 @@ export default function ProductsPage() {
                 </Field>
               </>
             )}
+            </>
+            )}
             <button type="submit" className="primary" disabled={saveProductMutation.isPending}>
               {saveProductMutation.isPending
                 ? '⏳...'
@@ -561,8 +596,30 @@ export default function ProductsPage() {
         {products.length === 0 ? (
           <EmptyState message="هنوز محصولی وجود ندارد. برای شروع اولین محصول را اضافه کنید." />
         ) : (
-          <ul className="list">
-            {products.map((p) => (
+          <>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                placeholder="جستجوی نام محصول..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ flex: 1, minWidth: 150 }}
+                dir="auto"
+              />
+              <select value={filterCatId} onChange={(e) => setFilterCatId(e.target.value)}>
+                <option value="">همه دسته‌بندی‌ها</option>
+                {categories.map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {filteredProducts.length === 0 ? (
+              <EmptyState message="محصولی با فیلتر انتخاب‌شده یافت نشد." />
+            ) : (
+            <ul className="list">
+              {filteredProducts.map((p) => (
               <li key={p.id} className="list-item">
                 <div className="list-item-info">
                   {(isSuperAdmin || allowedCatId) && (
@@ -650,6 +707,8 @@ export default function ProductsPage() {
               </li>
             ))}
           </ul>
+          )}
+          </>
         )}
       </div>
 

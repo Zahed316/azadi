@@ -62,4 +62,7 @@ export interface Settings {
   about?: string;
   price_unit?: string;
   instagram?: string;
+  welcome_message?: string;
+  vat_note?: string;
+  announcement?: string;
 }

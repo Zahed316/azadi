@@ -44,6 +44,9 @@ export const handleFavorites: ResourceHandler = async (method, path, ctx) => {
     if (!ok) {
       return new Response(JSON.stringify({ ok: false }), { status: 404, headers: corsHeaders });
     }
+    if (ctx.cache) {
+      await ctx.cache.delete(`cache:favorites:${telegramId}`);
+    }
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 

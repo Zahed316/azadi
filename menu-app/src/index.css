@@ -276,6 +276,19 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   Announcement banner
+   ═══════════════════════════════════════════════════════════════════ */
+.announcement-banner {
+  background: rgba(201, 162, 107, 0.1);
+  border-bottom: 1px solid var(--hairline);
+  padding: var(--space-md);
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    HomePage — quick nav + category index
    ═══════════════════════════════════════════════════════════════════ */
 .home-nav {

@@ -14,7 +14,8 @@ import { InlineKeyboard } from 'grammy';
 import { BranchRepository, SettingsRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
-import { mainMenu, MAIN_MENU_TEXT } from './mainMenu';
+import { escapeHtml } from '../utils/htmlEscape';
+import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
 
 const BRANCHES_PAGE_PREFIX = 'branches:page:';
@@ -38,7 +39,7 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
 
       // Build the about text section
       const aboutSection = aboutText
-        ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
+        ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
         : '<b>🏠 درباره ما</b>';
 
       // Build keyboard: branch buttons (if any) + back button
@@ -53,7 +54,7 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
       }
 
       const body = aboutText
-        ? `<b>🏠 درباره ما</b>\n\n${aboutText}`
+        ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
         : '<b>🏠 درباره ما</b>\n\nاطلاعاتی ثبت نشده است.';
 
       await ctx
@@ -67,7 +68,7 @@ export const branchesMenu = new Menu<MyContext>('branches-menu')
   .row()
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
-    const body = MAIN_MENU_TEXT;
+    const body = await getWelcomeText(ctx.env);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
       .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));

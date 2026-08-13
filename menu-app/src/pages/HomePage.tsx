@@ -44,6 +44,13 @@ export default function HomePage() {
         )}
       </section>
 
+      {/* ── Announcement banner ── */}
+      {settings?.announcement && (
+        <section className="announcement-banner" dir="auto">
+          {settings.announcement}
+        </section>
+      )}
+
       {/* ── Quick links ── */}
       <nav className="home-nav">
         <Link to="/featured" className="home-nav-link">
