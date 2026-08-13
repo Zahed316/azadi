@@ -52,37 +52,116 @@ interface EqCondition {
   column: string;
   tableName: string;
   value: unknown;
+  operator?: 'eq' | 'in' | 'gt' | 'lt' | 'gte' | 'lte' | 'and' | 'or';
+  children?: EqCondition[];
 }
 
-function extractEq(condition: unknown): EqCondition | null {
+/**
+ * Extract conditions from a Drizzle predicate.
+ *
+ * Handles:
+ * - `eq(col, val)` → single EqCondition with operator 'eq'
+ * - `and(pred, pred)` / `or(pred, pred)` → EqCondition with operator 'and'/'or' + children
+ * - `gt(col, val)`, `lt(col, val)`, `gte(col, val)`, `lte(col, val)` → comparison operators
+ * - `inArray(col, vals)` → operator 'in' with array value
+ */
+function extractEq(condition: unknown): EqCondition[] {
   const c = condition as any;
-  if (!c?.queryChunks) return null;
-  const left = c.queryChunks[1];
-  const right = c.queryChunks[3];
-  if (!left || !right) return null;
+  if (!c?.queryChunks) return [];
+
   // Drizzle columns carry the SQL column name in `.name` (e.g. `telegram_id`)
   // but rows in the harness store are seeded with the JS property name
   // (camelCase, e.g. `telegramId`). Convert snake→camel so the WHERE clause
   // finds the matching key.
-  const camel = String(left.name).replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
-  // Detect inArray: chunk[2].value is [" in "] instead of [" = "]
-  const operator = c.queryChunks[2]?.value;
-  const isInArray = Array.isArray(operator) && operator[0] === ' in ';
-  return {
-    column: camel,
+  function camelName(col: any): string {
+    return String(col.name).replace(/_([a-z0-9])/g, (_: string, c: string) => c.toUpperCase());
+  }
+
+  // Compound predicates: and() / or()
+  // Shape: queryChunks = ['(', SQL([' left ', ' and ', ' right ']), ')']
+  const firstVal = c.queryChunks[0]?.value;
+  if (Array.isArray(firstVal) && firstVal[0] === '(') {
+    const inner = c.queryChunks[1];
+    if (inner?.queryChunks) {
+      const compoundOp = String(inner.queryChunks[1]?.value?.[0] ?? '').trim();
+      if (compoundOp === 'and' || compoundOp === 'or') {
+        const leftChildren = extractEq(inner.queryChunks[0]);
+        const rightChildren = extractEq(inner.queryChunks[2]);
+        return [{
+          column: '',
+          tableName: '',
+          value: null,
+          operator: compoundOp,
+          children: [...leftChildren, ...rightChildren],
+        }];
+      }
+    }
+  }
+
+  // Comparison operators: eq / gt / lt / gte / lte / inArray
+  // Shape: queryChunks = ['', column, StringChunk(' = '/ > ' etc), value, '']
+  const left = c.queryChunks[1];
+  const right = c.queryChunks[3];
+  if (!left || !right) return [];
+
+  const operatorChunk = c.queryChunks[2]?.value;
+  const opStr = Array.isArray(operatorChunk) ? operatorChunk[0]?.trim() : '';
+
+  let operator: EqCondition['operator'] = 'eq';
+  let value: unknown;
+
+  if (opStr === 'in') {
+    operator = 'in';
+    value = Object.values(right).map((v: any) => v?.value ?? v);
+  } else if (opStr === '>') {
+    operator = 'gt';
+    value = right?.value ?? right;
+  } else if (opStr === '<') {
+    operator = 'lt';
+    value = right?.value ?? right;
+  } else if (opStr === '>=') {
+    operator = 'gte';
+    value = right?.value ?? right;
+  } else if (opStr === '<=') {
+    operator = 'lte';
+    value = right?.value ?? right;
+  } else {
+    // Default: equality
+    operator = 'eq';
+    value = right?.value ?? right;
+  }
+
+  return [{
+    column: camelName(left),
     tableName: tableNameOf(left.table),
-    value: isInArray ? Object.values(right).map((v: any) => v?.value ?? v) : (right.value ?? right),
-  };
+    value,
+    operator,
+  }];
 }
 
 function matchesCondition(row: TableRow, eqs: EqCondition[]): boolean {
-  return eqs.every((eq) => {
-    const cell = row[eq.column];
-    if (Array.isArray(eq.value)) {
-      return eq.value.includes(cell);
-    }
-    return cell === eq.value;
-  });
+  return eqs.every(cond => matchSingle(row, cond));
+}
+
+function matchSingle(row: TableRow, cond: EqCondition): boolean {
+  // Compound predicates
+  if (cond.operator === 'and' && cond.children) {
+    return cond.children.every(child => matchSingle(row, child));
+  }
+  if (cond.operator === 'or' && cond.children) {
+    return cond.children.some(child => matchSingle(row, child));
+  }
+
+  // Leaf predicates
+  const rowValue = row[cond.column];
+  switch (cond.operator) {
+    case 'gt': return rowValue > cond.value;
+    case 'lt': return rowValue < cond.value;
+    case 'gte': return rowValue >= cond.value;
+    case 'lte': return rowValue <= cond.value;
+    case 'in': return Array.isArray(cond.value) && cond.value.includes(rowValue);
+    default: return rowValue === cond.value; // eq
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -118,8 +197,10 @@ class QueryChain {
   }
 
   where(condition: unknown) {
-    const eq = extractEq(condition);
-    if (eq) this._eqs.push(eq);
+    const conditions = extractEq(condition);
+    for (const cond of conditions) {
+      this._eqs.push(cond);
+    }
     return this;
   }
 
