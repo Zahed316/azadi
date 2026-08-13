@@ -13,6 +13,7 @@ import {
   FavoritesRepository,
 } from '../repositories';
 import { buildMinimalContext } from '../utils/menuContext';
+import { checkAndSetCooldown } from '../utils/rateLimit';
 
 /**
  * Run an AI query against the Azadi context without bot-specific plumbing.
@@ -153,11 +154,18 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         return ctx.reply('دستیار هوشمند در حال حاضر غیرفعال است.');
       }
 
+      // AI-001: In-memory per-user cooldown (replaces log-based check in AiService
+      // which had a race condition via waitUntil). The log-based cooldown was bypassed
+      // by concurrent requests because logs hadn't been written yet.
+      const userId = String(ctx.from?.id);
+      if (!checkAndSetCooldown(userId)) {
+        return ctx.reply('⏳ لطفاً چند ثانیه صبر کنید و دوباره سؤال بپرسید.');
+      }
+
       try {
         const requestStartedAt = performance.now();
         // Best-effort typing indicator — Telegram timeout is expected
         await ctx.replyWithChatAction('typing').catch(() => {});
-        const userId = String(ctx.from?.id);
         const db = ctx.env.DB;
         const productRepo = new ProductRepository(db);
         const branchRepo = new BranchRepository(db);
@@ -168,17 +176,25 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         const favoritesRepo = new FavoritesRepository(db);
 
         const catalogStartedAt = performance.now();
-        const [productsWithDetails, branches, faqs, recentLogs, visibleCategoryIds, aboutSetting, userFavorites, popularProducts] =
-          await Promise.all([
-            productRepo.getAllProductsWithDetails(),
-            branchRepo.getActiveBranches(),
-            faqRepo.getAll(),
-            aiLogRepo.getRecentLogs(userId, 5),
-            menuConfigRepo.getVisibleCategoryIds(),
-            settingsRepo.getValue('about'),
-            favoritesRepo.list(userId).then((rows) => rows.map((r) => r.name)),
-            productRepo.getPopularProducts(5),
-          ]);
+        const [
+          productsWithDetails,
+          branches,
+          faqs,
+          recentLogs,
+          visibleCategoryIds,
+          aboutSetting,
+          userFavorites,
+          popularProducts,
+        ] = await Promise.all([
+          productRepo.getAllProductsWithDetails(),
+          branchRepo.getActiveBranches(),
+          faqRepo.getAll(),
+          aiLogRepo.getRecentLogs(userId, 5),
+          menuConfigRepo.getVisibleCategoryIds(),
+          settingsRepo.getValue('about'),
+          favoritesRepo.list(userId).then((rows) => rows.map((r) => r.name)),
+          productRepo.getPopularProducts(5),
+        ]);
         const catalogDuration = performance.now() - catalogStartedAt;
 
         const contextStartedAt = performance.now();
@@ -197,7 +213,12 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
 
         const AI_TIMEOUT_MS = 20_000;
         const aiStartedAt = performance.now();
-        const aiPromise = aiService.processQuery(ctx.message.text, userId, recentLogs, userFavorites);
+        const aiPromise = aiService.processQuery(
+          ctx.message.text,
+          userId,
+          recentLogs,
+          userFavorites,
+        );
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('AI_TIMEOUT')), AI_TIMEOUT_MS),
         );
@@ -216,14 +237,14 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
 
         if (ctx.execCtx) {
           ctx.execCtx.waitUntil(
-            aiLogRepo.logConversation(userId, ctx.message.text, answer).catch((e) =>
-              console.error('AI log failed:', e),
-            ),
+            aiLogRepo
+              .logConversation(userId, ctx.message.text, answer)
+              .catch((e) => console.error('AI log failed:', e)),
           );
         } else {
-          await aiLogRepo.logConversation(userId, ctx.message.text, answer).catch((e) =>
-            console.error('AI log failed:', e),
-          );
+          await aiLogRepo
+            .logConversation(userId, ctx.message.text, answer)
+            .catch((e) => console.error('AI log failed:', e));
         }
 
         if (ctx.env.PERF_LOG === 'true') {
@@ -238,11 +259,13 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
           );
         }
       } catch (e: any) {
-        console.error(JSON.stringify({
-          ts: new Date().toISOString(),
-          operation: 'ai-message-handler',
-          error: e?.message || String(e),
-        }));
+        console.error(
+          JSON.stringify({
+            ts: new Date().toISOString(),
+            operation: 'ai-message-handler',
+            error: e?.message || String(e),
+          }),
+        );
         if (e?.message === 'AI_TIMEOUT') {
           await ctx.reply('⏳ پاسخگویی دستیار هوشمند طول کشید. لطفاً کمی بعد دوباره تلاش کنید.', {
             parse_mode: 'HTML',

@@ -73,18 +73,11 @@ export class AiService {
     recentLogs: any[],
     userFavorites: string[] = [],
   ): Promise<string> {
-    if (recentLogs.length > 0) {
-      const lastMessageTime = new Date(recentLogs[0].timestamp).getTime();
-      const now = new Date().getTime();
-      if (now - lastMessageTime < 5000) {
-        return '⏳ لطفاً چند ثانیه صبر کنید و دوباره سؤال بپرسید.';
-      }
-    }
-
-    // INJ-001: Sanitize user input before sending to LLM
-    // Limit input length to prevent abuse and reduce prompt injection surface
+    // AI-002: Truncate input to prevent abuse and reduce prompt injection surface.
+    // Note: this is length truncation, not sanitization — the LLM itself handles
+    // prompt injection via the system prompt's SECURITY RULES section.
     const MAX_QUERY_LENGTH = 500;
-    const sanitizedQuery = query.slice(0, MAX_QUERY_LENGTH);
+    const truncatedQuery = query.slice(0, MAX_QUERY_LENGTH);
 
     // Build the complete system prompt
     let systemPrompt = SYSTEM_PROMPT_BASE;
@@ -95,7 +88,8 @@ export class AiService {
       for (const fav of userFavorites) {
         systemPrompt += `- ${fav}\n`;
       }
-      systemPrompt += '\nWhen recommending, suggest products similar to their favorites or from the same categories.\n';
+      systemPrompt +=
+        '\nWhen recommending, suggest products similar to their favorites or from the same categories.\n';
     }
 
     // Add the dynamic menu context (branches, products, FAQs, etc.)
@@ -121,7 +115,7 @@ export class AiService {
           messages: [
             { role: 'system', content: systemPrompt },
             ...historyMessages,
-            { role: 'user', content: sanitizedQuery },
+            { role: 'user', content: truncatedQuery },
           ],
           max_tokens: 768,
         }),
@@ -129,15 +123,17 @@ export class AiService {
 
       if (!response.ok) {
         const errorBody = await response.text().catch(() => '');
-        console.error(JSON.stringify({
-          ts: new Date().toISOString(),
-          operation: 'opencode-api-error',
-          status: response.status,
-          statusText: response.statusText,
-          queryLength: query.length,
-          userId,
-          errorBody: '(omitted)',
-        }));
+        console.error(
+          JSON.stringify({
+            ts: new Date().toISOString(),
+            operation: 'opencode-api-error',
+            status: response.status,
+            statusText: response.statusText,
+            queryLength: query.length,
+            userId,
+            errorBody: '(omitted)',
+          }),
+        );
         return '⚠️ متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
       }
 
