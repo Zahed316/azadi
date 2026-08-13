@@ -17,6 +17,7 @@ import { SettingsRepository, UserStateRepository } from './repositories';
 import { toPersianDigits } from './utils/numbers';
 import { DataService } from './services/data';
 import { CacheService } from './services/cache';
+import { pushMessage } from './utils/menuLifecycle';
 
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
@@ -147,10 +148,11 @@ export function createBot(env: Env): Bot<MyContext> {
     // is registered (see USE_CONVERSATIONS gate above). Guard so /start works
     // in both states — the framework is currently dormant.
     await ctx.conversation?.exitAll();
-    return ctx.reply(await getWelcomeText(ctx.dataService), {
+    const sent = await ctx.reply(await getWelcomeText(ctx.dataService), {
       reply_markup: mainMenu,
       parse_mode: 'HTML',
     });
+    pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
   });
 
   setupAdminCommands(bot, env);
