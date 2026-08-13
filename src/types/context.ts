@@ -3,6 +3,13 @@ import { ConversationFlavor } from '@grammyjs/conversations';
 import { Env } from '../bot';
 import type { IDataService } from '../services/types';
 
+export interface MenuStackEntry {
+  chatId: number;
+  messageId: number;
+  state: string; // 'main', 'discover', 'featured', 'product:123', etc.
+  timestamp: number;
+}
+
 export interface SessionData {
   lastUpdateId?: number;
   messageFlow?: {
@@ -12,6 +19,7 @@ export interface SessionData {
     rating?: number;
     isAnonymous?: boolean;
   };
+  menuStack?: MenuStackEntry[];
 }
 
 export type MyContext = Context &
