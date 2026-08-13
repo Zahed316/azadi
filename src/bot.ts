@@ -152,7 +152,7 @@ export function createBot(env: Env): Bot<MyContext> {
       reply_markup: mainMenu,
       parse_mode: 'HTML',
     });
-    pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+    pushMessage(ctx.session, ctx.chat.id, sent.message_id, 'main');
   });
 
   setupAdminCommands(bot, env);

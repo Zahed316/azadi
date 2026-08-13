@@ -101,7 +101,9 @@ export async function handleEditFailure(
   const msg = error instanceof Error ? error.message : String(error);
 
   if (msg.includes('message is not modified')) {
-    await ctx.answerCallbackQuery({ text: 'Already showing this', show_alert: false }).catch(() => {});
+    await ctx
+      .answerCallbackQuery({ text: 'Already showing this', show_alert: false })
+      .catch(() => {});
     return;
   }
 

@@ -37,7 +37,12 @@ export const infoMenu = new Menu<MyContext>('info-menu')
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'about');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'about',
+        );
       }
     } catch (e) {
       console.error(e);

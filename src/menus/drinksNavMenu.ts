@@ -63,7 +63,12 @@ export async function buildCategoryPage(
     .editMessageText(text, { parse_mode: 'HTML', reply_markup: kb })
     .catch(() => ctx.reply(text, { parse_mode: 'HTML', reply_markup: kb }));
   if (sent && typeof sent === 'object' && 'message_id' in sent) {
-    pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, `drinks:cat:${config.categoryId}`);
+    pushMessage(
+      ctx.session,
+      ctx.chat!.id,
+      (sent as { message_id: number }).message_id,
+      `drinks:cat:${config.categoryId}`,
+    );
   }
 }
 

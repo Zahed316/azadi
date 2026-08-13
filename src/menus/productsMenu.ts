@@ -53,7 +53,12 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'cakes');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'cakes',
+        );
       }
     } catch (e) {
       console.error(e);
@@ -107,7 +112,12 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'beans');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'beans',
+        );
       }
     } catch (e) {
       console.error(e);

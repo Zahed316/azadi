@@ -17,7 +17,7 @@ function makeMockCtx() {
       last.opts = opts;
       return Promise.resolve({ message_id: 1 });
     }),
-    reply: vi.fn(async () => ({ message_id: 2 })),
+    reply: vi.fn(() => Promise.resolve({ message_id: 2 })),
   };
   return { ctx, last };
 }

@@ -91,7 +91,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'branches');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'branches',
+        );
       }
     } catch (e) {
       console.error(e);
@@ -125,7 +130,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'beans');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'beans',
+        );
       }
     } catch (e) {
       console.error(e);
@@ -159,7 +169,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'cakes');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'cakes',
+        );
       }
     } catch (e) {
       console.error(e);
@@ -324,7 +339,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'featured');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'featured',
+        );
       }
     } catch (e) {
       console.error(e);
@@ -358,7 +378,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'seasonal');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'seasonal',
+        );
       }
     } catch (e) {
       console.error(e);
@@ -410,7 +435,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
       if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'passport');
+        pushMessage(
+          ctx.session,
+          ctx.chat!.id,
+          (sent as { message_id: number }).message_id,
+          'passport',
+        );
       }
     } catch (e) {
       console.error(e);
@@ -434,7 +464,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         const active = getActiveMessage(ctx.session);
         if (active) {
           try {
-            await ctx.api.editMessageText(active.chatId, active.messageId, body, { reply_markup: kb });
+            await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+              reply_markup: kb,
+            });
             return;
           } catch (e) {
             await handleEditFailure(ctx, body, { reply_markup: kb }, e);
@@ -451,7 +483,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const active = getActiveMessage(ctx.session);
       if (active) {
         try {
-          await ctx.api.editMessageText(active.chatId, active.messageId, body, { reply_markup: kb });
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+            reply_markup: kb,
+          });
           return;
         } catch (e) {
           await handleEditFailure(ctx, body, { reply_markup: kb }, e);
@@ -479,7 +513,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         const active = getActiveMessage(ctx.session);
         if (active) {
           try {
-            await ctx.api.editMessageText(active.chatId, active.messageId, body, { reply_markup: kb });
+            await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+              reply_markup: kb,
+            });
             return;
           } catch (e) {
             await handleEditFailure(ctx, body, { reply_markup: kb }, e);
@@ -496,7 +532,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const active = getActiveMessage(ctx.session);
       if (active) {
         try {
-          await ctx.api.editMessageText(active.chatId, active.messageId, body, { reply_markup: kb });
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+            reply_markup: kb,
+          });
           return;
         } catch (e) {
           await handleEditFailure(ctx, body, { reply_markup: kb }, e);

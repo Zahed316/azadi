@@ -114,7 +114,7 @@ describe('cleanupOldMessages', () => {
   test('does nothing when stack <= 5', async () => {
     const api = { deleteMessage: vi.fn() };
     const session = makeSession([{ chatId: 1, messageId: 10, state: 'a', timestamp: 1 }]);
-    await cleanupOldMessages(api as never, session);
+    await cleanupOldMessages(api, session);
     expect(api.deleteMessage).not.toHaveBeenCalled();
   });
 
@@ -128,7 +128,7 @@ describe('cleanupOldMessages', () => {
       { chatId: 1, messageId: 50, state: 'e', timestamp: 5 },
       { chatId: 1, messageId: 60, state: 'f', timestamp: 6 },
     ]);
-    await cleanupOldMessages(api as never, session);
+    await cleanupOldMessages(api, session);
     expect(api.deleteMessage).toHaveBeenCalledWith(1, 10);
     expect(session.menuStack).toHaveLength(5);
   });
@@ -144,7 +144,7 @@ describe('cleanupOldMessages', () => {
       { chatId: 1, messageId: 60, state: 'f', timestamp: 6 },
     ]);
     // Should not throw
-    await cleanupOldMessages(api as never, session);
+    await cleanupOldMessages(api, session);
     expect(session.menuStack).toHaveLength(5);
   });
 });
@@ -156,7 +156,7 @@ describe('handleEditFailure', () => {
       reply: vi.fn().mockResolvedValue({ message_id: 1 }),
     };
     const error = new Error('message is not modified');
-    await handleEditFailure(ctx as never, 'new text', {}, error);
+    await handleEditFailure(ctx, 'new text', {}, error);
     expect(ctx.answerCallbackQuery).toHaveBeenCalledWith({
       text: 'Already showing this',
       show_alert: false,
@@ -170,7 +170,7 @@ describe('handleEditFailure', () => {
       reply: vi.fn().mockResolvedValue({ message_id: 99 }),
     };
     const error = new Error('message to edit not found');
-    await handleEditFailure(ctx as never, 'new text', { parse_mode: 'HTML' }, error);
+    await handleEditFailure(ctx, 'new text', { parse_mode: 'HTML' }, error);
     expect(ctx.reply).toHaveBeenCalledWith('new text', { parse_mode: 'HTML' });
   });
 
@@ -180,7 +180,7 @@ describe('handleEditFailure', () => {
       reply: vi.fn().mockResolvedValue({ message_id: 99 }),
     };
     const error = new Error("message can't be edited");
-    await handleEditFailure(ctx as never, 'new text', {}, error);
+    await handleEditFailure(ctx, 'new text', {}, error);
     expect(ctx.reply).toHaveBeenCalled();
   });
 
@@ -190,7 +190,7 @@ describe('handleEditFailure', () => {
       reply: vi.fn().mockResolvedValue({ message_id: 99 }),
     };
     const error = new Error('network timeout');
-    await handleEditFailure(ctx as never, 'new text', {}, error);
+    await handleEditFailure(ctx, 'new text', {}, error);
     expect(ctx.reply).toHaveBeenCalled();
   });
 });
