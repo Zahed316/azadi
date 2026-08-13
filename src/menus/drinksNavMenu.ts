@@ -8,6 +8,7 @@ import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
+import { pushMessage } from '../utils/menuLifecycle';
 
 /**
  * Pagination callback prefix for drinks categories:
@@ -58,9 +59,12 @@ export async function buildCategoryPage(
   const name = config.categoryName ?? 'بدون نام';
   const header = `<b>${config.categoryEmoji ? config.categoryEmoji + ' ' : ''}${name}</b> (${page.pageLabel})`;
   const text = `${header}${vatNote}`;
-  await ctx
+  const sent = await ctx
     .editMessageText(text, { parse_mode: 'HTML', reply_markup: kb })
     .catch(() => ctx.reply(text, { parse_mode: 'HTML', reply_markup: kb }));
+  if (sent && typeof sent === 'object' && 'message_id' in sent) {
+    pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, `drinks:cat:${config.categoryId}`);
+  }
 }
 
 export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
@@ -125,5 +129,8 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
     const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
-      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
+      .catch(async () => {
+        const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
+        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+      });
   });

@@ -10,12 +10,14 @@ import { buildCategoryPage } from '../menus/drinksNavMenu';
 function makeMockCtx() {
   const last: { text?: string; opts?: any } = {};
   const ctx: any = {
+    chat: { id: 123 },
+    session: {},
     editMessageText: vi.fn((text: string, opts: any) => {
       last.text = text;
       last.opts = opts;
       return Promise.resolve({ message_id: 1 });
     }),
-    reply: vi.fn(async () => {}),
+    reply: vi.fn(async () => ({ message_id: 2 })),
   };
   return { ctx, last };
 }
