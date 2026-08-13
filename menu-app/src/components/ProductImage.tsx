@@ -38,7 +38,7 @@ export default function ProductImage({ src, alt, className }: ProductImageProps)
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'var(--accent-light, #d4a574)',
+        background: 'var(--brass)',
         color: '#fff',
         fontSize: 28,
         fontWeight: 700,

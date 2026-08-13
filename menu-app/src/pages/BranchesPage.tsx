@@ -1,17 +1,36 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
-import Spinner from '../components/Spinner';
+import BranchesSkeleton from '../components/skeletons/BranchesSkeleton';
+import ErrorState from '../components/ErrorState';
+import EmptyState from '../components/EmptyState';
 import type { Branch } from '../api/types';
 
 export default function BranchesPage() {
-  const { data: branches, isLoading } = useQuery({
+  const queryClient = useQueryClient();
+
+  const {
+    data: branches,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: queryKeys.branches,
     queryFn: () => apiFetch<Branch[]>('/branches', 'branches'),
   });
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) return <BranchesSkeleton />;
+  if (isError)
+    return (
+      <ErrorState
+        message="خطا در بارگذاری شعبه‌ها"
+        detail={error?.message}
+        onRetry={() => {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.branches });
+        }}
+      />
+    );
 
   return (
     <>
@@ -45,7 +64,7 @@ export default function BranchesPage() {
           ))}
         </div>
       ) : (
-        <div className="empty-state">شعبه‌ای یافت نشد</div>
+        <EmptyState message="شعبه‌ای یافت نشد" detail="هنوز شعبه‌ای ثبت نشده است" />
       )}
     </>
   );

@@ -1,17 +1,36 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
-import Spinner from '../components/Spinner';
+import FaqSkeleton from '../components/skeletons/FaqSkeleton';
+import ErrorState from '../components/ErrorState';
+import EmptyState from '../components/EmptyState';
 import type { FaqItem } from '../api/types';
 
 export default function FaqPage() {
-  const { data: faqs, isLoading } = useQuery({
+  const queryClient = useQueryClient();
+
+  const {
+    data: faqs,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: queryKeys.faq,
     queryFn: () => apiFetch<FaqItem[]>('/faq', 'faqs'),
   });
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) return <FaqSkeleton />;
+  if (isError)
+    return (
+      <ErrorState
+        message="خطا در بارگذاری سؤالات"
+        detail={error?.message}
+        onRetry={() => {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.faq });
+        }}
+      />
+    );
 
   return (
     <>
@@ -31,7 +50,7 @@ export default function FaqPage() {
           ))}
         </ol>
       ) : (
-        <div className="empty-state">سؤالی یافت نشد</div>
+        <EmptyState message="سؤالی یافت نشد" detail="هنوز سؤالی ثبت نشده است" />
       )}
     </>
   );

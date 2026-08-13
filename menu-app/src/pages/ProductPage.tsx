@@ -1,15 +1,24 @@
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import { formatPersianPrice, toPersianDigits } from '../utils/numbers';
-import Spinner from '../components/Spinner';
+import ProductSkeleton from '../components/skeletons/ProductSkeleton';
+import ErrorState from '../components/ErrorState';
+import EmptyState from '../components/EmptyState';
 import ProductImage from '../components/ProductImage';
 import type { Product, Settings } from '../api/types';
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: product, isLoading } = useQuery({
+  const queryClient = useQueryClient();
+
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: queryKeys.product(Number(id)),
     queryFn: () => apiFetch<Product>(`/products/${id}`, 'product'),
   });
@@ -21,8 +30,18 @@ export default function ProductPage() {
 
   const priceUnit = settings?.price_unit ?? 'تومان';
 
-  if (isLoading) return <Spinner />;
-  if (!product) return <div className="empty-state">محصول یافت نشد</div>;
+  if (isLoading) return <ProductSkeleton />;
+  if (isError)
+    return (
+      <ErrorState
+        message="خطا در بارگذاری محصول"
+        detail={error?.message}
+        onRetry={() => {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.product(Number(id)) });
+        }}
+      />
+    );
+  if (!product) return <EmptyState message="محصول یافت نشد" detail="محصول مورد نظر وجود ندارد" />;
 
   const d = product.coffee_details;
   const hasDetails =

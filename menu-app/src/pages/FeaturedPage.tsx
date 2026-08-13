@@ -1,13 +1,23 @@
-import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
-import Spinner from '../components/Spinner';
+import CategorySkeleton from '../components/skeletons/CategorySkeleton';
+import ErrorState from '../components/ErrorState';
+import EmptyState from '../components/EmptyState';
 import ProductRow from '../components/ProductRow';
 import type { Product, Settings } from '../api/types';
 
 export default function FeaturedPage() {
-  const { data: products, isLoading } = useQuery({
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const {
+    data: products,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: queryKeys.featured,
     queryFn: () => apiFetch<Product[]>('/products/featured', 'products'),
   });
@@ -19,7 +29,17 @@ export default function FeaturedPage() {
 
   const priceUnit = settings?.price_unit ?? 'تومان';
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) return <CategorySkeleton />;
+  if (isError)
+    return (
+      <ErrorState
+        message="خطا در بارگذاری محصولات ویژه"
+        detail={error?.message}
+        onRetry={() => {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.featured });
+        }}
+      />
+    );
 
   return (
     <>
@@ -32,7 +52,11 @@ export default function FeaturedPage() {
       {products?.length ? (
         products.map((p) => <ProductRow key={p.id} product={p} priceUnit={priceUnit} />)
       ) : (
-        <div className="empty-state">محصول ویژه‌ای یافت نشد</div>
+        <EmptyState
+          message="محصول ویژه‌ای یافت نشد"
+          detail="به زودی محصولات ویژه اضافه می‌شود"
+          action={{ label: 'بازگشت به خانه', onClick: () => navigate('/') }}
+        />
       )}
     </>
   );

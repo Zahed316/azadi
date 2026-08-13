@@ -1,13 +1,22 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import { toPersianDigits } from '../utils/numbers';
-import Spinner from '../components/Spinner';
+import HomeSkeleton from '../components/skeletons/HomeSkeleton';
+import ErrorState from '../components/ErrorState';
+import EmptyState from '../components/EmptyState';
 import type { Category, Settings } from '../api/types';
 
 export default function HomePage() {
-  const { data: categories, isLoading: catsLoading } = useQuery({
+  const queryClient = useQueryClient();
+
+  const {
+    data: categories,
+    isLoading: catsLoading,
+    isError: catsError,
+    error: catsErr,
+  } = useQuery({
     queryKey: queryKeys.categories,
     queryFn: () => apiFetch<Category[]>('/categories', 'categories'),
   });
@@ -17,7 +26,17 @@ export default function HomePage() {
     queryFn: () => apiFetch<Settings>('/settings', 'settings'),
   });
 
-  if (catsLoading) return <Spinner />;
+  if (catsLoading) return <HomeSkeleton />;
+  if (catsError)
+    return (
+      <ErrorState
+        message="خطا در بارگذاری منو"
+        detail={catsErr?.message}
+        onRetry={() => {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+        }}
+      />
+    );
 
   const sorted = categories
     ? [...categories].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
@@ -84,7 +103,7 @@ export default function HomePage() {
             ))}
           </ul>
         ) : (
-          <div className="empty-state">دسته‌ای یافت نشد</div>
+          <EmptyState message="دسته‌ای یافت نشد" detail="منو هنوز آماده نیست" />
         )}
       </section>
     </>
