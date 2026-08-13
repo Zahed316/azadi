@@ -25,7 +25,6 @@
     "grammy": "^1.45.1"
   },
   "devDependencies": {
-    "@cloudflare/workerd-linux-arm64": "^1.20260813.1",
     "@cloudflare/workers-types": "^5.20260731.1",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.39.5",
