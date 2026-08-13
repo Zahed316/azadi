@@ -35,7 +35,16 @@ const MENU_VISIBILITY_LABELS: Record<string, string> = {
   menu_visible_faq: '❓ سوالات متداول',
 };
 
-const BUILTIN_KEYS = ['instagram', 'phone', 'price_unit', 'ai_greeting', 'about', 'welcome_message', 'vat_note', 'announcement'];
+const BUILTIN_KEYS = [
+  'instagram',
+  'phone',
+  'price_unit',
+  'ai_greeting',
+  'about',
+  'welcome_message',
+  'vat_note',
+  'announcement',
+];
 const BUILTIN_LABELS: Record<string, string> = {
   instagram: 'آدرس اینستاگرام',
   phone: 'تلفن تماس',
@@ -200,7 +209,10 @@ export default function SettingsPage() {
         <form onSubmit={handleSaveSettings}>
           {BUILTIN_KEYS.map((key) => (
             <Field key={key} label={BUILTIN_LABELS[key] || key}>
-              {key === 'about' || key === 'welcome_message' || key === 'vat_note' || key === 'announcement' ? (
+              {key === 'about' ||
+              key === 'welcome_message' ||
+              key === 'vat_note' ||
+              key === 'announcement' ? (
                 <textarea
                   value={localSettings.find((s: any) => s.key === key)?.value || ''}
                   onChange={(e) => updateSetting(key, e.target.value)}

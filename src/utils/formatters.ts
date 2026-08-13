@@ -4,8 +4,7 @@ import { SettingsRepository } from '../repositories';
 import { escapeHtml } from './htmlEscape';
 import type { Env } from '../bot';
 
-export const DEFAULT_VAT_NOTE =
-  '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
+export const DEFAULT_VAT_NOTE = '\n\n<i>تمامی قیمت‌ها شامل ۱۰٪ مالیات بر ارزش افزوده می‌باشند.</i>';
 
 /** @deprecated Use getVatNote(env) instead. Kept for backward compatibility. */
 export const VAT_NOTE = DEFAULT_VAT_NOTE;

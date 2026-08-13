@@ -103,7 +103,19 @@ describe('Menu-config cache invalidation', () => {
   });
 
   test('DELETE /menu-config/:id deletes cache:menu: prefix and cache:visible-categories', async () => {
-    seedTable(menuConfig, [{ id: 1, categoryId: 1, section: 'drinks', displayOrder: 0, isVisible: true, buttonLabel: null, categoryName: null, categoryEmoji: null, specialMessage: null }]);
+    seedTable(menuConfig, [
+      {
+        id: 1,
+        categoryId: 1,
+        section: 'drinks',
+        displayOrder: 0,
+        isVisible: true,
+        buttonLabel: null,
+        categoryName: null,
+        categoryEmoji: null,
+        specialMessage: null,
+      },
+    ]);
     const res = await callRouter({
       method: 'DELETE',
       path: 'menu-config/1',

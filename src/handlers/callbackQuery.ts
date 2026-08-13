@@ -8,7 +8,13 @@ import {
   FavoritesRepository,
   MessageRepository,
 } from '../repositories';
-import { formatBranch, formatProduct, formatFaq, DEFAULT_PRICE_UNIT, DEFAULT_VAT_NOTE } from '../utils/formatters';
+import {
+  formatBranch,
+  formatProduct,
+  formatFaq,
+  DEFAULT_PRICE_UNIT,
+  DEFAULT_VAT_NOTE,
+} from '../utils/formatters';
 import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { buildCategoryPage } from '../menus/drinksNavMenu';
@@ -69,7 +75,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `branches:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `branches:page:${idx + 1}`);
       if (page.hasPrev || page.hasNext) kb.row();
-      const body = aboutText ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}` : '<b>🏠 درباره ما</b>';
+      const body = aboutText
+        ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
+        : '<b>🏠 درباره ما</b>';
       await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
@@ -200,11 +208,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const repo = new ProductRepository(ctx.env.DB);
       const product = await repo.getProductById(id);
       if (product) {
-        const priceUnitRaw =
-          await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+        const priceUnitRaw = await new SettingsRepository(ctx.env.DB).getValue('price_unit');
         const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
-        const vatNoteRaw =
-          await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+        const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
         const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
         const kb = backKeyboard();
         // Phase 5.2: favorite toggle
@@ -254,11 +260,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const items = await new ProductRepository(ctx.env.DB).getByFlag('featured');
-      const priceUnitRaw =
-        await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const priceUnitRaw = await new SettingsRepository(ctx.env.DB).getValue('price_unit');
       const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
-      const vatNoteRaw =
-        await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
@@ -287,11 +291,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const items = await new ProductRepository(ctx.env.DB).getByFlag('isSeasonal');
-      const priceUnitRaw =
-        await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const priceUnitRaw = await new SettingsRepository(ctx.env.DB).getValue('price_unit');
       const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
-      const vatNoteRaw =
-        await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
@@ -320,11 +322,9 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const rows = await new ProductRepository(ctx.env.DB).getBeansWithCoffeeDetails();
-      const priceUnitRaw =
-        await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const priceUnitRaw = await new SettingsRepository(ctx.env.DB).getValue('price_unit');
       const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
-      const vatNoteRaw =
-        await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(rows, idx, 5);
       const kb = new InlineKeyboard();

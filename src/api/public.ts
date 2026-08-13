@@ -10,7 +10,14 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json',
 };
 
-const PUBLIC_SETTINGS_KEYS = ['about', 'price_unit', 'instagram', 'welcome_message', 'vat_note', 'announcement'];
+const PUBLIC_SETTINGS_KEYS = [
+  'about',
+  'price_unit',
+  'instagram',
+  'welcome_message',
+  'vat_note',
+  'announcement',
+];
 
 export async function handlePublicApiRequest(
   request: Request,

@@ -15,25 +15,95 @@ import { describe, test, expect, vi } from 'vitest';
 
 const mockProducts = [
   {
-    products: { id: 1, name: 'Espresso', price: 50000, categoryId: 1, available: true, unit: 'cup', featured: true, isSeasonal: false, priceOnRequest: false, stock: 0, description: null, imageUrl: null, sizeOptions: null, syrupOptions: null, calories: null, allergens: null, caffeineMg: null },
+    products: {
+      id: 1,
+      name: 'Espresso',
+      price: 50000,
+      categoryId: 1,
+      available: true,
+      unit: 'cup',
+      featured: true,
+      isSeasonal: false,
+      priceOnRequest: false,
+      stock: 0,
+      description: null,
+      imageUrl: null,
+      sizeOptions: null,
+      syrupOptions: null,
+      calories: null,
+      allergens: null,
+      caffeineMg: null,
+    },
     coffee_details: null,
     categories: { id: 1, name: 'Drinks', emoji: '☕', description: null, sortOrder: 0 },
   },
   {
-    products: { id: 2, name: 'Latte', price: 55000, categoryId: 1, available: false, unit: 'cup', featured: false, isSeasonal: false, priceOnRequest: false, stock: 0, description: null, imageUrl: null, sizeOptions: null, syrupOptions: null, calories: null, allergens: null, caffeineMg: null },
+    products: {
+      id: 2,
+      name: 'Latte',
+      price: 55000,
+      categoryId: 1,
+      available: false,
+      unit: 'cup',
+      featured: false,
+      isSeasonal: false,
+      priceOnRequest: false,
+      stock: 0,
+      description: null,
+      imageUrl: null,
+      sizeOptions: null,
+      syrupOptions: null,
+      calories: null,
+      allergens: null,
+      caffeineMg: null,
+    },
     coffee_details: null,
     categories: { id: 1, name: 'Drinks', emoji: '☕', description: null, sortOrder: 0 },
   },
   {
-    products: { id: 3, name: 'Muffin', price: 25000, categoryId: 2, available: true, unit: 'item', featured: false, isSeasonal: true, priceOnRequest: false, stock: 10, description: null, imageUrl: null, sizeOptions: null, syrupOptions: null, calories: null, allergens: null, caffeineMg: null },
+    products: {
+      id: 3,
+      name: 'Muffin',
+      price: 25000,
+      categoryId: 2,
+      available: true,
+      unit: 'item',
+      featured: false,
+      isSeasonal: true,
+      priceOnRequest: false,
+      stock: 10,
+      description: null,
+      imageUrl: null,
+      sizeOptions: null,
+      syrupOptions: null,
+      calories: null,
+      allergens: null,
+      caffeineMg: null,
+    },
     coffee_details: null,
     categories: { id: 2, name: 'Bakery', emoji: '🧁', description: null, sortOrder: 1 },
   },
 ];
 
 const mockBranches = [
-  { id: 1, name: 'Main', address: '123 St', phone: '0912', openingHours: '8-22', location: null, isActive: true },
-  { id: 2, name: 'Closed', address: '456 St', phone: '0935', openingHours: '9-18', location: null, isActive: false },
+  {
+    id: 1,
+    name: 'Main',
+    address: '123 St',
+    phone: '0912',
+    openingHours: '8-22',
+    location: null,
+    isActive: true,
+  },
+  {
+    id: 2,
+    name: 'Closed',
+    address: '456 St',
+    phone: '0935',
+    openingHours: '9-18',
+    location: null,
+    isActive: false,
+  },
 ];
 
 const mockCategories = [
@@ -47,13 +117,27 @@ const mockFaqs = [
 ];
 
 class MockDataService {
-  getAllProductsWithDetails() { return mockProducts; }
-  getActiveBranches() { return mockBranches.filter((b) => b.isActive); }
-  getAllCategories() { return mockCategories; }
-  getAllFaqs() { return mockFaqs; }
-  getBySection(_section: string) { return []; }
-  getProductById(id: number) { return mockProducts.find((p) => p.products.id === id)?.products ?? null; }
-  getCoffeeDetails(_id: number) { return null; }
+  getAllProductsWithDetails() {
+    return mockProducts;
+  }
+  getActiveBranches() {
+    return mockBranches.filter((b) => b.isActive);
+  }
+  getAllCategories() {
+    return mockCategories;
+  }
+  getAllFaqs() {
+    return mockFaqs;
+  }
+  getBySection(_section: string) {
+    return [];
+  }
+  getProductById(id: number) {
+    return mockProducts.find((p) => p.products.id === id)?.products ?? null;
+  }
+  getCoffeeDetails(_id: number) {
+    return null;
+  }
 }
 
 vi.mock('../services/data', () => ({
@@ -219,7 +303,13 @@ describe('GET /api/public (unknown path)', () => {
     const { handlePublicApiRequest } = await import('../api/public');
     const url = 'https://bot.test/api/public/products';
     const request = new Request(url, { method: 'POST' });
-    const env = { TELEGRAM_BOT_TOKEN: 'test', SECRET_TOKEN: 'test', DB: {} as any, CACHE: undefined as any, OPENCODE_API_KEY: 'test' };
+    const env = {
+      TELEGRAM_BOT_TOKEN: 'test',
+      SECRET_TOKEN: 'test',
+      DB: {} as any,
+      CACHE: undefined as any,
+      OPENCODE_API_KEY: 'test',
+    };
     const ctx = {} as ExecutionContext;
     const response = await handlePublicApiRequest(request, env, ctx);
     expect(response.status).toBe(405);

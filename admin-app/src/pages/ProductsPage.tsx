@@ -475,30 +475,30 @@ export default function ProductsPage() {
             </div>
             {showNutrition && (
               <>
-            <Field label="کالری (کیلوکالری)">
-              <input
-                type="number"
-                value={prodCalories}
-                onChange={(e) => setProdCalories(e.target.value)}
-                placeholder="مثلاً ۱۲۰"
-              />
-            </Field>
-            <Field label="کافئین (میلی‌گرم)">
-              <input
-                type="number"
-                value={prodCaffeine}
-                onChange={(e) => setProdCaffeine(e.target.value)}
-                placeholder="مثلاً ۶۳"
-              />
-            </Field>
-            <Field label="آلرژن‌ها">
-              <input
-                value={prodAllergens}
-                onChange={(e) => setProdAllergens(e.target.value)}
-                placeholder="مثلاً شیر، گلوتن"
-                dir="auto"
-              />
-            </Field>
+                <Field label="کالری (کیلوکالری)">
+                  <input
+                    type="number"
+                    value={prodCalories}
+                    onChange={(e) => setProdCalories(e.target.value)}
+                    placeholder="مثلاً ۱۲۰"
+                  />
+                </Field>
+                <Field label="کافئین (میلی‌گرم)">
+                  <input
+                    type="number"
+                    value={prodCaffeine}
+                    onChange={(e) => setProdCaffeine(e.target.value)}
+                    placeholder="مثلاً ۶۳"
+                  />
+                </Field>
+                <Field label="آلرژن‌ها">
+                  <input
+                    value={prodAllergens}
+                    onChange={(e) => setProdAllergens(e.target.value)}
+                    placeholder="مثلاً شیر، گلوتن"
+                    dir="auto"
+                  />
+                </Field>
               </>
             )}
 
@@ -510,72 +510,81 @@ export default function ProductsPage() {
               {showCoffeeDetails ? '▼' : '▶'} جزئیات قهوه (اختیاری)
             </div>
             {showCoffeeDetails && (
-            <>
-            <Field label="دانه قهوه است؟">
-              <input
-                type="checkbox"
-                checked={isCoffeeBean}
-                onChange={(e) => setIsCoffeeBean(e.target.checked)}
-              />
-            </Field>
-            {isCoffeeBean && (
               <>
-                <Field label="خاستگاه">
-                  <input value={coffeeOrigin} onChange={(e) => setCoffeeOrigin(e.target.value)} />
-                </Field>
-                <Field label="مزرعه">
-                  <input value={coffeeFarm} onChange={(e) => setCoffeeFarm(e.target.value)} />
-                </Field>
-                <Field label="ارتفاع">
+                <Field label="دانه قهوه است؟">
                   <input
-                    value={coffeeAltitude}
-                    onChange={(e) => setCoffeeAltitude(e.target.value)}
+                    type="checkbox"
+                    checked={isCoffeeBean}
+                    onChange={(e) => setIsCoffeeBean(e.target.checked)}
                   />
                 </Field>
-                <Field label="فرآوری">
-                  <input
-                    value={coffeeProcessing}
-                    onChange={(e) => setCoffeeProcessing(e.target.value)}
-                  />
-                </Field>
-                <Field label="رقم">
-                  <input value={coffeeVariety} onChange={(e) => setCoffeeVariety(e.target.value)} />
-                </Field>
-                <Field label="درجه رست">
-                  <input
-                    value={coffeeRoastLevel}
-                    onChange={(e) => setCoffeeRoastLevel(e.target.value)}
-                  />
-                </Field>
-                <Field label="نت‌های طعمی">
-                  <input
-                    value={coffeeFlavorNotes}
-                    onChange={(e) => setCoffeeFlavorNotes(e.target.value)}
-                  />
-                </Field>
-                <Field label="دم‌آوری پیشنهادی">
-                  <input
-                    value={coffeeRecommendedBrew}
-                    onChange={(e) => setCoffeeRecommendedBrew(e.target.value)}
-                  />
-                </Field>
-                <Field label="اسیدیته">
-                  <input value={coffeeAcidity} onChange={(e) => setCoffeeAcidity(e.target.value)} />
-                </Field>
-                <Field label="بدنه">
-                  <input value={coffeeBody} onChange={(e) => setCoffeeBody(e.target.value)} />
-                </Field>
-                <Field label="راهنمای دم‌آوری">
-                  <textarea
-                    value={coffeeBrewGuide}
-                    onChange={(e) => setCoffeeBrewGuide(e.target.value)}
-                    placeholder="دستورالعمل دم‌آوری را به فارسی بنویسید"
-                    dir="auto"
-                  />
-                </Field>
+                {isCoffeeBean && (
+                  <>
+                    <Field label="خاستگاه">
+                      <input
+                        value={coffeeOrigin}
+                        onChange={(e) => setCoffeeOrigin(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="مزرعه">
+                      <input value={coffeeFarm} onChange={(e) => setCoffeeFarm(e.target.value)} />
+                    </Field>
+                    <Field label="ارتفاع">
+                      <input
+                        value={coffeeAltitude}
+                        onChange={(e) => setCoffeeAltitude(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="فرآوری">
+                      <input
+                        value={coffeeProcessing}
+                        onChange={(e) => setCoffeeProcessing(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="رقم">
+                      <input
+                        value={coffeeVariety}
+                        onChange={(e) => setCoffeeVariety(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="درجه رست">
+                      <input
+                        value={coffeeRoastLevel}
+                        onChange={(e) => setCoffeeRoastLevel(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="نت‌های طعمی">
+                      <input
+                        value={coffeeFlavorNotes}
+                        onChange={(e) => setCoffeeFlavorNotes(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="دم‌آوری پیشنهادی">
+                      <input
+                        value={coffeeRecommendedBrew}
+                        onChange={(e) => setCoffeeRecommendedBrew(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="اسیدیته">
+                      <input
+                        value={coffeeAcidity}
+                        onChange={(e) => setCoffeeAcidity(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="بدنه">
+                      <input value={coffeeBody} onChange={(e) => setCoffeeBody(e.target.value)} />
+                    </Field>
+                    <Field label="راهنمای دم‌آوری">
+                      <textarea
+                        value={coffeeBrewGuide}
+                        onChange={(e) => setCoffeeBrewGuide(e.target.value)}
+                        placeholder="دستورالعمل دم‌آوری را به فارسی بنویسید"
+                        dir="auto"
+                      />
+                    </Field>
+                  </>
+                )}
               </>
-            )}
-            </>
             )}
             <button type="submit" className="primary" disabled={saveProductMutation.isPending}>
               {saveProductMutation.isPending
@@ -618,96 +627,96 @@ export default function ProductsPage() {
             {filteredProducts.length === 0 ? (
               <EmptyState message="محصولی با فیلتر انتخاب‌شده یافت نشد." />
             ) : (
-            <ul className="list">
-              {filteredProducts.map((p) => (
-              <li key={p.id} className="list-item">
-                <div className="list-item-info">
-                  {(isSuperAdmin || allowedCatId) && (
-                    <input
-                      type="checkbox"
-                      checked={selectedProductIds.includes(p.id)}
-                      onChange={() => toggleProductSelect(p.id)}
-                    />
-                  )}
-                  <span dir="auto">{p.name}</span>
-                  {p.featured && <span title="پیشنهاد ویژه">⭐</span>}
-                  {p.isSeasonal && <span title="مخصوص فصل">🌿</span>}
-                  <span className="list-item-meta">
-                    {p.price}
-                    {p.unit && p.unit !== 'item' && (
-                      <span style={{ marginLeft: 4, fontSize: '0.85em', opacity: 0.7 }}>
-                        /{p.unit}
+              <ul className="list">
+                {filteredProducts.map((p) => (
+                  <li key={p.id} className="list-item">
+                    <div className="list-item-info">
+                      {(isSuperAdmin || allowedCatId) && (
+                        <input
+                          type="checkbox"
+                          checked={selectedProductIds.includes(p.id)}
+                          onChange={() => toggleProductSelect(p.id)}
+                        />
+                      )}
+                      <span dir="auto">{p.name}</span>
+                      {p.featured && <span title="پیشنهاد ویژه">⭐</span>}
+                      {p.isSeasonal && <span title="مخصوص فصل">🌿</span>}
+                      <span className="list-item-meta">
+                        {p.price}
+                        {p.unit && p.unit !== 'item' && (
+                          <span style={{ marginLeft: 4, fontSize: '0.85em', opacity: 0.7 }}>
+                            /{p.unit}
+                          </span>
+                        )}
                       </span>
+                      {(p.calories || p.caffeineMg) && (
+                        <span className="list-item-meta" style={{ fontSize: '0.8em' }}>
+                          {p.calories ? `${p.calories} کیلوکالری` : ''}
+                          {p.calories && p.caffeineMg ? ' · ' : ''}
+                          {p.caffeineMg ? `${p.caffeineMg} میلی‌گرم کافئین` : ''}
+                        </span>
+                      )}
+                    </div>
+                    {(isSuperAdmin || allowedCatId) && (
+                      <div className="list-item-actions">
+                        <button
+                          className="secondary"
+                          onClick={() =>
+                            toggleProductField.mutate({
+                              id: p.id,
+                              field: 'available',
+                              value: !p.available,
+                            })
+                          }
+                          disabled={toggleProductField.isPending}
+                          title={p.available ? 'موجود' : 'ناموجود'}
+                        >
+                          {p.available ? '✓' : '✗'}
+                        </button>
+                        <button
+                          className="secondary"
+                          onClick={() =>
+                            toggleProductField.mutate({
+                              id: p.id,
+                              field: 'featured',
+                              value: !p.featured,
+                            })
+                          }
+                          disabled={toggleProductField.isPending}
+                          title={p.featured ? 'پیشنهاد ویژه' : 'پیشنهاد ویژه نیست'}
+                        >
+                          ⭐
+                        </button>
+                        <button
+                          className="secondary"
+                          onClick={() =>
+                            toggleProductField.mutate({
+                              id: p.id,
+                              field: 'isSeasonal',
+                              value: !p.isSeasonal,
+                            })
+                          }
+                          disabled={toggleProductField.isPending}
+                          title={p.isSeasonal ? 'مخصوص فصل' : 'مخصوص فصل نیست'}
+                        >
+                          🌿
+                        </button>
+                        <button className="secondary" onClick={() => startEditProduct(p)}>
+                          ویرایش
+                        </button>
+                        <button
+                          className="danger"
+                          onClick={() => deleteProduct(p.id)}
+                          disabled={deleteProductMutation.isPending}
+                        >
+                          حذف
+                        </button>
+                      </div>
                     )}
-                  </span>
-                  {(p.calories || p.caffeineMg) && (
-                    <span className="list-item-meta" style={{ fontSize: '0.8em' }}>
-                      {p.calories ? `${p.calories} کیلوکالری` : ''}
-                      {p.calories && p.caffeineMg ? ' · ' : ''}
-                      {p.caffeineMg ? `${p.caffeineMg} میلی‌گرم کافئین` : ''}
-                    </span>
-                  )}
-                </div>
-                {(isSuperAdmin || allowedCatId) && (
-                  <div className="list-item-actions">
-                    <button
-                      className="secondary"
-                      onClick={() =>
-                        toggleProductField.mutate({
-                          id: p.id,
-                          field: 'available',
-                          value: !p.available,
-                        })
-                      }
-                      disabled={toggleProductField.isPending}
-                      title={p.available ? 'موجود' : 'ناموجود'}
-                    >
-                      {p.available ? '✓' : '✗'}
-                    </button>
-                    <button
-                      className="secondary"
-                      onClick={() =>
-                        toggleProductField.mutate({
-                          id: p.id,
-                          field: 'featured',
-                          value: !p.featured,
-                        })
-                      }
-                      disabled={toggleProductField.isPending}
-                      title={p.featured ? 'پیشنهاد ویژه' : 'پیشنهاد ویژه نیست'}
-                    >
-                      ⭐
-                    </button>
-                    <button
-                      className="secondary"
-                      onClick={() =>
-                        toggleProductField.mutate({
-                          id: p.id,
-                          field: 'isSeasonal',
-                          value: !p.isSeasonal,
-                        })
-                      }
-                      disabled={toggleProductField.isPending}
-                      title={p.isSeasonal ? 'مخصوص فصل' : 'مخصوص فصل نیست'}
-                    >
-                      🌿
-                    </button>
-                    <button className="secondary" onClick={() => startEditProduct(p)}>
-                      ویرایش
-                    </button>
-                    <button
-                      className="danger"
-                      onClick={() => deleteProduct(p.id)}
-                      disabled={deleteProductMutation.isPending}
-                    >
-                      حذف
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-          )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </>
         )}
       </div>
