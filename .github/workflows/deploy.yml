@@ -31,12 +31,11 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-      - name: Lint (non-blocking, first iteration)
-        # Phase 4.3: lint is added as a non-blocking step. Once the existing
-        # warning baseline is fixed in follow-up PRs, drop continue-on-error
-        # to make this a hard gate.
-        continue-on-error: true
+      - name: Lint
         run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
 
       - name: Typecheck
         run: ./node_modules/.bin/tsc --noEmit
@@ -74,10 +73,13 @@ jobs:
         working-directory: admin-app
         run: npm run typecheck
 
-      - name: Lint admin-app (non-blocking, first iteration)
+      - name: Lint admin-app
         working-directory: admin-app
-        continue-on-error: true
         run: npm run lint
+
+      - name: Format check admin-app
+        working-directory: admin-app
+        run: npm run format:check
 
       - name: Build admin-app
         working-directory: admin-app
@@ -116,10 +118,13 @@ jobs:
         working-directory: menu-app
         run: npm run typecheck
 
-      - name: Lint menu-app (non-blocking, first iteration)
+      - name: Lint menu-app
         working-directory: menu-app
-        continue-on-error: true
         run: npm run lint
+
+      - name: Format check menu-app
+        working-directory: menu-app
+        run: npm run format:check
 
       - name: Build menu-app
         working-directory: menu-app

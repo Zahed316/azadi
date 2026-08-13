@@ -1,16 +1,18 @@
 #!/data/data/com.termux/files/usr/bin/env bash
-# deploy.sh — Single-command production deploy for Azadi Coffee Bot
+# deploy.sh — Local preflight validation for Azadi Coffee Bot
+#
+# This script runs tests, typechecks, lint, and builds all three packages.
+# It does NOT deploy — CI is the sole deploy path (push to main → GitHub Actions).
 #
 # Usage:
-#   ./deploy.sh           # full deploy (test + build + deploy)
-#   ./deploy.sh --dry-run # test + build only, no deploy
-#   ./deploy.sh --skip-tests  # build + deploy, skip tests
+#   ./deploy.sh           # full preflight (test + typecheck + lint + build)
+#   ./deploy.sh --skip-tests  # typecheck + lint + build, skip tests
 #
 # Prerequisites:
-#   - Node.js 18+ installed
+#   - Node.js 22+ installed
 #   - npm dependencies installed (run `npm ci` first)
-#   - CLOUDFLARE_API_TOKEN set in environment (for wrangler deploy)
 #   - admin-app dependencies installed (run `cd admin-app && npm ci`)
+#   - menu-app dependencies installed (run `cd menu-app && npm ci`)
 
 set -euo pipefail
 
@@ -27,17 +29,14 @@ ok()   { echo -e "${GREEN}  ✓ $1${NC}"; }
 warn() { echo -e "${YELLOW}  ⚠ $1${NC}"; }
 fail() { echo -e "${RED}  ✗ $1${NC}"; exit 1; }
 
-DRY_RUN=false
 SKIP_TESTS=false
 
 for arg in "$@"; do
   case $arg in
-    --dry-run)    DRY_RUN=true ;;
     --skip-tests) SKIP_TESTS=true ;;
     --help|-h)
-      echo "Usage: $0 [--dry-run] [--skip-tests]"
-      echo "  --dry-run     Test + build only, no deploy"
-      echo "  --skip-tests  Build + deploy, skip tests"
+      echo "Usage: $0 [--skip-tests]"
+      echo "  --skip-tests  Typecheck + lint + build, skip tests"
       exit 0
       ;;
   esac
@@ -46,11 +45,11 @@ done
 # ─── Preflight checks ────────────────────────────────────────────────
 step "Preflight checks"
 
-command -v node >/dev/null 2>&1 || fail "Node.js not found. Install Node.js 18+ first."
+command -v node >/dev/null 2>&1 || fail "Node.js not found. Install Node.js 22+ first."
 command -v npm  >/dev/null 2>&1 || fail "npm not found."
 
 NODE_VERSION=$(node -v | sed 's/v//' | cut -d. -f1)
-[ "$NODE_VERSION" -ge 18 ] || fail "Node.js 18+ required (found v$(node -v))"
+[ "$NODE_VERSION" -ge 22 ] || fail "Node.js 22+ required (found v$(node -v))"
 ok "Node.js $(node -v)"
 
 [ -d "node_modules" ] || fail "Root node_modules not found. Run 'npm ci' first."
@@ -59,10 +58,8 @@ ok "Root dependencies installed"
 [ -d "admin-app/node_modules" ] || fail "admin-app/node_modules not found. Run 'cd admin-app && npm ci' first."
 ok "Admin-app dependencies installed"
 
-if [ "$DRY_RUN" = false ]; then
-  [ -n "${CLOUDFLARE_API_TOKEN:-}" ] || fail "CLOUDFLARE_API_TOKEN not set. Export it or run with --dry-run."
-  ok "Cloudflare API token configured"
-fi
+[ -d "menu-app/node_modules" ] || fail "menu-app/node_modules not found. Run 'cd menu-app && npm ci' first."
+ok "Menu-app dependencies installed"
 
 # ─── Step 1: Tests ───────────────────────────────────────────────────
 if [ "$SKIP_TESTS" = false ]; then
@@ -84,41 +81,38 @@ npm run typecheck 2>&1 | tail -3
 ok "Admin-app typecheck passed"
 cd ..
 
-# ─── Step 3: Lint (non-blocking) ────────────────────────────────────
-step "Linting (non-blocking)"
-npm run lint 2>&1 | tail -3 || true
-ok "Lint completed (warnings are non-blocking)"
+step "Typechecking Menu App"
+cd menu-app
+npm run typecheck 2>&1 | tail -3
+ok "Menu-app typecheck passed"
+cd ..
 
-# ─── Step 4: Build Admin App ─────────────────────────────────────────
+# ─── Step 3: Lint + Format ──────────────────────────────────────────
+step "Linting"
+npm run lint 2>&1 | tail -3
+ok "Worker lint passed"
+
+step "Formatting check"
+npm run format:check 2>&1 | tail -3
+ok "Worker format check passed"
+
+# ─── Step 4: Build ───────────────────────────────────────────────────
 step "Building Admin App"
 cd admin-app
 npm run build 2>&1 | tail -5
 ok "Admin-app built → admin-app/dist/"
 cd ..
 
-# ─── Step 5: Deploy ─────────────────────────────────────────────────
-if [ "$DRY_RUN" = true ]; then
-  step "Dry run — skipping deploy"
-  ok "Build complete. Ready for deployment."
-  echo ""
-  echo "To deploy manually:"
-  echo "  npm run deploy                    # Worker"
-  echo "  wrangler pages deploy admin-app/dist --project-name=azadi-admin  # Admin App"
-  exit 0
-fi
-
-step "Deploying Worker"
-npm run deploy 2>&1 | tail -5
-ok "Worker deployed to azadi-coffee-bot"
-
-step "Deploying Admin App to Cloudflare Pages"
-npx wrangler pages deploy admin-app/dist --project-name=azadi-admin 2>&1 | tail -5
-ok "Admin App deployed to azadi-admin.pages.dev"
+step "Building Menu App"
+cd menu-app
+npm run build 2>&1 | tail -5
+ok "Menu-app built → menu-app/dist/"
+cd ..
 
 # ─── Done ────────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  ✓ Deploy complete!${NC}"
-echo -e "${GREEN}  Worker:    https://azadi-coffee-bot.zahedrastgar316.workers.dev${NC}"
-echo -e "${GREEN}  Admin App: https://azadi-admin.pages.dev${NC}"
+echo -e "${GREEN}  ✓ Preflight complete!${NC}"
+echo -e "${GREEN}  All three packages: test ✓ typecheck ✓ lint ✓ format ✓ build ✓${NC}"
+echo -e "${GREEN}  CI deploys on push to main.${NC}"
 echo -e "${GREEN}════════════════════════════════════════════════${NC}"
