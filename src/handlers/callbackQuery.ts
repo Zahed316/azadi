@@ -12,6 +12,7 @@ import { escapeHtml } from '../utils/htmlEscape';
 import { buildCategoryPage } from '../menus/drinksNavMenu';
 import { mainMenu, getWelcomeText } from '../menus/mainMenu';
 import { MyContext } from '../types/context';
+import { pushMessage, getActiveMessage, handleEditFailure } from '../utils/menuLifecycle';
 
 const backKeyboard = () => new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
 
@@ -20,9 +21,22 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery();
       const body = await getWelcomeText(ctx.dataService);
-      await ctx
-        .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
-        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        try {
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+            parse_mode: 'HTML',
+            reply_markup: mainMenu,
+          });
+          active.state = 'main';
+          return;
+        } catch (e) {
+          await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: mainMenu }, e);
+          return;
+        }
+      }
+      const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
+      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
     } catch (e) {
       console.error(e);
     }
@@ -39,9 +53,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       if (page.hasPrev) kb.text('صفحه قبل ▶️', `faq:page:${idx - 1}`);
       if (page.hasNext) kb.text('◀️ صفحه بعد', `faq:page:${idx + 1}`);
       const body = `<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'faq');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -70,9 +87,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const body = aboutText
         ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
         : '<b>🏠 درباره ما</b>';
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'branches');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -101,9 +121,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         page.items.length === 0
           ? `<b>دانه‌های قهوه</b> (${page.pageLabel})`
           : `<b>دانه‌های قهوه</b> (${page.pageLabel})\n\nدانه قهوه مورد نظر را انتخاب کنید:`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'beans');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -132,9 +155,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         page.items.length === 0
           ? `<b>کیک و کوکی</b> (${page.pageLabel})`
           : `<b>کیک و کوکی</b> (${page.pageLabel})\n\nیک کیک یا کوکی انتخاب کنید:`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'cakes');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -180,7 +206,24 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const id = parseInt(ctx.match[1]);
       const branch = await ctx.dataService.getBranchById(id);
       if (branch) {
-        await ctx.reply(formatBranch(branch), { parse_mode: 'HTML', reply_markup: backKeyboard() });
+        const body = formatBranch(branch);
+        const kb = backKeyboard();
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+              parse_mode: 'HTML',
+              reply_markup: kb,
+            });
+            active.state = `branch:${id}`;
+            return;
+          } catch (e) {
+            await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: kb }, e);
+            return;
+          }
+        }
+        const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
+        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, `branch:${id}`);
       } else {
         await ctx.reply('شعبه مورد نظر یافت نشد.');
       }
@@ -218,16 +261,30 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
           caption += `\n\n📋 <b>راهنمای دم‌آوری:</b>\n${details.brewGuide}`;
         }
         if (product.imageUrl) {
+          // Photo — must create new message (can't edit text → photo)
           await ctx.replyWithPhoto(product.imageUrl, {
             caption,
             parse_mode: 'HTML',
             reply_markup: kb,
           });
         } else {
-          await ctx.reply(caption, {
-            parse_mode: 'HTML',
-            reply_markup: kb,
-          });
+          // Text-only — try to edit active message first
+          const active = getActiveMessage(ctx.session);
+          if (active) {
+            try {
+              await ctx.api.editMessageText(active.chatId, active.messageId, caption, {
+                parse_mode: 'HTML',
+                reply_markup: kb,
+              });
+              active.state = `product:${id}`;
+              return;
+            } catch (e) {
+              await handleEditFailure(ctx, caption, { parse_mode: 'HTML', reply_markup: kb }, e);
+              return;
+            }
+          }
+          const sent = await ctx.reply(caption, { parse_mode: 'HTML', reply_markup: kb });
+          pushMessage(ctx.session, ctx.chat!.id, sent.message_id, `product:${id}`);
         }
       } else {
         await ctx.reply('محصول مورد نظر یافت نشد.');
@@ -263,9 +320,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         page.items.length === 0
           ? `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})`
           : `<b>⭐ پیشنهاد ویژه</b> (${page.pageLabel})\n\n${page.items.map((p: typeof productsTable.$inferSelect) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'featured');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -294,9 +354,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         page.items.length === 0
           ? `<b>🌿 مخصوص فصل</b> (${page.pageLabel})`
           : `<b>🌿 مخصوص فصل</b> (${page.pageLabel})\n\n${page.items.map((p: typeof productsTable.$inferSelect) => formatProduct(p, priceUnit, vatNote)).join('\n\n')}`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'seasonal');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -343,9 +406,12 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         page.items.length === 0
           ? `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})`
           : `<b>📖 پاسپورت قهوه</b> (${page.pageLabel})${originsLine}\n\n${page.items.map((r: { product: typeof productsTable.$inferSelect; details: typeof coffeeDetails.$inferSelect }) => formatProduct(r.product, priceUnit, vatNote)).join('\n\n')}`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'passport');
+      }
     } catch (e) {
       console.error(e);
       // Telegram timeout — safe to ignore
@@ -363,15 +429,37 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const uid = String(ctx.from.id);
       const alreadyFav = await ctx.dataService.isFavorited(uid, productId);
       if (alreadyFav) {
-        await ctx.reply('ℹ️ این محصول از قبل در علاقمندی‌های شما بود.', {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const body = 'ℹ️ این محصول از قبل در علاقمندی‌های شما بود.';
+        const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, body, { reply_markup: kb });
+            return;
+          } catch (e) {
+            await handleEditFailure(ctx, body, { reply_markup: kb }, e);
+            return;
+          }
+        }
+        const sent = await ctx.reply(body, { reply_markup: kb });
+        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
         return;
       }
       await ctx.dataService.toggleFavorite(uid, productId);
-      await ctx.reply('✅ به علاقمندی‌ها اضافه شد.', {
-        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-      });
+      const body = '✅ به علاقمندی‌ها اضافه شد.';
+      const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        try {
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, { reply_markup: kb });
+          return;
+        } catch (e) {
+          await handleEditFailure(ctx, body, { reply_markup: kb }, e);
+          return;
+        }
+      }
+      const sent = await ctx.reply(body, { reply_markup: kb });
+      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
@@ -386,15 +474,37 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       const uid = String(ctx.from.id);
       const isFav = await ctx.dataService.isFavorited(uid, productId);
       if (!isFav) {
-        await ctx.reply('ℹ️ این محصول در علاقمندی‌های شما نبود.', {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const body = 'ℹ️ این محصول در علاقمندی‌های شما نبود.';
+        const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, body, { reply_markup: kb });
+            return;
+          } catch (e) {
+            await handleEditFailure(ctx, body, { reply_markup: kb }, e);
+            return;
+          }
+        }
+        const sent = await ctx.reply(body, { reply_markup: kb });
+        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
         return;
       }
       await ctx.dataService.toggleFavorite(uid, productId);
-      await ctx.reply('❌ از علاقمندی‌ها حذف شد.', {
-        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-      });
+      const body = '❌ از علاقمندی‌ها حذف شد.';
+      const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        try {
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, { reply_markup: kb });
+          return;
+        } catch (e) {
+          await handleEditFailure(ctx, body, { reply_markup: kb }, e);
+          return;
+        }
+      }
+      const sent = await ctx.reply(body, { reply_markup: kb });
+      pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'fav');
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
