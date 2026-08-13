@@ -293,6 +293,96 @@ describe('GET /api/public/settings', () => {
   });
 });
 
+describe('Rate limiting', () => {
+  function makeMockKv(): KVNamespace {
+    const store = new Map<string, string>();
+    return {
+      get: vi.fn(async (key: string) => store.get(key) ?? null),
+      put: vi.fn(async (key: string, value: string) => {
+        store.set(key, value);
+      }),
+      list: vi.fn(),
+      delete: vi.fn(),
+      getWithMetadata: vi.fn(),
+    } as unknown as KVNamespace;
+  }
+
+  async function callWithCache(
+    path: string,
+    kv: KVNamespace,
+    headers?: Record<string, string>,
+  ): Promise<{ status: number; body: any }> {
+    const { handlePublicApiRequest } = await import('../api/public');
+    const url = `https://bot.test/api/public/${path}`;
+    const request = new Request(url, { method: 'GET', headers });
+    const env = {
+      TELEGRAM_BOT_TOKEN: 'test',
+      SECRET_TOKEN: 'test',
+      DB: {} as any,
+      CACHE: kv,
+      OPENCODE_API_KEY: 'test',
+    };
+    const ctx = {} as ExecutionContext;
+    const response = await handlePublicApiRequest(request, env, ctx);
+    const body = await response.json().catch(() => null);
+    return { status: response.status, body };
+  }
+
+  test('allows requests under the limit', async () => {
+    const kv = makeMockKv();
+    const res = await callWithCache('products', kv, { 'CF-Connecting-IP': '1.2.3.4' });
+    expect(res.status).toBe(200);
+  });
+
+  test('returns 429 when limit exceeded', async () => {
+    const kv = makeMockKv();
+    // Simulate 100 existing requests in the current window
+    const windowKey = `ratelimit:10.0.0.1:${Math.floor(Date.now() / 1000 / 60)}`;
+    await kv.put!(windowKey, '100', undefined);
+
+    const res = await callWithCache('products', kv, { 'CF-Connecting-IP': '10.0.0.1' });
+    expect(res.status).toBe(429);
+    expect(res.body.error).toBe('Rate limit exceeded');
+  });
+
+  test('includes Retry-After header on 429', async () => {
+    const kv = makeMockKv();
+    const windowKey = `ratelimit:10.0.0.2:${Math.floor(Date.now() / 1000 / 60)}`;
+    await kv.put!(windowKey, '100', undefined);
+
+    const { handlePublicApiRequest } = await import('../api/public');
+    const request = new Request('https://bot.test/api/public/products', {
+      method: 'GET',
+      headers: { 'CF-Connecting-IP': '10.0.0.2' },
+    });
+    const env = {
+      TELEGRAM_BOT_TOKEN: 'test',
+      SECRET_TOKEN: 'test',
+      DB: {} as any,
+      CACHE: kv,
+      OPENCODE_API_KEY: 'test',
+    };
+    const response = await handlePublicApiRequest(request, env, {} as ExecutionContext);
+    expect(response.headers.get('Retry-After')).toBe('60');
+  });
+
+  test('skips rate limiting when CACHE is absent', async () => {
+    const res = await callPublic('products');
+    expect(res.status).toBe(200);
+  });
+
+  test('uses CF-Connecting-IP for client identification', async () => {
+    const kv = makeMockKv();
+    // Request from IP A — should succeed
+    const resA = await callWithCache('products', kv, { 'CF-Connecting-IP': '11.0.0.1' });
+    expect(resA.status).toBe(200);
+
+    // Request from IP B — should also succeed (different counter)
+    const resB = await callWithCache('products', kv, { 'CF-Connecting-IP': '11.0.0.2' });
+    expect(resB.status).toBe(200);
+  });
+});
+
 describe('GET /api/public (unknown path)', () => {
   test('returns 404 for unknown endpoints', async () => {
     const res = await callPublic('nonexistent');

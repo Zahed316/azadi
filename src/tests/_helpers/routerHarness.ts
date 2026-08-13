@@ -87,13 +87,15 @@ function extractEq(condition: unknown): EqCondition[] {
       if (compoundOp === 'and' || compoundOp === 'or') {
         const leftChildren = extractEq(inner.queryChunks[0]);
         const rightChildren = extractEq(inner.queryChunks[2]);
-        return [{
-          column: '',
-          tableName: '',
-          value: null,
-          operator: compoundOp,
-          children: [...leftChildren, ...rightChildren],
-        }];
+        return [
+          {
+            column: '',
+            tableName: '',
+            value: null,
+            operator: compoundOp,
+            children: [...leftChildren, ...rightChildren],
+          },
+        ];
       }
     }
   }
@@ -131,36 +133,44 @@ function extractEq(condition: unknown): EqCondition[] {
     value = right?.value ?? right;
   }
 
-  return [{
-    column: camelName(left),
-    tableName: tableNameOf(left.table),
-    value,
-    operator,
-  }];
+  return [
+    {
+      column: camelName(left),
+      tableName: tableNameOf(left.table),
+      value,
+      operator,
+    },
+  ];
 }
 
 function matchesCondition(row: TableRow, eqs: EqCondition[]): boolean {
-  return eqs.every(cond => matchSingle(row, cond));
+  return eqs.every((cond) => matchSingle(row, cond));
 }
 
 function matchSingle(row: TableRow, cond: EqCondition): boolean {
   // Compound predicates
   if (cond.operator === 'and' && cond.children) {
-    return cond.children.every(child => matchSingle(row, child));
+    return cond.children.every((child) => matchSingle(row, child));
   }
   if (cond.operator === 'or' && cond.children) {
-    return cond.children.some(child => matchSingle(row, child));
+    return cond.children.some((child) => matchSingle(row, child));
   }
 
   // Leaf predicates
   const rowValue = row[cond.column];
   switch (cond.operator) {
-    case 'gt': return rowValue > cond.value;
-    case 'lt': return rowValue < cond.value;
-    case 'gte': return rowValue >= cond.value;
-    case 'lte': return rowValue <= cond.value;
-    case 'in': return Array.isArray(cond.value) && cond.value.includes(rowValue);
-    default: return rowValue === cond.value; // eq
+    case 'gt':
+      return rowValue > cond.value;
+    case 'lt':
+      return rowValue < cond.value;
+    case 'gte':
+      return rowValue >= cond.value;
+    case 'lte':
+      return rowValue <= cond.value;
+    case 'in':
+      return Array.isArray(cond.value) && cond.value.includes(rowValue);
+    default:
+      return rowValue === cond.value; // eq
   }
 }
 

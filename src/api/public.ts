@@ -10,6 +10,22 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json',
 };
 
+const RATE_LIMIT_WINDOW = 60; // seconds
+const RATE_LIMIT_MAX = 100; // requests per window per IP
+
+async function checkRateLimit(kv: KVNamespace, ip: string): Promise<boolean> {
+  const key = `ratelimit:${ip}:${Math.floor(Date.now() / 1000 / RATE_LIMIT_WINDOW)}`;
+  const raw = await kv.get(key);
+  const count = raw ? parseInt(raw, 10) + 1 : 1;
+
+  if (count > RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  await kv.put(key, count.toString(), { expirationTtl: RATE_LIMIT_WINDOW * 2 });
+  return true;
+}
+
 const PUBLIC_SETTINGS_KEYS = [
   'about',
   'price_unit',
@@ -38,6 +54,21 @@ export async function handlePublicApiRequest(
         'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
+  }
+
+  // Rate limiting (fixed-window per IP)
+  if (env.CACHE) {
+    const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const allowed = await checkRateLimit(env.CACHE, clientIp);
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+        status: 429,
+        headers: {
+          ...CORS_HEADERS,
+          'Retry-After': RATE_LIMIT_WINDOW.toString(),
+        },
+      });
+    }
   }
 
   // Only GET is allowed for public endpoints

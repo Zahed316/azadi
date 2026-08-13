@@ -69,8 +69,9 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
     const repo = new MenuConfigRepository(db);
     try {
       await repo.reorder(body.items);
-    } catch (e: any) {
-      return new Response(JSON.stringify({ error: e?.message || 'Reorder failed' }), {
+    } catch (e: unknown) {
+      console.error('Menu config reorder error:', e);
+      return new Response(JSON.stringify({ error: 'Reorder failed' }), {
         status: 500,
         headers: corsHeaders,
       });
