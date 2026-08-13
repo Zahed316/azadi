@@ -7,6 +7,7 @@ import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
+import { pushMessage } from '../utils/menuLifecycle';
 
 export const infoMenu = new Menu<MyContext>('info-menu')
   .text('🏠 درباره ما', async (ctx) => {
@@ -32,9 +33,12 @@ export const infoMenu = new Menu<MyContext>('info-menu')
       const body = aboutText
         ? `<b>🏠 درباره ما</b>\n\n${escapeHtml(aboutText)}`
         : '<b>🏠 درباره ما</b>\n\nاطلاعاتی ثبت نشده است.';
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'about');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود.' }).catch(() => {});
@@ -60,9 +64,12 @@ export const infoMenu = new Menu<MyContext>('info-menu')
       const kb = new InlineKeyboard();
       if (page.hasNext) kb.text('◀️ صفحه بعد', `faq:page:1`);
       const body = `<b>سوالات متداول</b> (${page.pageLabel})\n\n${text}`;
-      await ctx
+      const sent = await ctx
         .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
         .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
+      if (sent && typeof sent === 'object' && 'message_id' in sent) {
+        pushMessage(ctx.session, ctx.chat!.id, (sent as { message_id: number }).message_id, 'faq');
+      }
     } catch (e) {
       console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ بارگذاری ناموفق بود.' }).catch(() => {});
@@ -74,5 +81,8 @@ export const infoMenu = new Menu<MyContext>('info-menu')
     const body = await getWelcomeText(ctx.dataService);
     await ctx
       .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
-      .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu }));
+      .catch(async () => {
+        const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
+        pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+      });
   });
