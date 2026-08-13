@@ -13,7 +13,6 @@ export default [
       'node_modules/**',
       'admin-app/**', // separate package, has its own eslint.config.mjs
       'menu-app/**', // separate package, has its own eslint.config.mjs
-      'menu-proxy/**', // separate package
       'dist/**',
       'wrangler-dry/**',
       '.wrangler/**',
@@ -22,7 +21,6 @@ export default [
       '.claude/**', // Claude Code session files, not part of runtime
       '*.config.{js,cjs,mjs,ts}',
       'eslint.config.mjs',
-      'test-drizzle.ts', // 7-line smoke script, not part of runtime
     ],
   },
 
