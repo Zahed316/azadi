@@ -102,8 +102,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
               }
 
               const priceUnit =
-                (await ctx.dataService.getSetting('price_unit')) ||
-                DEFAULT_PRICE_UNIT;
+                (await ctx.dataService.getSetting('price_unit')) || DEFAULT_PRICE_UNIT;
               const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
               const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
               await buildCategoryPage(ctx, config, items, 0, priceUnit, vatNote);
