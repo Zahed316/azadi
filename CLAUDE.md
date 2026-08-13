@@ -58,14 +58,14 @@ npm run check                       # typecheck + lint + format:check (all-in-on
 
 # Menu Website (Second Mini App)
 
+```bash
 cd menu-app
 npm install
-npm run dev # vite dev server
-npm run build # tsc + vite build (also what CI runs)
-npm run typecheck # tsc --noEmit
-npm run lint # eslint (menu-app config: menu-app/eslint.config.mjs)
-npm run check # typecheck + lint + format:check (all-in-one)
-
+npm run dev                         # vite dev server
+npm run build                       # tsc + vite build (also what CI runs)
+npm run typecheck                   # tsc --noEmit
+npm run lint                        # eslint (menu-app config: menu-app/eslint.config.mjs)
+npm run check                       # typecheck + lint + format:check (all-in-one)
 ```
 
 CI (`.github/workflows/deploy.yml`): three parallel jobs:

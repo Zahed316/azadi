@@ -11,3 +11,9 @@ wrangler-dry/
 screenshot-analysis.jpg
 .commandcode/
 
+# Audit / plan / spec files (ephemeral, not part of the project)
+AZADI-AUDIT*.md
+docs/audit-report-*.md
+docs/superpowers/plans/
+docs/superpowers/specs/
+
