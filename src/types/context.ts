@@ -1,6 +1,7 @@
 import { Context, SessionFlavor } from 'grammy';
 import { ConversationFlavor } from '@grammyjs/conversations';
 import { Env } from '../bot';
+import type { IDataService } from '../services/types';
 
 export interface SessionData {
   lastUpdateId?: number;
@@ -18,4 +19,5 @@ export type MyContext = Context &
   ConversationFlavor<Context> & {
     env: Env;
     execCtx?: ExecutionContext;
+    dataService: IDataService;
   };

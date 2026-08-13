@@ -15,6 +15,8 @@ import { getEnv, getExecCtx } from './requestContext';
 import { D1SessionStorage } from './database/sessionStorage';
 import { SettingsRepository, UserStateRepository } from './repositories';
 import { toPersianDigits } from './utils/numbers';
+import { DataService } from './services/data';
+import { CacheService } from './services/cache';
 
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
@@ -37,6 +39,10 @@ export function createBot(env: Env): Bot<MyContext> {
   bot.use(async (ctx, next) => {
     ctx.env = getEnv() || env;
     ctx.execCtx = getExecCtx();
+    ctx.dataService = new DataService(
+      ctx.env.DB,
+      ctx.env.CACHE ? new CacheService(ctx.env.CACHE) : undefined,
+    );
     await next();
   });
 
