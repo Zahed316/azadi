@@ -1,4 +1,5 @@
 import { MenuConfigRepository } from '../../repositories';
+import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
 export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
@@ -20,9 +21,11 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
       });
     const repo = new MenuConfigRepository(db);
     const body: any = await request.json();
+    const catIdResult = parseRequiredInt(body.categoryId, 'categoryId');
+    if (catIdResult instanceof Response) return catIdResult;
     const now = new Date();
     const result = await repo.add({
-      categoryId: parseInt(body.categoryId),
+      categoryId: catIdResult,
       menuSection: body.menuSection,
       displayOrder: body.displayOrder ?? 0,
       isVisible: body.isVisible ?? true,
@@ -44,9 +47,30 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
+    const body: any = await request.json();
+    if (!Array.isArray(body.items)) {
+      return new Response(JSON.stringify({ error: 'items must be an array' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
+    for (const item of body.items) {
+      if (typeof item?.id !== 'number' || typeof item?.displayOrder !== 'number') {
+        return new Response(
+          JSON.stringify({ error: 'Each item must have numeric id and displayOrder' }),
+          { status: 400, headers: corsHeaders },
+        );
+      }
+    }
     const repo = new MenuConfigRepository(db);
-    const body: any = await request.json(); // { items: [{id, displayOrder}] }
-    await repo.reorder(body.items);
+    try {
+      await repo.reorder(body.items);
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e?.message || 'Reorder failed' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
+    }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 
@@ -57,7 +81,9 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new MenuConfigRepository(db);
     const body: any = await request.json();
     await repo.update(id, {
@@ -77,7 +103,9 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
         status: 403,
         headers: corsHeaders,
       });
-    const id = parseInt(path.split('/')[1]);
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
     const repo = new MenuConfigRepository(db);
     await repo.delete(id);
     return new Response(null, { status: 204, headers: corsHeaders });
