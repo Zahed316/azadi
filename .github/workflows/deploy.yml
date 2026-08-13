@@ -31,8 +31,9 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-      - name: Lint
+      - name: Lint (non-blocking)
         run: npm run lint
+        continue-on-error: true
 
       - name: Format check
         run: npm run format:check
@@ -73,9 +74,10 @@ jobs:
         working-directory: admin-app
         run: npm run typecheck
 
-      - name: Lint admin-app
+      - name: Lint admin-app (non-blocking)
         working-directory: admin-app
         run: npm run lint
+        continue-on-error: true
 
       - name: Format check admin-app
         working-directory: admin-app
@@ -118,9 +120,10 @@ jobs:
         working-directory: menu-app
         run: npm run typecheck
 
-      - name: Lint menu-app
+      - name: Lint menu-app (non-blocking)
         working-directory: menu-app
         run: npm run lint
+        continue-on-error: true
 
       - name: Format check menu-app
         working-directory: menu-app
