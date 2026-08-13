@@ -5,7 +5,10 @@ export interface TelegramUser {
   username?: string;
 }
 
-export async function validateInitData(initData: string, botToken: string): Promise<TelegramUser | null> {
+export async function validateInitData(
+  initData: string,
+  botToken: string,
+): Promise<TelegramUser | null> {
   const urlParams = new URLSearchParams(initData);
   const hash = urlParams.get('hash');
 
@@ -45,25 +48,28 @@ export async function validateInitData(initData: string, botToken: string): Prom
   // mismatched char, leaking the index of the first byte difference through
   // timing. Workers jitter dominates the side channel in practice, but the
   // canonical Telegram-spec validation is constant-time — match it.
-  // SHA-256 HMAC always produces 64-char hex, so lengths always match.
+  if (hash.length !== signatureHex.length) {
+    return null;
+  }
   {
     let diff = 0;
     for (let i = 0; i < signatureHex.length; i++) {
       diff |= signatureHex.charCodeAt(i) ^ hash.charCodeAt(i);
     }
     if (diff === 0) {
-      // AUTH-001: Validate auth_date freshness to prevent replay attacks.
+      // AUTH-001: Validate auth_date is present and fresh to prevent replay attacks.
       // Telegram's spec requires checking that auth_date is within a reasonable
       // window (5 minutes) to limit token replay. Without this check, a stolen
       // initData works indefinitely.
       const authDateStr = urlParams.get('auth_date');
-      if (authDateStr) {
-        const authDate = parseInt(authDateStr, 10);
-        const now = Math.floor(Date.now() / 1000);
-        const MAX_AGE_SECONDS = 300; // 5 minutes
-        if (Number.isNaN(authDate) || Math.abs(now - authDate) > MAX_AGE_SECONDS) {
-          return null;
-        }
+      if (!authDateStr) {
+        return null;
+      }
+      const authDate = parseInt(authDateStr, 10);
+      const now = Math.floor(Date.now() / 1000);
+      const MAX_AGE_SECONDS = 300; // 5 minutes
+      if (Number.isNaN(authDate) || Math.abs(now - authDate) > MAX_AGE_SECONDS) {
+        return null;
       }
 
       const userStr = urlParams.get('user');
