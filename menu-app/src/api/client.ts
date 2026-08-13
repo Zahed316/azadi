@@ -1,5 +1,6 @@
 export const API_BASE =
-  (import.meta.env.VITE_API_BASE as string) || 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api/public';
+  (import.meta.env.VITE_API_BASE as string) ||
+  'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api/public';
 
 /**
  * Fetch from the public API and unwrap the response envelope.
