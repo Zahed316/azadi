@@ -18,16 +18,16 @@ The codebase is functionally sound. The audit surface is mostly hygiene: stale f
 
 ## 1. STALE FILES (6) ✅ RESOLVED
 
-| File                                                                             | Notes                                                                                                                                             | Status |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `test-drizzle.ts` (root)                                                         | 6-line file that calls `drizzle(undefined as any)` in a try/catch. Not imported by anything. **Tracked in git.**                                  | ✅ Deleted |
-| `src/scripts/measure-latency.sh`                                                 | References `/list_products` command that no longer exists in the bot. Hardcoded production URL. Termux-specific shebang.                          | ✅ Deleted |
-| `src/scripts/test-webhook.sh`                                                    | References `/list_products` command. Hardcoded `TEST_SECRET`. Termux-specific shebang.                                                            | ✅ Deleted |
+| File                                                                             | Notes                                                                                                                                             | Status      |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `test-drizzle.ts` (root)                                                         | 6-line file that calls `drizzle(undefined as any)` in a try/catch. Not imported by anything. **Tracked in git.**                                  | ✅ Deleted  |
+| `src/scripts/measure-latency.sh`                                                 | References `/list_products` command that no longer exists in the bot. Hardcoded production URL. Termux-specific shebang.                          | ✅ Deleted  |
+| `src/scripts/test-webhook.sh`                                                    | References `/list_products` command. Hardcoded `TEST_SECRET`. Termux-specific shebang.                                                            | ✅ Deleted  |
 | `drizzle/0001_menu_update.sql`                                                   | Hand-crafted migration that overlaps with `0001_lumpy_zuras.sql`. Shares sequence number 0001. Not in `_journal.json` (already applied directly). | ✅ Archived |
 | `drizzle/0002_sessions_table.sql`                                                | Hand-crafted, not in `_journal.json`. Already applied.                                                                                            | ✅ Archived |
 | `drizzle/0003_menu_config.sql` through `0006_add_nutritional_and_brew_guide.sql` | Hand-crafted migrations, all already applied directly, none in `_journal.json`.                                                                   | ✅ Archived |
-| `src/config/`                                                                    | Empty directory with no files — leftover placeholder                                                                                              | ✅ Deleted |
-| `src/telegram/`                                                                  | Empty directory with no files — leftover placeholder                                                                                              | ✅ Deleted |
+| `src/config/`                                                                    | Empty directory with no files — leftover placeholder                                                                                              | ✅ Deleted  |
+| `src/telegram/`                                                                  | Empty directory with no files — leftover placeholder                                                                                              | ✅ Deleted  |
 
 ---
 
@@ -62,8 +62,8 @@ The codebase is functionally sound. The audit surface is mostly hygiene: stale f
 
 ## 3b. UNUSED IMPORTS (1) ✅ RESOLVED
 
-| File:Line                      | Import                      | Notes                                                                   | Status |
-| ------------------------------ | --------------------------- | ----------------------------------------------------------------------- | ------ |
+| File:Line                      | Import                      | Notes                                                                   | Status     |
+| ------------------------------ | --------------------------- | ----------------------------------------------------------------------- | ---------- |
 | `src/repositories/index.ts:16` | `isNull` from `drizzle-orm` | Imported but never used; only `eq`, `and`, `desc`, `lt`, `sql` are used | ✅ Removed |
 
 ---
@@ -79,8 +79,8 @@ The codebase is functionally sound. The audit surface is mostly hygiene: stale f
 
 ## 5. GITIGNORE GAPS (5) ✅ RESOLVED
 
-| Pattern         | Notes                                                                                                      | Status |
-| --------------- | ---------------------------------------------------------------------------------------------------------- | ------ |
+| Pattern         | Notes                                                                                                      | Status   |
+| --------------- | ---------------------------------------------------------------------------------------------------------- | -------- |
 | `dist/`         | Root `dist/` contains `worker.js` (665KB build output) but is NOT in `.gitignore`. Already tracked in git. | ✅ Added |
 | `.claude/`      | Claude Code session directory not ignored                                                                  | ✅ Added |
 | `.superpowers/` | Superpowers workspace directory not ignored                                                                | ✅ Added |
@@ -91,41 +91,41 @@ The codebase is functionally sound. The audit surface is mostly hygiene: stale f
 
 ## 6. BUILD & DEPLOYMENT CONFIG (12)
 
-| Category       | File                           | Finding                                                     | Status |
-| -------------- | ------------------------------ | ----------------------------------------------------------- | ------ |
-| BUILD_OPT      | `admin-app/vite.config.ts`     | No code splitting (manualChunks) for React dependencies     | Open |
-| BUILD_OPT      | `admin-app/vite.config.ts`     | No explicit build.sourcemap config                          | Open |
-| BUILD_OPT      | `admin-app/vite.config.ts`     | No base path for Cloudflare Pages                           | Open |
-| CI_OPT         | `.github/workflows/deploy.yml` | Three parallel jobs with duplicated setup (no shared caching) | Open |
-| CI_OPT         | `.github/workflows/deploy.yml` | Lint runs before build in all jobs                          | ✅ Fixed |
-| CI_OPT         | `.github/workflows/deploy.yml` | Admin-app typecheck step in CI                              | ✅ Fixed |
-| CI_OPT         | `.github/workflows/deploy.yml` | No node_modules caching across jobs                         | Open |
-| SCRIPT_STALE   | `package.json`                 | `"main": "index.js"` points to nonexistent file             | Open |
-| SCRIPT_STALE   | `package.json`                 | No `dev` script for local worker development                | Open |
-| SCRIPT_STALE   | `package.json`                 | `check` meta-script (typecheck + lint + format + test)      | ✅ Added |
-| CONFIG_MISSING | `package.json`                 | No `engines` field declaring minimum Node version           | Open |
-| CONFIG_MISSING | `wrangler.toml`                | No `workers_dev` or `routes` config (relies on defaults)    | Open |
+| Category       | File                           | Finding                                                       | Status   |
+| -------------- | ------------------------------ | ------------------------------------------------------------- | -------- |
+| BUILD_OPT      | `admin-app/vite.config.ts`     | No code splitting (manualChunks) for React dependencies       | Open     |
+| BUILD_OPT      | `admin-app/vite.config.ts`     | No explicit build.sourcemap config                            | Open     |
+| BUILD_OPT      | `admin-app/vite.config.ts`     | No base path for Cloudflare Pages                             | Open     |
+| CI_OPT         | `.github/workflows/deploy.yml` | Three parallel jobs with duplicated setup (no shared caching) | Open     |
+| CI_OPT         | `.github/workflows/deploy.yml` | Lint runs before build in all jobs                            | ✅ Fixed |
+| CI_OPT         | `.github/workflows/deploy.yml` | Admin-app typecheck step in CI                                | ✅ Fixed |
+| CI_OPT         | `.github/workflows/deploy.yml` | No node_modules caching across jobs                           | Open     |
+| SCRIPT_STALE   | `package.json`                 | `"main": "index.js"` points to nonexistent file               | Open     |
+| SCRIPT_STALE   | `package.json`                 | No `dev` script for local worker development                  | Open     |
+| SCRIPT_STALE   | `package.json`                 | `check` meta-script (typecheck + lint + format + test)        | ✅ Added |
+| CONFIG_MISSING | `package.json`                 | No `engines` field declaring minimum Node version             | Open     |
+| CONFIG_MISSING | `wrangler.toml`                | No `workers_dev` or `routes` config (relies on defaults)      | Open     |
 
 ---
 
 ## 7. SECURITY (14)
 
-| Severity | File:Line                   | Finding                                                                                    | Status |
-| -------- | --------------------------- | ------------------------------------------------------------------------------------------ | ------ |
-| ~~HIGH~~ | `src/index.ts:43`           | Stack trace leaked in 500 error responses (`err.stack` in JSON body)                       | ✅ Fixed — code sanitizes error output |
-| **HIGH** | `src/requestContext.ts:3-4` | Module-level singleton env/context state shared across concurrent requests in same isolate | Open — Workers isolate per-request, low real-world risk |
-| MEDIUM   | `src/api/router.ts:41`      | Wildcard CORS (`*`) on all API responses                                                   | Open |
-| MEDIUM   | `src/api/router.ts:46`      | Health check endpoint exposes DB connectivity status without auth                          | Open |
+| Severity | File:Line                   | Finding                                                                                    | Status                                                                           |
+| -------- | --------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| ~~HIGH~~ | `src/index.ts:43`           | Stack trace leaked in 500 error responses (`err.stack` in JSON body)                       | ✅ Fixed — code sanitizes error output                                           |
+| **HIGH** | `src/requestContext.ts:3-4` | Module-level singleton env/context state shared across concurrent requests in same isolate | Open — Workers isolate per-request, low real-world risk                          |
+| MEDIUM   | `src/api/router.ts:41`      | Wildcard CORS (`*`) on all API responses                                                   | Open                                                                             |
+| MEDIUM   | `src/api/router.ts:46`      | Health check endpoint exposes DB connectivity status without auth                          | Open                                                                             |
 | MEDIUM   | `src/api/router.ts:111`     | `parseInt` used without NaN checks (systemic — ~15 locations)                              | ⚠️ Partial — `parseRequiredInt` added in PR 4, some paths still use raw parseInt |
-| MEDIUM   | `src/api/router.ts:109`     | Admin creation accepts arbitrary role/categoryId without validation                        | Open |
-| MEDIUM   | `src/api/router.ts:143`     | Settings POST iterates body.settings without bounds checking                               | Open |
-| LOW      | `src/index.ts:27`           | Webhook secret comparison is not constant-time (`!==`)                                     | Open |
-| LOW      | `src/api/router.ts:33`      | Missing `Access-Control-Max-Age` header on preflight                                       | Open |
-| LOW      | `src/api/router.ts:884`     | AI test endpoint sends user query to external API (no rate limit)                          | Open |
-| LOW      | `src/api/router.ts:415`     | Product creation lacks body structure validation                                           | Open |
-| LOW      | `src/api/router.ts:372`     | Menu config reorder accepts unvalidated items array                                        | ✅ Fixed — PR 5 adds validation |
-| LOW      | `src/api/router.ts:898`     | Error response leaks `error.message` to client                                             | Open |
-| LOW      | `src/index.ts:27`           | No rate limiting on webhook or API endpoints                                               | Open |
+| MEDIUM   | `src/api/router.ts:109`     | Admin creation accepts arbitrary role/categoryId without validation                        | Open                                                                             |
+| MEDIUM   | `src/api/router.ts:143`     | Settings POST iterates body.settings without bounds checking                               | Open                                                                             |
+| LOW      | `src/index.ts:27`           | Webhook secret comparison is not constant-time (`!==`)                                     | Open                                                                             |
+| LOW      | `src/api/router.ts:33`      | Missing `Access-Control-Max-Age` header on preflight                                       | Open                                                                             |
+| LOW      | `src/api/router.ts:884`     | AI test endpoint sends user query to external API (no rate limit)                          | Open                                                                             |
+| LOW      | `src/api/router.ts:415`     | Product creation lacks body structure validation                                           | Open                                                                             |
+| LOW      | `src/api/router.ts:372`     | Menu config reorder accepts unvalidated items array                                        | ✅ Fixed — PR 5 adds validation                                                  |
+| LOW      | `src/api/router.ts:898`     | Error response leaks `error.message` to client                                             | Open                                                                             |
+| LOW      | `src/index.ts:27`           | No rate limiting on webhook or API endpoints                                               | Open                                                                             |
 
 ---
 

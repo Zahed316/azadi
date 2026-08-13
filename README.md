@@ -4,11 +4,11 @@ Telegram bot + admin Web App for Azadi Coffee Roastery in Iranshahr, Iran.
 
 ## Deployed
 
-| Unit | URL | Platform |
-|------|-----|----------|
-| Menu Website | [www.azadiroastery.ir](https://www.azadiroastery.ir) | Cloudflare Pages |
-| Admin Mini App | [azadi-admin.pages.dev](https://azadi-admin.pages.dev) | Cloudflare Pages |
-| Bot + API | [azadi-coffee-bot.zahedrastgar316.workers.dev](https://azadi-coffee-bot.zahedrastgar316.workers.dev) | Cloudflare Workers |
+| Unit           | URL                                                                                                  | Platform           |
+| -------------- | ---------------------------------------------------------------------------------------------------- | ------------------ |
+| Menu Website   | [www.azadiroastery.ir](https://www.azadiroastery.ir)                                                 | Cloudflare Pages   |
+| Admin Mini App | [azadi-admin.pages.dev](https://azadi-admin.pages.dev)                                               | Cloudflare Pages   |
+| Bot + API      | [azadi-coffee-bot.zahedrastgar316.workers.dev](https://azadi-coffee-bot.zahedrastgar316.workers.dev) | Cloudflare Workers |
 
 ## Tech Stack
 
@@ -36,6 +36,7 @@ cd menu-app && npm ci && npm run check
 See [CLAUDE.md](CLAUDE.md) for full architecture, commands, conventions, and pitfalls.
 
 **Three deployable units:**
+
 1. `src/` — Worker (bot webhook + REST API + public API)
 2. `admin-app/` — Admin Mini App (React + Vite)
 3. `menu-app/` — Public menu website (React + Vite)

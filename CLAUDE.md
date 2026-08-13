@@ -69,6 +69,7 @@ npm run check                       # typecheck + lint + format:check (all-in-on
 ```
 
 CI (`.github/workflows/deploy.yml`): three parallel jobs:
+
 1. `test-and-deploy` — Worker tests + `wrangler deploy`
 2. `deploy-admin-app` — admin-app build + `wrangler pages deploy admin-app/dist --project-name=azadi-admin`
 3. `deploy-menu-app` — menu-app build + `wrangler pages deploy menu-app/dist --project-name=azadi-menu`
@@ -157,6 +158,7 @@ No-auth endpoints at `/api/public/*` for the menu website. CORS wildcard. **All 
 Envelope keys: `categories`, `products`, `product`, `branches`, `faqs`, `sections`, `settings`.
 
 Filtering rules:
+
 - Products: `available = true` only. Supports `?categoryId=N` query param for server-side filtering. Stock hidden for `cup` units.
 - Menu config: `isVisible = true` only, ordered by `displayOrder`.
 - Branches: `isActive = true` only.
@@ -186,7 +188,7 @@ Filtering rules:
 - **Admin conversational wizards were removed from the chat interface** to avoid a webhook-retry / AI-fallback race condition (conversations stored state per-request, so retries fell through to the AI handler). All multi-step admin data entry now goes through the Mini App + REST API. The `conversations()` middleware itself is **gated by `env.USE_CONVERSATIONS === 'true'`** in `src/bot.ts` so re-introduction is a config flip — not a code change. If you flip it on, you MUST also add a `ctx.hasActiveConversation` snapshot middleware (BEFORE any `createConversation()` enter) AND a `if (ctx.hasActiveConversation) return;` skip at the top of `src/handlers/message.ts:9` — otherwise a wizard's final message will be answered by the AI rather than by the wizard. See `src/bot.ts` for the place-marker comment.
 - **Drinks don't show stock in `formatProduct`**: stock is intentionally hidden when `p.unit === 'cup'` (drinks are made-to-order). Don't add stock display to `cup` units — it would imply per-drink inventory that doesn't exist.
 - **`PERF_LOG` is a per-request env flag**, not a build-time one. Set it on the Worker (`wrangler secret put PERF_LOG` or in dashboard) to enable JSON timing lines on stdout. Off by default.
-- **`STREAK_MESSAGES` is a per-request env flag** that gates the streak middleware (`src/bot.ts:44-61`). Off by default. Set with `echo "true" | wrangler secret put STREAK_MESSAGES` to enable consecutive-day tracking and the `🔥 N روز متوالی` reply. **Phase 5 verified end-to-end 2026-08-06**: with the flag set, `user_state` rows are created on first non-`/` message and `visits_total` increments per message; without the flag the middleware is inert (the empty-table behavior the prior session observed is *expected*, not a bug).
+- **`STREAK_MESSAGES` is a per-request env flag** that gates the streak middleware (`src/bot.ts:44-61`). Off by default. Set with `echo "true" | wrangler secret put STREAK_MESSAGES` to enable consecutive-day tracking and the `🔥 N روز متوالی` reply. **Phase 5 verified end-to-end 2026-08-06**: with the flag set, `user_state` rows are created on first non-`/` message and `visits_total` increments per message; without the flag the middleware is inert (the empty-table behavior the prior session observed is _expected_, not a bug).
 - **Favorites (Phase 5.2)** — callback handlers `fav:add:${id}` and `fav:remove:${id}` are in `src/handlers/callbackQuery.ts` (~lines 313 and 332). **Phase 5 verified end-to-end 2026-08-06**: 3 rows appeared in `favorites` after the user tapped the toggle on three product detail pages in a single smoke-test session, confirming the toggle works through the cached reply_markup. If a future smoke test sees an empty `favorites` table, the most likely causes are (a) the user never navigated to a product detail page, or (b) a stale keyboard from a pre-Phase-5 build is still cached in their Telegram client (fix: close and reopen the chat).
 - **ESLint/Prettier is non-blocking in CI as of Phase 4** (commit pending). Both jobs run `npm run lint` with `continue-on-error: true`; the existing warning baseline (~137 root + ~294 admin) is being whittled down file-by-file. **Do not flip to a hard gate without first checking the current warning count.** Lint config: `eslint.config.mjs` (root, governs `src/`) and `admin-app/eslint.config.mjs` (React + Vite). Prettier config: `.prettierrc.json` (root) + `.prettierignore`. Both packages use `node ./node_modules/...` shebang-free script invocations to avoid the Termux `/usr/bin/env` gap (see [[android-arm64-platform-binary-gaps]]).
 - **Unused npm dependencies**: `@grammyjs/auto-retry`, `@grammyjs/parse-mode`, `@grammyjs/router`, `tsx` are installed but never imported. Safe to remove in a cleanup PR.
@@ -196,4 +198,7 @@ Filtering rules:
 ## Memory (project-scoped only — global rules live in `~/.claude/CLAUDE.md` and are loaded automatically)
 
 This project has session memory at `~/.claude/projects/-data-data-com-termux-files-home-repo-azadi/memory/`. The index in `MEMORY.md` there points to lessons about the local environment (Termux android-arm64 specifics, zsh managed-block convention) that affect how tooling around this repo is set up. Load those memories when bootstrapping a new toolchain, debugging shebang/binary errors, or appending to `~/.zshrc`. The earlier "## Memory" section at the top of this file covers the global memory + global rules paths.
+
+```
+
 ```
