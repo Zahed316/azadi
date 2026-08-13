@@ -1,14 +1,5 @@
 import { Bot, InlineKeyboard } from 'grammy';
 import {
-  BranchRepository,
-  ProductRepository,
-  SettingsRepository,
-  FaqRepository,
-  MenuConfigRepository,
-  FavoritesRepository,
-  MessageRepository,
-} from '../repositories';
-import {
   formatBranch,
   formatProduct,
   formatFaq,
@@ -41,7 +32,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
-      const faqs = await new FaqRepository(ctx.env.DB).getAll();
+      const faqs = await ctx.dataService.getAllFaqs();
       const page = buildListPage(faqs, idx, 5);
       const text = page.items.map((f: typeof faqTable.$inferSelect) => formatFaq(f)).join('\n\n');
       const kb = new InlineKeyboard();
@@ -64,8 +55,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
       const [aboutText, branches] = await Promise.all([
-        new SettingsRepository(ctx.env.DB).getValue('about'),
-        new BranchRepository(ctx.env.DB).getActiveBranches(),
+        ctx.dataService.getSetting('about'),
+        ctx.dataService.getActiveBranches(),
       ]);
       const page = buildListPage(branches, idx, 5);
       const kb = new InlineKeyboard();
@@ -92,11 +83,11 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
-      const repo = new ProductRepository(ctx.env.DB);
-      const menuRepo = new MenuConfigRepository(ctx.env.DB);
-      const configs = await menuRepo.getBySection('beans');
+      const configs = await ctx.dataService.getBySection('beans');
       const products =
-        configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
+        configs.length > 0
+          ? await ctx.dataService.getProductsByCategory(configs[0].categoryId)
+          : [];
       const page = buildListPage(products, idx, 5);
       const kb = new InlineKeyboard();
       for (let i = 0; i < page.items.length; i++) {
@@ -123,11 +114,11 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
-      const repo = new ProductRepository(ctx.env.DB);
-      const menuRepo = new MenuConfigRepository(ctx.env.DB);
-      const configs = await menuRepo.getBySection('cakes');
+      const configs = await ctx.dataService.getBySection('cakes');
       const products =
-        configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
+        configs.length > 0
+          ? await ctx.dataService.getProductsByCategory(configs[0].categoryId)
+          : [];
       const page = buildListPage(products, idx, 5);
       const kb = new InlineKeyboard();
       for (let i = 0; i < page.items.length; i++) {
@@ -155,11 +146,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       const catId = parseInt(ctx.match[1]);
       const idx = parseInt(ctx.match[2]);
-      const menuRepo = new MenuConfigRepository(ctx.env.DB);
       const [configs, items, priceUnitRaw] = await Promise.all([
-        menuRepo.getBySection('drinks'),
-        new ProductRepository(ctx.env.DB).getProductsByCategory(catId),
-        new SettingsRepository(ctx.env.DB).getValue('price_unit'),
+        ctx.dataService.getBySection('drinks'),
+        ctx.dataService.getProductsByCategory(catId),
+        ctx.dataService.getSetting('price_unit'),
       ]);
       const config = configs.find((c) => c.categoryId === catId);
       if (!config) {
@@ -188,8 +178,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery({ text: '⏳ در حال بارگذاری...' });
       const id = parseInt(ctx.match[1]);
-      const repo = new BranchRepository(ctx.env.DB);
-      const branch = await repo.getBranchById(id);
+      const branch = await ctx.dataService.getBranchById(id);
       if (branch) {
         await ctx.reply(formatBranch(branch), { parse_mode: 'HTML', reply_markup: backKeyboard() });
       } else {
@@ -206,20 +195,16 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery({ text: '⏳ در حال بارگذاری...' });
       const id = parseInt(ctx.match[1]);
-      const repo = new ProductRepository(ctx.env.DB);
-      const product = await repo.getProductById(id);
+      const product = await ctx.dataService.getProductById(id);
       if (product) {
-        const priceUnitRaw = await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+        const priceUnitRaw = await ctx.dataService.getSetting('price_unit');
         const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
-        const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+        const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
         const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
         const kb = backKeyboard();
         // Phase 5.2: favorite toggle
         if (ctx.from?.id) {
-          const isFav = await new FavoritesRepository(ctx.env.DB).isFavorited(
-            String(ctx.from.id),
-            id,
-          );
+          const isFav = await ctx.dataService.isFavorited(String(ctx.from.id), id);
           if (isFav) {
             kb.row().text('💔 حذف از علاقمندی‌ها', `fav:remove:${id}`);
           } else {
@@ -228,7 +213,7 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         }
         let caption = formatProduct(product, priceUnit, vatNote);
         // Show brew guide for coffee beans with details
-        const details = await repo.getCoffeeDetails(id);
+        const details = await ctx.dataService.getCoffeeDetails(id);
         if (details?.brewGuide) {
           caption += `\n\n📋 <b>راهنمای دم‌آوری:</b>\n${details.brewGuide}`;
         }
@@ -260,10 +245,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
-      const items = await new ProductRepository(ctx.env.DB).getByFlag('featured');
-      const priceUnitRaw = await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const items = await ctx.dataService.getByFlag('featured');
+      const priceUnitRaw = await ctx.dataService.getSetting('price_unit');
       const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
-      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
@@ -291,10 +276,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
-      const items = await new ProductRepository(ctx.env.DB).getByFlag('isSeasonal');
-      const priceUnitRaw = await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const items = await ctx.dataService.getByFlag('isSeasonal');
+      const priceUnitRaw = await ctx.dataService.getSetting('price_unit');
       const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
-      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(items, idx, 5);
       const kb = new InlineKeyboard();
@@ -322,10 +307,10 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     try {
       await ctx.answerCallbackQuery();
       const idx = parseInt(ctx.match[1]);
-      const rows = await new ProductRepository(ctx.env.DB).getBeansWithCoffeeDetails();
-      const priceUnitRaw = await new SettingsRepository(ctx.env.DB).getValue('price_unit');
+      const rows = await ctx.dataService.getBeansWithCoffeeDetails();
+      const priceUnitRaw = await ctx.dataService.getSetting('price_unit');
       const priceUnit = priceUnitRaw ? escapeHtml(priceUnitRaw) : DEFAULT_PRICE_UNIT;
-      const vatNoteRaw = await new SettingsRepository(ctx.env.DB).getValue('vat_note');
+      const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
       const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
       const page = buildListPage(rows, idx, 5);
       const kb = new InlineKeyboard();
@@ -375,12 +360,16 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       if (!ctx.from?.id) return;
       const productId = Number(ctx.match[1]);
-      const repo = new FavoritesRepository(ctx.env.DB);
-      const added = await repo.add(String(ctx.from.id), productId);
-      const msg = added
-        ? '✅ به علاقمندی‌ها اضافه شد.'
-        : 'ℹ️ این محصول از قبل در علاقمندی‌های شما بود.';
-      await ctx.reply(msg, {
+      const uid = String(ctx.from.id);
+      const alreadyFav = await ctx.dataService.isFavorited(uid, productId);
+      if (alreadyFav) {
+        await ctx.reply('ℹ️ این محصول از قبل در علاقمندی‌های شما بود.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      await ctx.dataService.toggleFavorite(uid, productId);
+      await ctx.reply('✅ به علاقمندی‌ها اضافه شد.', {
         reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
       });
     } catch (e) {
@@ -394,10 +383,16 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       await ctx.answerCallbackQuery();
       if (!ctx.from?.id) return;
       const productId = Number(ctx.match[1]);
-      const repo = new FavoritesRepository(ctx.env.DB);
-      const removed = await repo.remove(String(ctx.from.id), productId);
-      const msg = removed ? '❌ از علاقمندی‌ها حذف شد.' : 'ℹ️ این محصول در علاقمندی‌های شما نبود.';
-      await ctx.reply(msg, {
+      const uid = String(ctx.from.id);
+      const isFav = await ctx.dataService.isFavorited(uid, productId);
+      if (!isFav) {
+        await ctx.reply('ℹ️ این محصول در علاقمندی‌های شما نبود.', {
+          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
+        });
+        return;
+      }
+      await ctx.dataService.toggleFavorite(uid, productId);
+      await ctx.reply('❌ از علاقمندی‌ها حذف شد.', {
         reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
       });
     } catch (e) {
@@ -415,13 +410,11 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         return;
       }
 
-      const repo = new MessageRepository(ctx.env.DB);
-      const message = await repo.create({
+      const message = await ctx.dataService.createMessage({
         telegramId: String(ctx.from.id),
-        senderName: flow.isAnonymous ? null : (flow.name ?? null),
-        senderEmail: null,
+        senderName: flow.isAnonymous ? undefined : (flow.name ?? undefined),
         content: flow.content,
-        rating: flow.rating ?? null,
+        rating: flow.rating ?? undefined,
         isAnonymous: flow.isAnonymous ?? false,
       });
 
