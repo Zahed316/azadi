@@ -160,13 +160,13 @@ function matchSingle(row: TableRow, cond: EqCondition): boolean {
   const rowValue = row[cond.column];
   switch (cond.operator) {
     case 'gt':
-      return rowValue > cond.value;
+      return (rowValue as number) > (cond.value as number);
     case 'lt':
-      return rowValue < cond.value;
+      return (rowValue as number) < (cond.value as number);
     case 'gte':
-      return rowValue >= cond.value;
+      return (rowValue as number) >= (cond.value as number);
     case 'lte':
-      return rowValue <= cond.value;
+      return (rowValue as number) <= (cond.value as number);
     case 'in':
       return Array.isArray(cond.value) && cond.value.includes(rowValue);
     default:

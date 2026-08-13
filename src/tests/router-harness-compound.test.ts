@@ -35,7 +35,10 @@ describe('extractEq compound predicate support', () => {
       { id: 2, name: 'Latte', stock: 5, price: 60000 },
     ]);
 
-    const rows = await fakeDb.select().from(fakeTable).where(eq(fakeTable.name, 'Espresso'));
+    const rows = await fakeDb
+      .select()
+      .from(fakeTable)
+      .where(eq(fakeTable.name as any, 'Espresso'));
     expect(rows).toHaveLength(1);
     expect(rows[0].id).toBe(1);
   });
@@ -50,7 +53,7 @@ describe('extractEq compound predicate support', () => {
     const rows = await fakeDb
       .select()
       .from(fakeTable)
-      .where(and(eq(fakeTable.name, 'Espresso'), eq(fakeTable.stock, 10)));
+      .where(and(eq(fakeTable.name as any, 'Espresso'), eq(fakeTable.stock as any, 10)));
 
     expect(rows).toHaveLength(1);
     expect(rows[0].id).toBe(1);
@@ -66,7 +69,7 @@ describe('extractEq compound predicate support', () => {
     const rows = await fakeDb
       .select()
       .from(fakeTable)
-      .where(or(eq(fakeTable.name, 'Espresso'), eq(fakeTable.name, 'Latte')));
+      .where(or(eq(fakeTable.name as any, 'Espresso'), eq(fakeTable.name as any, 'Latte')));
 
     expect(rows).toHaveLength(2);
     expect(rows.map((r: any) => r.id)).toEqual([1, 2]);
@@ -79,7 +82,10 @@ describe('extractEq compound predicate support', () => {
       { id: 3, name: 'Mocha', stock: 3, price: 70000 },
     ]);
 
-    const rows = await fakeDb.select().from(fakeTable).where(gt(fakeTable.stock, 4));
+    const rows = await fakeDb
+      .select()
+      .from(fakeTable)
+      .where(gt(fakeTable.stock as any, 4));
 
     expect(rows).toHaveLength(2);
     expect(rows.map((r: any) => r.id)).toEqual([1, 2]);
@@ -92,7 +98,10 @@ describe('extractEq compound predicate support', () => {
       { id: 3, name: 'Mocha', stock: 3, price: 70000 },
     ]);
 
-    const rows = await fakeDb.select().from(fakeTable).where(lt(fakeTable.stock, 5));
+    const rows = await fakeDb
+      .select()
+      .from(fakeTable)
+      .where(lt(fakeTable.stock as any, 5));
 
     expect(rows).toHaveLength(1);
     expect(rows[0].id).toBe(3);
@@ -105,7 +114,10 @@ describe('extractEq compound predicate support', () => {
       { id: 3, name: 'Mocha', stock: 3, price: 70000 },
     ]);
 
-    const rows = await fakeDb.select().from(fakeTable).where(gte(fakeTable.stock, 5));
+    const rows = await fakeDb
+      .select()
+      .from(fakeTable)
+      .where(gte(fakeTable.stock as any, 5));
 
     expect(rows).toHaveLength(2);
     expect(rows.map((r: any) => r.id)).toEqual([1, 2]);
@@ -118,7 +130,10 @@ describe('extractEq compound predicate support', () => {
       { id: 3, name: 'Mocha', stock: 3, price: 70000 },
     ]);
 
-    const rows = await fakeDb.select().from(fakeTable).where(lte(fakeTable.stock, 5));
+    const rows = await fakeDb
+      .select()
+      .from(fakeTable)
+      .where(lte(fakeTable.stock as any, 5));
 
     expect(rows).toHaveLength(2);
     expect(rows.map((r: any) => r.id)).toEqual([2, 3]);
@@ -135,7 +150,7 @@ describe('extractEq compound predicate support', () => {
     const rows = await fakeDb
       .select()
       .from(fakeTable)
-      .where(and(eq(fakeTable.name, 'Espresso'), gt(fakeTable.stock, 8)));
+      .where(and(eq(fakeTable.name as any, 'Espresso'), gt(fakeTable.stock as any, 8)));
 
     expect(rows).toHaveLength(1);
     expect(rows[0].id).toBe(1);
