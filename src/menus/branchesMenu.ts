@@ -21,7 +21,7 @@ import { MyContext } from '../types/context';
 export const branchesMenu = new Menu<MyContext>('branches-menu')
   .text('🏠 درباره ما', async (ctx) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'branches'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'branches'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });

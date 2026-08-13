@@ -68,7 +68,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   .dynamic(async (ctx, range) => {
     try {
       // Check drinks section visibility before rendering any category buttons
-      if (!(await isMenuVisible(ctx.env, 'drinks'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'drinks'))) {
         range
           .text(HIDDEN_MESSAGE, async (ctx) => {
             await ctx.reply(HIDDEN_MESSAGE, {

@@ -12,7 +12,7 @@ import { MyContext } from '../types/context';
 export const infoMenu = new Menu<MyContext>('info-menu')
   .text('🏠 درباره ما', async (ctx) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'branches'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'branches'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
@@ -43,7 +43,7 @@ export const infoMenu = new Menu<MyContext>('info-menu')
   })
   .text('❓ سوالات متداول', async (ctx: MyContext) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'faq'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'faq'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });

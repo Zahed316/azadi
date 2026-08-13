@@ -20,7 +20,7 @@ const PRODUCTS_PAGE_SIZE = 5;
 export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
   .text('🍰 کیک و کوکی', async (ctx) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'cakes'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'cakes'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
@@ -68,7 +68,7 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
 export const beansMenu = new Menu<MyContext>('products-menu-beans')
   .text('🌱 دانه‌های قهوه', async (ctx) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'beans'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'beans'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });

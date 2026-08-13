@@ -17,7 +17,7 @@ async function loadPriceUnit(env: Env): Promise<string> {
 export const discoverMenu = new Menu<MyContext>('discover-menu')
   .text('⭐ پیشنهاد ویژه', async (ctx: MyContext) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'featured'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'featured'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
@@ -52,7 +52,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   })
   .text('🌿 محصول فصلی', async (ctx: MyContext) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'seasonal'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'seasonal'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
@@ -86,7 +86,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   })
   .text('📖 پاسپورت', async (ctx: MyContext) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'passport'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'passport'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
@@ -139,7 +139,7 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   .row()
   .text('🔍 جستجو', async (ctx: MyContext) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'search'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'search'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });

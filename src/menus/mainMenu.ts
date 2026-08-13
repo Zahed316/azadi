@@ -32,7 +32,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .submenu('🔍 کاوش', 'discover-menu')
   .text('⭐ منوهای من', async (ctx: MyContext) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'favorites'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'favorites'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
@@ -68,7 +68,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
   .submenu('ℹ️ اطلاعات', 'info-menu')
   .text('✉️ پیام به ما', async (ctx: MyContext) => {
     try {
-      if (!(await isMenuVisible(ctx.env, 'messages'))) {
+      if (!(await isMenuVisible(ctx.dataService, 'messages'))) {
         await ctx.reply(HIDDEN_MESSAGE, {
           reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
         });
