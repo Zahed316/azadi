@@ -26,7 +26,6 @@ npm run format:check                # prettier --check
 npm run format                      # prettier --write
 npm run check                       # typecheck + lint + format:check + test
 npm run deploy                      # npm exec -- wrangler deploy
-npm run deploy:dry                  # wrangler deploy --dry-run --outdir ./wrangler-dry
 npm run setup:webhook               # reads TELEGRAM_BOT_TOKEN + SECRET_TOKEN from ~/.env
 ./deploy.sh --dry-run               # pre-flight: test, typecheck, lint, build
 ```

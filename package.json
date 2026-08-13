@@ -10,7 +10,6 @@
     "format:check": "node ./node_modules/prettier/bin/prettier.cjs --check .",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
     "deploy": "npm exec -- wrangler deploy",
-    "deploy:dry": "npm exec -- wrangler deploy --dry-run --outdir ./wrangler-dry",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
     "setup:webhook": "TELEGRAM_BOT_TOKEN=$(grep '^TELEGRAM_BOT_TOKEN=' ~/.env | cut -d= -f2-) SECRET_TOKEN=$(grep '^SECRET_TOKEN=' ~/.env | cut -d= -f2-) && [ -n \"$TELEGRAM_BOT_TOKEN\" ] && [ -n \"$SECRET_TOKEN\" ] && curl -s -X POST \"https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook\" -d \"url=https://azadi-coffee-bot.zahedrastgar316.workers.dev/webhook&secret_token=${SECRET_TOKEN}\" | python3 -m json.tool || { echo \"Missing TELEGRAM_BOT_TOKEN or SECRET_TOKEN in ~/.env\" >&2; exit 1; }"
   },
