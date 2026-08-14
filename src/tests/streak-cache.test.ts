@@ -111,7 +111,7 @@ const BOT_INFO = {
   can_join_groups: true,
   can_read_all_group_messages: false,
   supports_inline_queries: false,
-};
+} as any;
 
 function makeEnv(overrides: Partial<Env> = {}): Env {
   return {
@@ -129,11 +129,11 @@ function makeUpdate(userId = 123) {
     message: {
       message_id: 1,
       date: Math.floor(Date.now() / 1000),
-      chat: { id: userId, type: 'private' as const },
+      chat: { id: userId, type: 'private' as const, first_name: 'Test' },
       from: { id: userId, is_bot: false, first_name: 'Test' },
       text: 'hello',
     },
-  };
+  } as any;
 }
 
 describe('streak middleware env-var cache', () => {
