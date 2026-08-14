@@ -1,5 +1,5 @@
 import { BranchRepository } from '../../repositories';
-import { requireSuperAdmin } from '../../utils/apiHelpers';
+import { requireSuperAdmin, jsonSuccess, jsonError, noContent } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -19,7 +19,7 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
   if (path === 'branches' && method === 'GET') {
     const repo = new BranchRepository(db);
     const branchesList = await repo.getAllBranches();
-    return new Response(JSON.stringify({ branches: branchesList }), { headers: corsHeaders });
+    return jsonSuccess({ branches: branchesList }, corsHeaders);
   }
 
   // POST /branches
@@ -30,10 +30,7 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as BranchBody;
     if (!body.name || !body.address) {
-      return new Response(JSON.stringify({ error: 'name and address required' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return jsonError('name and address required', corsHeaders);
     }
     await repo.addBranch({
       name: body.name,
@@ -46,7 +43,7 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
     if (ctx.cache) {
       await ctx.cache.deleteByPrefix('cache:branches:');
     }
-    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders, 201);
   }
 
   // PUT /branches/:id
@@ -60,10 +57,7 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as BranchBody;
     if (!body.name || !body.address) {
-      return new Response(JSON.stringify({ error: 'name and address required' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return jsonError('name and address required', corsHeaders);
     }
     await repo.updateBranch(id, {
       name: body.name,
@@ -76,7 +70,7 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
     if (ctx.cache) {
       await ctx.cache.deleteByPrefix('cache:branches:');
     }
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders);
   }
 
   // DELETE /branches/:id
@@ -91,7 +85,7 @@ export const handleBranches: ResourceHandler = async (method, path, ctx) => {
     if (ctx.cache) {
       await ctx.cache.deleteByPrefix('cache:branches:');
     }
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return noContent(corsHeaders);
   }
 
   return null;

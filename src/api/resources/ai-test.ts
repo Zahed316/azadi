@@ -1,4 +1,5 @@
 import { runAiQuery } from '../../handlers/message';
+import { requireSuperAdmin, jsonSuccess, jsonError } from '../../utils/apiHelpers';
 import type { ResourceHandler } from './types';
 
 interface AiTestBody {
@@ -10,27 +11,18 @@ export const handleAiTest: ResourceHandler = async (method, path, ctx) => {
 
   // POST /ai-test
   if (path === 'ai-test' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as AiTestBody;
     if (!body.query || typeof body.query !== 'string')
-      return new Response(JSON.stringify({ error: 'query required' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return jsonError('query required', corsHeaders);
     try {
       const response = await runAiQuery(db, body.query, 'admin-test', env.OPENCODE_API_KEY);
-      return new Response(JSON.stringify({ response }), { headers: corsHeaders });
+      return jsonSuccess({ response }, corsHeaders);
     } catch (e: unknown) {
       console.error('ai-test error:', e);
-      return new Response(JSON.stringify({ error: 'AI query failed' }), {
-        status: 500,
-        headers: corsHeaders,
-      });
+      return jsonError('AI query failed', corsHeaders, 500);
     }
   }
 

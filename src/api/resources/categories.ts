@@ -1,5 +1,5 @@
 import { CategoryRepository } from '../../repositories';
-import { requireSuperAdmin } from '../../utils/apiHelpers';
+import { requireSuperAdmin, jsonSuccess, noContent } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -17,9 +17,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
   if (path === 'categories' && method === 'GET') {
     const repo = new CategoryRepository(db);
     const categoriesList = await repo.getAllCategories();
-    return new Response(JSON.stringify({ categories: categoriesList }), {
-      headers: corsHeaders,
-    });
+    return jsonSuccess({ categories: categoriesList }, corsHeaders);
   }
 
   // POST /categories
@@ -40,7 +38,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.delete('cache:visible-categories');
       await ctx.cache.delete('cache:settings:categories');
     }
-    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders, 201);
   }
 
   // PUT /categories/:id
@@ -64,7 +62,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.deleteByPrefix('cache:visible-categories');
       await ctx.cache.delete('cache:settings:categories');
     }
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders);
   }
 
   // DELETE /categories/:id
@@ -81,7 +79,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.deleteByPrefix('cache:visible-categories');
       await ctx.cache.delete('cache:settings:categories');
     }
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return noContent(corsHeaders);
   }
 
   return null;

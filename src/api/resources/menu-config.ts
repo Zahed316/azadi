@@ -1,5 +1,5 @@
 import { MenuConfigRepository } from '../../repositories';
-import { requireSuperAdmin } from '../../utils/apiHelpers';
+import { requireSuperAdmin, jsonSuccess, jsonError, noContent } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -23,7 +23,7 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
   if (path === 'menu-config' && method === 'GET') {
     const repo = new MenuConfigRepository(db);
     const configs = await repo.getAll();
-    return new Response(JSON.stringify({ menuConfigs: configs }), { headers: corsHeaders });
+    return jsonSuccess({ menuConfigs: configs }, corsHeaders);
   }
 
   // POST /menu-config
@@ -50,10 +50,7 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.deleteByPrefix('cache:menu:');
       await ctx.cache.delete('cache:visible-categories');
     }
-    return new Response(JSON.stringify({ success: true, menuConfig: result[0] }), {
-      status: 201,
-      headers: corsHeaders,
-    });
+    return jsonSuccess({ success: true, menuConfig: result[0] }, corsHeaders, 201);
   }
 
   // POST /menu-config/reorder (must be before /menu-config/:id)
@@ -63,17 +60,11 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as MenuConfigReorderBody;
     if (!Array.isArray(body.items)) {
-      return new Response(JSON.stringify({ error: 'items must be an array' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return jsonError('items must be an array', corsHeaders);
     }
     for (const item of body.items) {
       if (typeof item?.id !== 'number' || typeof item?.displayOrder !== 'number') {
-        return new Response(
-          JSON.stringify({ error: 'Each item must have numeric id and displayOrder' }),
-          { status: 400, headers: corsHeaders },
-        );
+        return jsonError('Each item must have numeric id and displayOrder', corsHeaders);
       }
     }
     const repo = new MenuConfigRepository(db);
@@ -81,16 +72,13 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
       await repo.reorder(body.items);
     } catch (e: unknown) {
       console.error('Menu config reorder error:', e);
-      return new Response(JSON.stringify({ error: 'Reorder failed' }), {
-        status: 500,
-        headers: corsHeaders,
-      });
+      return jsonError('Reorder failed', corsHeaders, 500);
     }
     if (ctx.cache) {
       await ctx.cache.deleteByPrefix('cache:menu:');
       await ctx.cache.delete('cache:visible-categories');
     }
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders);
   }
 
   // PUT /menu-config/:id
@@ -114,7 +102,7 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.deleteByPrefix('cache:menu:');
       await ctx.cache.delete('cache:visible-categories');
     }
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders);
   }
 
   // DELETE /menu-config/:id
@@ -130,7 +118,7 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.deleteByPrefix('cache:menu:');
       await ctx.cache.delete('cache:visible-categories');
     }
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return noContent(corsHeaders);
   }
 
   return null;

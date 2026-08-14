@@ -2,7 +2,7 @@ import { admins } from '../../database/schema';
 import { eq } from 'drizzle-orm';
 import { CategoryRepository } from '../../repositories';
 import { getDb } from '../../database/client';
-import { requireSuperAdmin } from '../../utils/apiHelpers';
+import { requireSuperAdmin, jsonSuccess, jsonError, noContent } from '../../utils/apiHelpers';
 import { parseRequiredInt, parseOptionalInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -21,7 +21,7 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
     const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
     if (guard) return guard;
     const allAdmins = await dbClient.select().from(admins);
-    return new Response(JSON.stringify({ admins: allAdmins }), { headers: corsHeaders });
+    return jsonSuccess({ admins: allAdmins }, corsHeaders);
   }
 
   // POST /admins
@@ -31,10 +31,7 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as AdminBody;
     if (!body.telegramId) {
-      return new Response(JSON.stringify({ error: 'telegramId required' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return jsonError('telegramId required', corsHeaders);
     }
     // Validate categoryId exists if provided
     if (body.categoryId) {
@@ -43,10 +40,7 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
         const catRepo = new CategoryRepository(db);
         const cat = await catRepo.getCategoryById(catIdVal);
         if (!cat) {
-          return new Response(JSON.stringify({ error: 'Category not found' }), {
-            status: 400,
-            headers: corsHeaders,
-          });
+          return jsonError('Category not found', corsHeaders);
         }
       }
     }
@@ -54,13 +48,7 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
     const VALID_ROLES = ['super_admin', 'category_admin'];
     const role = body.role || 'category_admin';
     if (!VALID_ROLES.includes(role)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid role. Must be super_admin or category_admin' }),
-        {
-          status: 400,
-          headers: corsHeaders,
-        },
-      );
+      return jsonError('Invalid role. Must be super_admin or category_admin', corsHeaders);
     }
     const telegramIdResult = parseRequiredInt(body.telegramId, 'telegramId');
     if (telegramIdResult instanceof Response) return telegramIdResult;
@@ -70,7 +58,7 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
       role,
       categoryId: adminCatId,
     });
-    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders, 201);
   }
 
   // DELETE /admins/:id
@@ -83,14 +71,11 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
 
     // AUTH-002: Prevent self-deletion to avoid accidental lockout
     if (id === ctx.telegramId) {
-      return new Response(JSON.stringify({ error: 'Cannot delete your own account' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+      return jsonError('Cannot delete your own account', corsHeaders, 403);
     }
 
     await dbClient.delete(admins).where(eq(admins.telegramId, id));
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return noContent(corsHeaders);
   }
 
   return null;
