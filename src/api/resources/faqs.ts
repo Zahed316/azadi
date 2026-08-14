@@ -1,4 +1,5 @@
 import { FaqRepository } from '../../repositories';
+import { requireSuperAdmin } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -20,11 +21,8 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
 
   // POST /faqs
   if (path === 'faqs' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new FaqRepository(db);
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as FaqBody;
@@ -43,11 +41,8 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
 
   // PUT /faqs/:id
   if (path.startsWith('faqs/') && path.split('/').length === 2 && method === 'PUT') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
@@ -69,11 +64,8 @@ export const handleFaqs: ResourceHandler = async (method, path, ctx) => {
 
   // DELETE /faqs/:id
   if (path.startsWith('faqs/') && path.split('/').length === 2 && method === 'DELETE') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;

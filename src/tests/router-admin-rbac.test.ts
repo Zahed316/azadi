@@ -28,7 +28,7 @@ test('category_admin is blocked from listing admins', async () => {
   setAdminRole(categoryAdmin);
   const res = await callRouter({ method: 'GET', path: 'admins' });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ test('category_admin is blocked from posting settings', async () => {
     body: { settings: [{ key: 'about', value: 'Hello' }] },
   });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 // ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ test('category_admin is blocked from deleting settings', async () => {
   setAdminRole(categoryAdmin);
   const res = await callRouter({ method: 'DELETE', path: 'settings/about' });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 // ---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ test('category_admin is blocked from creating categories', async () => {
     body: { name: 'New', emoji: 'NEW' },
   });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 // ---------------------------------------------------------------------------
@@ -99,7 +99,7 @@ test('category_admin is blocked from updating categories', async () => {
     body: { name: 'Updated' },
   });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 // ---------------------------------------------------------------------------
@@ -114,7 +114,7 @@ test('category_admin is blocked from creating menu config', async () => {
     body: { categoryId: '5', menuSection: 'drinks' },
   });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 // ---------------------------------------------------------------------------
@@ -129,7 +129,7 @@ test('category_admin is blocked from reordering menu config', async () => {
     body: { items: [{ id: 1, displayOrder: 0 }] },
   });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 // ---------------------------------------------------------------------------
@@ -144,7 +144,7 @@ test('category_admin is blocked from creating FAQs', async () => {
     body: { question: 'Q?', answer: 'A.' },
   });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 test('super_admin posting FAQ without question or answer returns 400', async () => {
@@ -181,7 +181,7 @@ test('category_admin is blocked from creating branches', async () => {
     body: { name: 'Branch', address: '123 St' },
   });
   expect(res.status).toBe(403);
-  expect(res.body.error).toBe('Forbidden');
+  expect(res.body.error).toBe('Forbidden: super admin only');
 });
 
 test('super_admin posting branch without name or address returns 400', async () => {

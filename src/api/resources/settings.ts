@@ -1,4 +1,5 @@
 import { SettingsRepository } from '../../repositories';
+import { requireSuperAdmin } from '../../utils/apiHelpers';
 import type { ResourceHandler } from './types';
 
 interface SettingsBody {
@@ -24,11 +25,8 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
 
   // POST /settings
   if (path === 'settings' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new SettingsRepository(db);
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as SettingsBody;
@@ -73,11 +71,8 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
 
   // DELETE /settings/:key
   if (path.startsWith('settings/') && method === 'DELETE') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const key = decodeURIComponent(path.split('/')[1]);
     const repo = new SettingsRepository(db);
     await repo.deleteSetting(key);
@@ -89,11 +84,8 @@ export const handleSettings: ResourceHandler = async (method, path, ctx) => {
 
   // PUT /settings/:key
   if (path.startsWith('settings/') && method === 'PUT') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const key = decodeURIComponent(path.split('/')[1]);
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as SettingsBody;

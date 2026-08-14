@@ -1,4 +1,5 @@
 import { MessageRepository } from '../../repositories';
+import { requireSuperAdmin } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -11,12 +12,8 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
 
   // GET /messages/unread-count (must be before /messages/:id)
   if (path === 'messages/unread-count' && method === 'GET') {
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
-    }
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new MessageRepository(db);
     const count = await repo.getUnreadCount();
     return new Response(JSON.stringify({ count }), { headers: corsHeaders });
@@ -24,12 +21,8 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
 
   // GET /messages (list all)
   if (path === 'messages' && method === 'GET') {
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
-    }
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new MessageRepository(db);
     const messages = await repo.getAll();
     return new Response(JSON.stringify({ messages }), { headers: corsHeaders });
@@ -37,12 +30,8 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
 
   // GET /messages/:id (must not match /reply)
   if (path.startsWith('messages/') && method === 'GET' && !path.includes('/reply')) {
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
-    }
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
@@ -63,12 +52,8 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
 
   // POST /messages/:id/reply
   if (path.match(/^messages\/\d+\/reply$/) && method === 'POST') {
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
-    }
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;

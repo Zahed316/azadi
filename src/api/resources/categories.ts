@@ -1,4 +1,5 @@
 import { CategoryRepository } from '../../repositories';
+import { requireSuperAdmin } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -23,11 +24,8 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
 
   // POST /categories
   if (path === 'categories' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new CategoryRepository(db);
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as CategoryBody;
@@ -47,11 +45,8 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
 
   // PUT /categories/:id
   if (path.startsWith('categories/') && method === 'PUT') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
@@ -74,11 +69,8 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
 
   // DELETE /categories/:id
   if (path.startsWith('categories/') && method === 'DELETE') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;

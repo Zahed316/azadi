@@ -2,6 +2,7 @@ import { admins } from '../../database/schema';
 import { eq } from 'drizzle-orm';
 import { CategoryRepository } from '../../repositories';
 import { getDb } from '../../database/client';
+import { requireSuperAdmin } from '../../utils/apiHelpers';
 import { parseRequiredInt, parseOptionalInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -17,22 +18,16 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
 
   // GET /admins
   if (path === 'admins' && method === 'GET') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const allAdmins = await dbClient.select().from(admins);
     return new Response(JSON.stringify({ admins: allAdmins }), { headers: corsHeaders });
   }
 
   // POST /admins
   if (path === 'admins' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as AdminBody;
     if (!body.telegramId) {
@@ -80,11 +75,8 @@ export const handleAdmins: ResourceHandler = async (method, path, ctx) => {
 
   // DELETE /admins/:id
   if (path.startsWith('admins/') && method === 'DELETE') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;

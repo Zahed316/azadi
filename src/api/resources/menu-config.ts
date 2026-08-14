@@ -1,4 +1,5 @@
 import { MenuConfigRepository } from '../../repositories';
+import { requireSuperAdmin } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -27,11 +28,8 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
 
   // POST /menu-config
   if (path === 'menu-config' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new MenuConfigRepository(db);
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as MenuConfigBody;
@@ -60,11 +58,8 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
 
   // POST /menu-config/reorder (must be before /menu-config/:id)
   if (path === 'menu-config/reorder' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as MenuConfigReorderBody;
     if (!Array.isArray(body.items)) {
@@ -100,11 +95,8 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
 
   // PUT /menu-config/:id
   if (path.startsWith('menu-config/') && path.split('/').length === 2 && method === 'PUT') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
@@ -127,11 +119,8 @@ export const handleMenuConfig: ResourceHandler = async (method, path, ctx) => {
 
   // DELETE /menu-config/:id
   if (path.startsWith('menu-config/') && path.split('/').length === 2 && method === 'DELETE') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
