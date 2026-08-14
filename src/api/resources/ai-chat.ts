@@ -1,5 +1,7 @@
 import { handleAiChat as processAiChat } from '../ai/handler';
 import type { AiChatRequest } from '../ai/types';
+import { handleAiExecute } from '../ai/execute';
+import type { AiExecuteRequest } from '../ai/execute';
 import { AiLogRepository } from '../../repositories';
 import { requireSuperAdmin, jsonSuccess, jsonError } from '../../utils/apiHelpers';
 import type { ResourceHandler } from './types';
@@ -12,6 +14,31 @@ import type { ResourceHandler } from './types';
  */
 export const handleAiChatRoute: ResourceHandler = async (method, path, ctx) => {
   const { db, isSuperAdmin, request, corsHeaders, env } = ctx;
+
+  // --- POST /ai/execute ---
+  if (path === 'ai/execute' && method === 'POST') {
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
+
+    let body: AiExecuteRequest;
+    try {
+      body = await request.json();
+    } catch {
+      return jsonError('Invalid JSON body', corsHeaders);
+    }
+
+    if (!body.tool || typeof body.tool !== 'string') {
+      return jsonError('tool is required', corsHeaders);
+    }
+
+    if (!body.params || typeof body.params !== 'object') {
+      return jsonError('params is required', corsHeaders);
+    }
+
+    const cache = ctx.cache;
+    const response = await handleAiExecute(body, db, cache);
+    return jsonSuccess(response, corsHeaders);
+  }
 
   // --- POST /ai/chat ---
   if (path === 'ai/chat' && method === 'POST') {
