@@ -704,15 +704,26 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       ctx.session.messageFlow = undefined;
 
       const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-      await ctx
-        .editMessageText('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
-          reply_markup: kb,
-        })
-        .catch(() =>
-          ctx.reply('✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.', {
+      const body = '✅ پیام شما با موفقیت ارسال شد!\nادمین به زودی پاسخ خواهد داد.';
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        try {
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
             reply_markup: kb,
-          }),
-        );
+          });
+          active.state = 'sent';
+          // fall through to admin notifications
+        } catch (e) {
+          await handleEditFailure(ctx, body, { reply_markup: kb }, e, 'sent');
+          // fall through to admin notifications
+        }
+      } else {
+        const sent = await ctx.reply(body, { reply_markup: kb });
+        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'sent');
+        if (evicted) {
+          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+        }
+      }
 
       // Notify admins (best-effort, parallel)
       if (ctx.env.TELEGRAM_BOT_TOKEN) {
