@@ -45,7 +45,11 @@ export async function executeTool(
 ): Promise<AiAction> {
   try {
     switch (toolName) {
-      // -- Products --
+      // -- Products (read) --
+      case 'listProducts':
+        return await handleListProducts(ctx);
+
+      // -- Products (write) --
       case 'createProduct':
         return await handleCreateProduct(params, ctx);
       case 'updateProduct':
@@ -55,7 +59,11 @@ export async function executeTool(
       case 'batchUpdateProducts':
         return await handleBatchUpdateProducts(params, ctx);
 
-      // -- Categories --
+      // -- Categories (read) --
+      case 'listCategories':
+        return await handleListCategories(ctx);
+
+      // -- Categories (write) --
       case 'createCategory':
         return await handleCreateCategory(params, ctx);
       case 'updateCategory':
@@ -72,6 +80,8 @@ export async function executeTool(
         return await handleGetSettings(params, ctx);
 
       // -- Menu config --
+      case 'getMenuConfig':
+        return await handleGetMenuConfig(ctx);
       case 'updateMenuConfig':
         return await handleUpdateMenuConfig(params, ctx);
 
@@ -401,6 +411,59 @@ async function handleGetSettings(
     type: 'getSettings',
     result: 'success',
     details: { settings: filtered },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Read-only tool handlers
+// ---------------------------------------------------------------------------
+
+async function handleListProducts(ctx: ExecutorContext): Promise<AiAction> {
+  const repo = new ProductRepository(ctx.db);
+  const all = await repo.getAllProducts();
+  // Strip internal fields the model doesn't need
+  const items = all.map((p) => ({
+    id: p.id,
+    name: p.name,
+    categoryId: p.categoryId,
+    price: p.price,
+    stock: p.stock,
+    unit: p.unit,
+    available: p.available,
+    featured: p.featured,
+    isSeasonal: p.isSeasonal,
+  }));
+  return {
+    type: 'listProducts',
+    result: 'success',
+    details: { products: items, count: items.length },
+  };
+}
+
+async function handleListCategories(ctx: ExecutorContext): Promise<AiAction> {
+  const repo = new CategoryRepository(ctx.db);
+  const all = await repo.getAllCategories();
+  const items = all.map((c) => ({
+    id: c.id,
+    name: c.name,
+    emoji: c.emoji,
+    description: c.description,
+    sortOrder: c.sortOrder,
+  }));
+  return {
+    type: 'listCategories',
+    result: 'success',
+    details: { categories: items, count: items.length },
+  };
+}
+
+async function handleGetMenuConfig(ctx: ExecutorContext): Promise<AiAction> {
+  const repo = new MenuConfigRepository(ctx.db);
+  const all = await repo.getAll();
+  return {
+    type: 'getMenuConfig',
+    result: 'success',
+    details: { menuConfig: all, count: all.length },
   };
 }
 

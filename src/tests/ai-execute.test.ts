@@ -55,4 +55,15 @@ describe('Full AI tool execution flow', () => {
     expect(classifyAction(actions[0])).toBe('read');
     expect(classifyAction(actions[1])).toBe('write');
   });
+
+  test('all read tools are classified correctly', () => {
+    const readTools = ['getSettings', 'listProducts', 'listCategories', 'getMenuConfig'];
+    for (const tool of readTools) {
+      const { actions } = parseAiActions(
+        `<ai_action>{"tool": "${tool}", "params": {}}</ai_action>`,
+      );
+      expect(actions).toHaveLength(1);
+      expect(classifyAction(actions[0])).toBe('read');
+    }
+  });
 });
