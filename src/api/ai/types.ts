@@ -8,10 +8,19 @@ export interface AiChatRequest {
   conversationId?: string;
 }
 
+/** A write action proposed by the AI, pending admin confirmation. */
+export interface PendingAction {
+  tool: string;
+  params: Record<string, unknown>;
+  /** Human-readable description of what this action does (for the confirmation UI). */
+  description: string;
+}
+
 /** Response returned after processing an AI chat message. */
 export interface AiChatResponse {
   reply: string;
   actions: AiAction[];
+  pendingActions: PendingAction[];
   conversationId: string;
 }
 

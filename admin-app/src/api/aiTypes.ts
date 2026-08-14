@@ -24,10 +24,18 @@ export interface AiAction {
   error?: string;
 }
 
+/** A write action proposed by the AI, pending admin confirmation. */
+export interface PendingAction {
+  tool: string;
+  params: Record<string, unknown>;
+  description: string;
+}
+
 /** Response returned after processing an AI chat message. */
 export interface AiChatResponse {
   reply: string;
   actions: AiAction[];
+  pendingActions: PendingAction[];
   conversationId: string;
 }
 
