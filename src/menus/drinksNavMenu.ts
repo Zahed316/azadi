@@ -76,7 +76,12 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
         range
           .text(HIDDEN_MESSAGE, async (ctx) => {
             const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-            await editOrSend(ctx, HIDDEN_MESSAGE, { parse_mode: 'HTML', reply_markup: backKb }, 'hidden:drinks');
+            await editOrSend(
+              ctx,
+              HIDDEN_MESSAGE,
+              { parse_mode: 'HTML', reply_markup: backKb },
+              'hidden:drinks',
+            );
           })
           .row();
         return;
@@ -98,7 +103,12 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
                 const emptyText = config.specialMessage
                   ? config.specialMessage
                   : `📭 در حال حاضر ${config.categoryName ?? 'بدون نام'} موجود نیست.`;
-                await editOrSend(ctx, emptyText, { parse_mode: 'HTML', reply_markup: backKb }, 'empty:drinks');
+                await editOrSend(
+                  ctx,
+                  emptyText,
+                  { parse_mode: 'HTML', reply_markup: backKb },
+                  'empty:drinks',
+                );
                 return;
               }
 

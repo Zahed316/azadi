@@ -14,7 +14,9 @@ const pushMessageMock = vi.mocked(pushMessage);
 const handleEditFailureMock = vi.mocked(handleEditFailure);
 
 let ctx: {
-  session: { menuStack: Array<{ chatId: number; messageId: number; state: string; timestamp: number }> };
+  session: {
+    menuStack: Array<{ chatId: number; messageId: number; state: string; timestamp: number }>;
+  };
   chat: { id: number } | null;
   api: {
     editMessageText: ReturnType<typeof vi.fn>;

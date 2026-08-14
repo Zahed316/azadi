@@ -5,11 +5,7 @@ import { toPersianDigits } from '../utils/numbers';
 import { escapeHtml } from '../utils/htmlEscape';
 import { MyContext } from '../types/context';
 import type { IDataService } from '../services/types';
-import {
-  pushMessage,
-  popMessage,
-  getActiveMessage,
-} from '../utils/menuLifecycle';
+import { pushMessage, popMessage, getActiveMessage } from '../utils/menuLifecycle';
 import { editOrSend } from '../utils/editOrSend';
 
 const DEFAULT_WELCOME_TEXT =

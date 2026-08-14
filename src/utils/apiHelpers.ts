@@ -24,10 +24,10 @@ export function requireSuperAdmin(
   corsHeaders: Record<string, string>,
 ): Response | null {
   if (!isSuperAdmin) {
-    return new Response(
-      JSON.stringify({ error: 'Forbidden: super admin only' }),
-      { status: 403, headers: corsHeaders },
-    );
+    return new Response(JSON.stringify({ error: 'Forbidden: super admin only' }), {
+      status: 403,
+      headers: corsHeaders,
+    });
   }
   return null;
 }

@@ -18,7 +18,7 @@ describe('requireSuperAdmin', () => {
   test('returns error body with correct message', async () => {
     const res = requireSuperAdmin(false, CORS_HEADERS);
     expect(res).not.toBeNull();
-    const body = await res!.json();
+    const body: { error: string } = await res!.json();
     expect(body.error).toBe('Forbidden: super admin only');
   });
 
