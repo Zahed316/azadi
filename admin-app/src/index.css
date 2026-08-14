@@ -442,6 +442,39 @@ button.secondary:hover {
   margin-bottom: 16px;
 }
 
+/* Sub-tab switcher */
+.sub-tab-switcher {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.sub-tab {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  width: auto;
+}
+
+.sub-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+.sub-tab:hover:not(.active) {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
 /* Stat tiles */
 .stat-tile {
   flex: 1 1 0;
@@ -465,6 +498,41 @@ button.secondary:hover {
   font-size: 11px;
   color: var(--text-muted, #999);
   margin-top: 2px;
+}
+
+/* Category list (SubTab) */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.category-emoji {
+  font-size: 24px;
+}
+
+.category-info {
+  flex: 1;
+}
+
+.category-info p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.category-actions {
+  display: flex;
+  gap: 4px;
 }
 
 /* Shimmer skeleton loading states */
@@ -541,4 +609,76 @@ button.secondary:hover {
   100% {
     background-position: -200% 0;
   }
+}
+
+/* ProductsSubTab – category picker */
+.category-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.category-chip {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  color: var(--text-main);
+  width: auto;
+}
+
+.category-chip:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: none;
+}
+
+.category-chip.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.category-chip.active:hover {
+  background: var(--primary-hover);
+}
+
+/* ProductsSubTab – product list */
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.product-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
 }

@@ -10,8 +10,7 @@ import { queryKeys } from './api/keys';
 import type { CurrentUserResponse } from './api/types';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-const ProductsPage = lazy(() => import('./pages/ProductsPage'));
-const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
+const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 const InsightsPage = lazy(() => import('./pages/InsightsPage'));
 const ConfigurePage = lazy(() => import('./pages/ConfigurePage'));
 const InfoPage = lazy(() => import('./pages/InfoPage'));
@@ -67,20 +66,30 @@ function AppInner() {
             <Suspense fallback={<LoadingScreen />}>
               <ErrorBoundary>
                 <Routes>
-                  <Route path="/products" element={<ProductsPage />} />
-                  <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="/inventory" element={<InventoryPage />} />
+                  {/* Legacy routes redirect to inventory with appropriate sub-tab */}
+                  <Route
+                    path="/products"
+                    element={<Navigate to="/inventory?tab=products" replace />}
+                  />
+                  <Route
+                    path="/categories"
+                    element={<Navigate to="/inventory?tab=categories" replace />}
+                  />
                   {/* Grouped tabs */}
                   <Route
                     path="/insights"
-                    element={isSuperAdmin ? <InsightsPage /> : <Navigate to="/products" replace />}
+                    element={isSuperAdmin ? <InsightsPage /> : <Navigate to="/inventory" replace />}
                   />
                   <Route
                     path="/configure"
-                    element={isSuperAdmin ? <ConfigurePage /> : <Navigate to="/products" replace />}
+                    element={
+                      isSuperAdmin ? <ConfigurePage /> : <Navigate to="/inventory" replace />
+                    }
                   />
                   <Route
                     path="/info"
-                    element={isSuperAdmin ? <InfoPage /> : <Navigate to="/products" replace />}
+                    element={isSuperAdmin ? <InfoPage /> : <Navigate to="/inventory" replace />}
                   />
                   {/* Redirect old routes to grouped pages */}
                   <Route path="/settings" element={<Navigate to="/configure" replace />} />
@@ -93,25 +102,18 @@ function AppInner() {
                   <Route path="/ai-logs" element={<Navigate to="/insights" replace />} />
                   <Route path="/ai-test" element={<Navigate to="/insights" replace />} />
                   <Route path="/messages" element={<Navigate to="/info" replace />} />
-                  <Route path="*" element={<Navigate to="/products" replace />} />
+                  <Route path="*" element={<Navigate to="/inventory" replace />} />
                 </Routes>
               </ErrorBoundary>
             </Suspense>
           </main>
           <nav className="bottom-nav" aria-label="ناوبری اصلی">
             <NavLink
-              to="/products"
+              to="/inventory"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
               onClick={scrollToTop}
             >
-              <span className="nav-icon">📦</span>محصولات
-            </NavLink>
-            <NavLink
-              to="/categories"
-              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-              onClick={scrollToTop}
-            >
-              <span className="nav-icon">🏷️</span>دسته‌بندی‌ها
+              <span className="nav-icon">📋</span>موجودی
             </NavLink>
             {isSuperAdmin && (
               <>
