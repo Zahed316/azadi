@@ -16,9 +16,9 @@ function getAuthHeader(): Record<string, string> {
 
 export async function apiFetch<T = unknown>(
   path: string,
-  options: { method?: string; body?: unknown } = {},
+  options: { method?: string; body?: unknown; signal?: AbortSignal } = {},
 ): Promise<T> {
-  const { method = 'GET', body } = options;
+  const { method = 'GET', body, signal } = options;
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
@@ -26,6 +26,7 @@ export async function apiFetch<T = unknown>(
       ...getAuthHeader(),
     },
     body: body ? JSON.stringify(body) : undefined,
+    signal,
   });
   if (!res.ok) {
     const errText = await res.text();

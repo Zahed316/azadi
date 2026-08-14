@@ -9,5 +9,6 @@ export { handleMessages } from './messages';
 export { handleFavorites } from './favorites';
 export { handleAiLogs } from './ai-logs';
 export { handleAiTest } from './ai-test';
+export { handleAiChatRoute } from './ai-chat';
 export { handleStreaks } from './streaks';
 export type { ResourceHandler, ResourceCtx } from './types';

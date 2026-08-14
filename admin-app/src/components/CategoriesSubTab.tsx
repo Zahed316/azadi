@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAppContext } from '../AppContext';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import type { CategoriesResponse, Category } from '../api/types';
-import Field from '../components/Field';
-import EmptyState from '../components/EmptyState';
-import { CategorySkeleton } from '../components/SkeletonLoader';
+import { useAppContext } from '../AppContext';
+import Field from './Field';
+import EmptyState from './EmptyState';
+import { CategorySkeleton } from './SkeletonLoader';
 
-export default function CategoriesPage() {
+export default function CategoriesSubTab() {
   const { isSuperAdmin, setError, showToast, confirm } = useAppContext();
   const queryClient = useQueryClient();
 
@@ -126,16 +126,18 @@ export default function CategoriesPage() {
         {categories.length === 0 ? (
           <EmptyState message="دسته‌بندی‌ها به مرتب‌سازی منو کمک می‌کنند. برای شروع یکی اضافه کنید." />
         ) : (
-          <ul className="list">
+          <div className="category-list">
             {categories.map((c) => (
-              <li key={c.id} className="list-item">
-                <div className="list-item-info">
-                  <span dir="auto">
-                    {c.emoji} {c.name}
-                  </span>
+              <div key={c.id} className="category-item">
+                <span className="category-emoji" dir="auto">
+                  {c.emoji}
+                </span>
+                <div className="category-info">
+                  <strong dir="auto">{c.name}</strong>
+                  {c.description && <p dir="auto">{c.description}</p>}
                 </div>
                 {isSuperAdmin && (
-                  <div className="list-item-actions">
+                  <div className="category-actions">
                     <button className="secondary" onClick={() => startEditCategory(c)}>
                       ویرایش
                     </button>
@@ -150,9 +152,9 @@ export default function CategoriesPage() {
                     </button>
                   </div>
                 )}
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </>

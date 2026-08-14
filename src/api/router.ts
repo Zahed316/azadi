@@ -16,6 +16,7 @@ import {
   handleFavorites,
   handleAiLogs,
   handleAiTest,
+  handleAiChatRoute,
   handleStreaks,
 } from './resources';
 import type { ResourceCtx, ResourceHandler } from './resources';
@@ -47,6 +48,7 @@ const resourceHandlers: ResourceHandler[] = [
   handleFavorites,
   handleAiLogs,
   handleAiTest,
+  handleAiChatRoute,
 ];
 
 export async function handleApiRequest(

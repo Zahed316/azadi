@@ -14,6 +14,7 @@ const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 const InsightsPage = lazy(() => import('./pages/InsightsPage'));
 const ConfigurePage = lazy(() => import('./pages/ConfigurePage'));
 const InfoPage = lazy(() => import('./pages/InfoPage'));
+const ChatButton = lazy(() => import('./components/ChatButton'));
 
 const queryClient = new QueryClient();
 
@@ -141,6 +142,9 @@ function AppInner() {
               </>
             )}
           </nav>
+          <Suspense fallback={null}>
+            <ChatButton />
+          </Suspense>
         </div>
       </HashRouter>
     </AppContext.Provider>

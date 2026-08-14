@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import LoadingScreen from '../components/Spinner';
 
 type SubTab = 'categories' | 'products';
 
@@ -7,6 +8,9 @@ const SUB_TABS: { key: SubTab; label: string }[] = [
   { key: 'categories', label: '🏷️ دسته‌بندی‌ها' },
   { key: 'products', label: '📦 محصولات' },
 ];
+
+const CategoriesSubTab = lazy(() => import('../components/CategoriesSubTab'));
+const ProductsSubTab = lazy(() => import('../components/ProductsSubTab'));
 
 export default function InventoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,21 +43,17 @@ export default function InventoryPage() {
 
       {activeTab === 'categories' && (
         <div role="tabpanel">
-          <div className="card">
-            <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
-              بخش دسته‌بندی‌ها به‌زودی اضافه می‌شود.
-            </p>
-          </div>
+          <Suspense fallback={<LoadingScreen />}>
+            <CategoriesSubTab />
+          </Suspense>
         </div>
       )}
 
       {activeTab === 'products' && (
         <div role="tabpanel">
-          <div className="card">
-            <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
-              بخش محصولات به‌زودی اضافه می‌شود.
-            </p>
-          </div>
+          <Suspense fallback={<LoadingScreen />}>
+            <ProductsSubTab />
+          </Suspense>
         </div>
       )}
     </>
