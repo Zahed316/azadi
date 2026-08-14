@@ -111,6 +111,7 @@ export async function handleAiChat(
   const tools = formatToolsForApi();
   const allActions: AiAction[] = [];
   let finalReply = '';
+  let toolsSupported = true; // assume tools work until proven otherwise
 
   // Tool-call loop: the model may request multiple tool calls per turn.
   // We execute each, append the results, and re-call the model until it
@@ -122,7 +123,8 @@ export async function handleAiChat(
     };
 
     try {
-      const response = await callOpenCodeApi(apiKey, messages, tools);
+      // On first round, try with tools. If tools failed before, skip them.
+      const response = await callOpenCodeApi(apiKey, messages, toolsSupported ? tools : []);
 
       if (!response.ok) {
         const errorBody = await response.text().catch(() => '');
@@ -132,11 +134,39 @@ export async function handleAiChat(
             operation: 'ai-chat-api-error',
             status: response.status,
             statusText: response.statusText,
-            errorBody: errorBody.slice(0, 200),
+            errorBody: errorBody.slice(0, 500),
+            model: OPENCODE_MODEL,
+            toolCount: tools.length,
+            messageCount: messages.length,
           }),
         );
+
+        // If tools were included, retry without them (model may not support function calling)
+        if (toolsSupported && tools.length > 0) {
+          console.error(
+            JSON.stringify({
+              ts: new Date().toISOString(),
+              operation: 'ai-chat-retry-no-tools',
+              reason: 'API rejected request with tools, retrying without',
+            }),
+          );
+          toolsSupported = false;
+          continue; // retry the loop without tools
+        }
+
+        // Surface API error details to the admin for debugging
+        let detail = '';
+        try {
+          const parsed = JSON.parse(errorBody) as Record<string, unknown>;
+          const errObj = parsed.error as Record<string, unknown> | undefined;
+          const msg = errObj?.message;
+          const typ = parsed.type;
+          detail = typeof msg === 'string' ? msg : typeof typ === 'string' ? typ : '';
+        } catch {
+          detail = errorBody.slice(0, 200);
+        }
         return {
-          reply: 'متأسفانه در پاسخگویی مشکلی پیش آمد. لطفاً دوباره تلاش کنید.',
+          reply: `متأسفانه در پاسخگویی مشکلی پیش آمد.${detail ? ` (${detail})` : ''} لطفاً دوباره تلاش کنید.`,
           actions: allActions,
           conversationId,
         };
@@ -159,9 +189,24 @@ export async function handleAiChat(
     }
 
     if (data.error) {
-      console.error('[AiChat] API returned error:', data.error.message);
+      const errMsg = data.error.message || 'Unknown error';
+      console.error(
+        JSON.stringify({
+          ts: new Date().toISOString(),
+          operation: 'ai-chat-api-body-error',
+          error: errMsg,
+          model: OPENCODE_MODEL,
+        }),
+      );
+
+      // If tools were included, retry without them
+      if (toolsSupported && tools.length > 0) {
+        toolsSupported = false;
+        continue;
+      }
+
       return {
-        reply: 'متأسفانه در پردازش درخواست مشکلی پیش آمد.',
+        reply: `متأسفانه در پردازش درخواست مشکلی پیش آمد. (${errMsg})`,
         actions: allActions,
         conversationId,
       };
@@ -289,7 +334,7 @@ function formatToolsForApi(): Array<{
       const prop: Record<string, unknown> = { type: param.type };
       if (param.description) prop.description = param.description;
       if (param.enum) prop.enum = param.enum;
-      if (param.default !== undefined) prop.default = param.default;
+      // Note: 'default' is NOT part of the OpenAI function calling spec — omit it
       properties[key] = prop;
       if (param.required) required.push(key);
     }
