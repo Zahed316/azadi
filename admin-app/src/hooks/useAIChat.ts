@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { sendAiChatMessage } from '../api/aiClient';
-import type { AiChatResponse, AiAction } from '../api/aiTypes';
+import { sendAiChatMessage, executeAiAction } from '../api/aiClient';
+import type { AiChatResponse, AiAction, PendingAction } from '../api/aiTypes';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -15,6 +15,10 @@ export interface ChatMessage {
   timestamp: Date;
   /** Actions executed by the AI (only on assistant messages). */
   actions?: AiAction[];
+  /** Write actions pending admin confirmation (only on assistant messages). */
+  pendingActions?: PendingAction[];
+  /** Whether this message's pending actions have been confirmed (hides Confirm/Cancel buttons). */
+  confirmed?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -57,6 +61,7 @@ export function useAIChat() {
           text: data.reply,
           timestamp: new Date(),
           actions: data.actions.length > 0 ? data.actions : undefined,
+          pendingActions: data.pendingActions.length > 0 ? data.pendingActions : undefined,
         },
       ]);
     },
@@ -120,6 +125,72 @@ export function useAIChat() {
     });
   }, [mutation, lastUserText, conversationId]);
 
+  /**
+   * Confirm a pending write action, sending it for execution.
+   *
+   * Finds the last assistant message with pendingActions, marks it as confirmed,
+   * sends the action for execution, and appends the result as a new message.
+   */
+  const confirmAction = useCallback(
+    async (tool: string, params: Record<string, unknown>) => {
+      // Find and mark the last assistant message with pending actions as confirmed
+      setMessages((prev) => {
+        const updated = [...prev];
+        for (let i = updated.length - 1; i >= 0; i--) {
+          if (updated[i].role === 'assistant' && updated[i].pendingActions?.length) {
+            updated[i] = { ...updated[i], confirmed: true };
+            break;
+          }
+        }
+        return updated;
+      });
+
+      try {
+        const result = await executeAiAction(tool, params, conversationId ?? undefined);
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            text:
+              result.result === 'success'
+                ? `✅ انجام شد: ${result.type}`
+                : `❌ خطا: ${result.error || 'مشکلی پیش آمد'}`,
+            timestamp: new Date(),
+            actions: [result],
+          },
+        ]);
+      } catch (err) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            text: `❌ خطا در اجرای عملیات: ${err instanceof Error ? err.message : String(err)}`,
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    },
+    [conversationId],
+  );
+
+  /**
+   * Cancel all pending actions on the last assistant message.
+   * Marks the message as confirmed (hiding the buttons) without executing.
+   */
+  const cancelAction = useCallback(() => {
+    setMessages((prev) => {
+      const updated = [...prev];
+      for (let i = updated.length - 1; i >= 0; i--) {
+        if (updated[i].role === 'assistant' && updated[i].pendingActions?.length) {
+          updated[i] = { ...updated[i], confirmed: true };
+          break;
+        }
+      }
+      return updated;
+    });
+  }, []);
+
   /** Reset the conversation — clears all messages and the conversationId. */
   const clearHistory = useCallback(() => {
     setMessages([]);
@@ -145,5 +216,9 @@ export function useAIChat() {
     canRetry: !mutation.isPending && lastUserText !== null && mutation.isError,
     /** Clear all messages and reset the conversation. */
     clearHistory,
+    /** Confirm a pending write action, sending it for execution. */
+    confirmAction,
+    /** Cancel all pending actions on the last assistant message (hides buttons). */
+    cancelAction,
   };
 }
