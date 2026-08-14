@@ -57,7 +57,7 @@ npm run deploy                      # wraps `npm exec -- wrangler deploy`
 npm run setup:webhook               # reads TELEGRAM_BOT_TOKEN and SECRET_TOKEN from ~/.env
 ./deploy.sh --dry-run               # pre-flight: test → typecheck → lint → build (no deploy)
 
-> **Test timeout**: `vitest.config.ts` sets a 30-second timeout for the router harness's dynamic imports. Tests that import the harness may need this headroom.
+> **Test timeout**: `vitest.config.mjs` sets a 30-second timeout for the router harness's dynamic imports. Tests that import the harness may need this headroom.
 
 # Admin Mini App
 cd admin-app
@@ -190,7 +190,7 @@ Filtering rules:
 - **Registered bot commands**: only `/start` and `/admin` (plus `/setup_bot` for the bot owner to push them). Do not add more without updating `setMyCommands` in `src/commands/admin.ts`.
 - **Menu navigation**: lists use `editMessageText(...).catch(() => ctx.reply(...))` to edit in place with fresh-reply fallback. Detail replies carry a `back:main` inline button handled in `src/handlers/callbackQuery.ts`.
 - **Mini App UX**: toast notifications via `showToast()` (never `alert()`), form fields wrapped in `<Field label>` (placeholder is a hint, not a label), every list renders an `.empty-state` block when empty, Persian data elements get `dir="auto"` while chrome stays English.
-- **Tests**: `src/tests/*.test.ts`, vitest (`import { expect, test } from 'vitest'`). `vitest.config.ts` at root sets a 30s timeout for dynamic imports. The Worker API tests in `src/tests/router-*.test.ts` share a harness at `src/tests/_helpers/routerHarness.ts` that mocks Drizzle, `validateInitData`, and `getAdminRole` to exercise `handleApiRequest` end-to-end. **Caveat**: the harness's `extractEq()` parser only matches Drizzle's `eq()` shape; any other predicate (`and`//`or`/`gt`/etc.) silently no-ops, so tests pass without actually filtering — see the global memory `permissive-where-parsers-mask-sql-bugs`.
+- **Tests**: `src/tests/*.test.ts`, vitest (`import { expect, test } from 'vitest'`). `vitest.config.mjs` at root sets a 30s timeout for dynamic imports. The Worker API tests in `src/tests/router-*.test.ts` share a harness at `src/tests/_helpers/routerHarness.ts` that mocks Drizzle, `validateInitData`, and `getAdminRole` to exercise `handleApiRequest` end-to-end. **Caveat**: the harness's `extractEq()` parser only matches Drizzle's `eq()` shape; any other predicate (`and`//`or`/`gt`/etc.) silently no-ops, so tests pass without actually filtering — see the global memory `permissive-where-parsers-mask-sql-bugs`.
   - **Cache tests**: spy on `CacheService.prototype` methods, not the KV mock directly — `CacheService.deleteByPrefix` pages through `kv.list()` internally; mocking KV makes it silently no-op. See `src/tests/router-cache.test.ts`.
   - **Mocking classes**: pass the class directly in `vi.mock()` — wrapping in `vi.fn().mockImplementation()` returns a non-constructable mock. See project memory `vitest-mock-class-no-fn-wrap`.
 - **Errors**: catch blocks log to `console.error`, reply with Persian error messages to users.

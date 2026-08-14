@@ -30,7 +30,7 @@ npm run setup:webhook               # reads TELEGRAM_BOT_TOKEN + SECRET_TOKEN fr
 ./deploy.sh --dry-run               # pre-flight: test, typecheck, lint, build
 ```
 
-**Test timeout:** `vitest.config.ts` sets a 30-second timeout for the router harness's dynamic imports. Tests that import the harness may need this headroom.
+**Test timeout:** `vitest.config.mjs` sets a 30-second timeout for the router harness's dynamic imports. Tests that import the harness may need this headroom.
 
 ```bash
 # Admin Mini App
