@@ -8,7 +8,7 @@ import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
-import { getActiveMessage, handleEditFailure, pushMessage } from '../utils/menuLifecycle';
+import { editOrSend } from '../utils/editOrSend';
 
 /**
  * Pagination callback prefix for drinks categories:
@@ -65,23 +65,7 @@ export async function buildCategoryPage(
   const msgOpts = { parse_mode: 'HTML' as const, reply_markup: kb };
 
   // Pattern A: edit the existing message in-place when possible
-  const active = getActiveMessage(ctx.session);
-  if (active) {
-    try {
-      await ctx.api.editMessageText(active.chatId, active.messageId, text, msgOpts);
-      active.state = newState;
-      return;
-    } catch (e) {
-      await handleEditFailure(ctx, text, msgOpts, e);
-      return;
-    }
-  }
-  // Fallback: no active message on the stack — create and track a new one
-  const sent = await ctx.reply(text, msgOpts);
-  const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, newState);
-  if (evicted) {
-    await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
-  }
+  await editOrSend(ctx, text, msgOpts, newState);
 }
 
 export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
@@ -92,37 +76,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
         range
           .text(HIDDEN_MESSAGE, async (ctx) => {
             const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-            const active = getActiveMessage(ctx.session);
-            if (active) {
-              try {
-                await ctx.api.editMessageText(active.chatId, active.messageId, HIDDEN_MESSAGE, {
-                  parse_mode: 'HTML',
-                  reply_markup: backKb,
-                });
-                active.state = 'hidden:drinks';
-                return;
-              } catch (e) {
-                await handleEditFailure(
-                  ctx,
-                  HIDDEN_MESSAGE,
-                  { parse_mode: 'HTML', reply_markup: backKb },
-                  e,
-                );
-                return;
-              }
-            }
-            const sent = await ctx.reply(HIDDEN_MESSAGE, {
-              parse_mode: 'HTML',
-              reply_markup: backKb,
-            });
-            const evicted = pushMessage(
-              ctx.session,
-              ctx.chat!.id,
-              sent.message_id,
-              'hidden:drinks',
-            );
-            if (evicted)
-              await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+            await editOrSend(ctx, HIDDEN_MESSAGE, { parse_mode: 'HTML', reply_markup: backKb }, 'hidden:drinks');
           })
           .row();
         return;
@@ -144,37 +98,7 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
                 const emptyText = config.specialMessage
                   ? config.specialMessage
                   : `📭 در حال حاضر ${config.categoryName ?? 'بدون نام'} موجود نیست.`;
-                const active = getActiveMessage(ctx.session);
-                if (active) {
-                  try {
-                    await ctx.api.editMessageText(active.chatId, active.messageId, emptyText, {
-                      parse_mode: 'HTML',
-                      reply_markup: backKb,
-                    });
-                    active.state = 'empty:drinks';
-                    return;
-                  } catch (e) {
-                    await handleEditFailure(
-                      ctx,
-                      emptyText,
-                      { parse_mode: 'HTML', reply_markup: backKb },
-                      e,
-                    );
-                    return;
-                  }
-                }
-                const sent = await ctx.reply(emptyText, {
-                  parse_mode: 'HTML',
-                  reply_markup: backKb,
-                });
-                const evicted = pushMessage(
-                  ctx.session,
-                  ctx.chat!.id,
-                  sent.message_id,
-                  'empty:drinks',
-                );
-                if (evicted)
-                  await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+                await editOrSend(ctx, emptyText, { parse_mode: 'HTML', reply_markup: backKb }, 'empty:drinks');
                 return;
               }
 
@@ -200,21 +124,5 @@ export const drinksNavMenu = new Menu<MyContext>('drinks-nav-menu')
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
     const body = await getWelcomeText(ctx.dataService);
-    const active = getActiveMessage(ctx.session);
-    if (active) {
-      try {
-        await ctx.api.editMessageText(active.chatId, active.messageId, body, {
-          parse_mode: 'HTML',
-          reply_markup: mainMenu,
-        });
-        active.state = 'main';
-        return;
-      } catch (e) {
-        await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: mainMenu }, e);
-        return;
-      }
-    }
-    const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
-    const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
-    if (evicted) await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+    await editOrSend(ctx, body, { parse_mode: 'HTML', reply_markup: mainMenu }, 'main');
   });
