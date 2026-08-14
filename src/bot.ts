@@ -52,8 +52,11 @@ export function createBot(env: Env): Bot<MyContext> {
   // via `wrangler secret put STREAK_MESSAGES`. Never re-throw — streak path
   // must not break the rest of the bot chain.
   bot.use(async (ctx, next) => {
-    const streakRepo = new SettingsRepository(ctx.env.DB);
-    const streakEnabled = (await streakRepo.getValue('streak_messages')) ?? ctx.env.STREAK_MESSAGES;
+    // Check env var first to avoid a D1 round-trip when the flag is set.
+    const streakEnabled =
+      ctx.env.STREAK_MESSAGES === 'true'
+        ? 'true'
+        : ((await new SettingsRepository(ctx.env.DB).getValue('streak_messages')) ?? 'false');
     if (ctx.from?.id && streakEnabled === 'true') {
       try {
         const repo = new UserStateRepository(ctx.env.DB);
