@@ -7,6 +7,7 @@
 ## Overview
 
 Redesign the admin panel to reduce moderation time by:
+
 1. Merging Products and Categories into a single tab with sub-tabs
 2. Adding an AI assistant (floating chat) that can execute admin operations via natural language
 3. Creating AI-specific backend endpoints with full D1/KV access
@@ -32,6 +33,7 @@ Redesign the admin panel to reduce moderation time by:
 ### Current State
 
 Bottom nav has 5 tabs (super_admin):
+
 1. 📦 محصولات (Products) — `/products`
 2. 🏷️ دسته‌بندی‌ها (Categories) — `/categories`
 3. 📊 آمار و گزارش (Insights) — `/insights`
@@ -44,12 +46,12 @@ category_admin sees only Products and Categories.
 
 **Bottom nav (4 tabs for super_admin, 2 for category_admin):**
 
-| Tab | Route | Icon | Persian |
-|-----|-------|------|---------|
-| Products & Categories | `/inventory` | 📦 | موجودی |
-| Insights | `/insights` | 📊 | آمار و گزارش |
-| Configure | `/configure` | ⚙️ | تنظیمات |
-| Info | `/info` | ℹ️ | اطلاعات |
+| Tab                   | Route        | Icon | Persian      |
+| --------------------- | ------------ | ---- | ------------ |
+| Products & Categories | `/inventory` | 📦   | موجودی       |
+| Insights              | `/insights`  | 📊   | آمار و گزارش |
+| Configure             | `/configure` | ⚙️   | تنظیمات      |
+| Info                  | `/info`      | ℹ️   | اطلاعات      |
 
 **category_admin:** only sees "موجودی" tab.
 
@@ -68,12 +70,14 @@ The `/inventory` route renders a tabbed interface:
 ```
 
 **Sub-Tab A: دسته‌بندی‌ها (Categories)**
+
 - Category list with drag-to-reorder
 - Create/edit/delete category
 - Toggle visibility per category
 - Emoji picker for category icon
 
 **Sub-Tab B: محصولات (Products)**
+
 - Category picker at top (dropdown or horizontal scroll chips)
 - "همه" (All) option for batch operations across categories
 - Filtered product list below the picker
@@ -83,6 +87,7 @@ The `/inventory` route renders a tabbed interface:
 ### Route Redirects
 
 Old routes redirect to new structure:
+
 - `/products` → `/inventory?tab=products`
 - `/categories` → `/inventory?tab=categories`
 - `/inventory` → defaults to `?tab=categories`
@@ -146,6 +151,7 @@ Old routes redirect to new structure:
 #### `POST /api/ai/chat`
 
 **Request:**
+
 ```json
 {
   "message": "افزودن ۳ نوشیدنی فصلی به دسته نوشیدنی‌ها",
@@ -154,6 +160,7 @@ Old routes redirect to new structure:
 ```
 
 **Response:**
+
 ```json
 {
   "reply": "✅ ۳ محصول با موفقیت اضافه شد:\n- آیس کاپوچینو فصلی\n- اسموتی تمشک\n- شیرنعناع گرم",
@@ -169,6 +176,7 @@ Old routes redirect to new structure:
 #### `GET /api/ai/history`
 
 **Response:**
+
 ```json
 {
   "messages": [
@@ -399,6 +407,7 @@ You execute admin operations via natural language commands. You are direct, effi
 ### Files to Create/Modify
 
 **New files:**
+
 - `src/api/ai/chat.ts` — AI chat handler
 - `src/api/ai/tools.ts` — tool definitions and execution
 - `src/api/ai/types.ts` — AI-specific types
@@ -407,6 +416,7 @@ You execute admin operations via natural language commands. You are direct, effi
 - `admin-app/src/hooks/useAIChat.ts` — chat state management
 
 **Modified files:**
+
 - `src/api/router.ts` — add `/api/ai/*` routes
 - `admin-app/src/App.tsx` — add ChatButton component
 

@@ -28,11 +28,13 @@
 ### Task 1: Create InventoryPage Container
 
 **Files:**
+
 - Create: `admin-app/src/pages/InventoryPage.tsx`
 - Modify: `admin-app/src/App.tsx:70-71` (routes)
 - Modify: `admin-app/src/App.tsx:101-141` (bottom nav)
 
 **Interfaces:**
+
 - Consumes: `useAppContext()` from `admin-app/src/AppContext.tsx`
 - Produces: Renders `<CategoriesSubTab />` or `<ProductsSubTab />` based on active sub-tab
 
@@ -152,10 +154,12 @@ git commit -m "feat: create InventoryPage container with sub-tab switcher"
 ### Task 2: Extract CategoriesSubTab Component
 
 **Files:**
+
 - Create: `admin-app/src/components/CategoriesSubTab.tsx`
 - Extract from: `admin-app/src/pages/CategoriesPage.tsx`
 
 **Interfaces:**
+
 - Consumes: `useAppContext()`, `queryKeys`, `apiFetch`, `CategoriesResponse`
 - Produces: Renders category list with CRUD operations
 
@@ -379,10 +383,12 @@ git commit -m "feat: extract CategoriesSubTab component"
 ### Task 3: Extract ProductsSubTab Component with Category Picker
 
 **Files:**
+
 - Create: `admin-app/src/components/ProductsSubTab.tsx`
 - Extract from: `admin-app/src/pages/ProductsPage.tsx`
 
 **Interfaces:**
+
 - Consumes: `useAppContext()`, `queryKeys`, `apiFetch`, `ProductsResponse`, `CategoriesResponse`
 - Produces: Category picker + filtered product list with CRUD
 
@@ -433,7 +439,8 @@ export default function ProductsSubTab() {
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const matchesCat = !selectedCatId || p.categoryId?.toString() === selectedCatId;
-      const matchesSearch = !searchQuery || p.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        !searchQuery || p.name?.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCat && matchesSearch;
     });
   }, [products, selectedCatId, searchQuery]);
@@ -636,9 +643,7 @@ export default function ProductsSubTab() {
                   onChange={() => toggleProductSelect(p.id)}
                   className="product-checkbox"
                 />
-                {p.imageUrl && (
-                  <img src={p.imageUrl} alt={p.name} className="product-thumb" />
-                )}
+                {p.imageUrl && <img src={p.imageUrl} alt={p.name} className="product-thumb" />}
                 <div className="product-info">
                   <strong>{p.name}</strong>
                   <span className="text-secondary">{getCategoryName(p.categoryId)}</span>
@@ -755,11 +760,13 @@ git commit -m "feat: extract ProductsSubTab with category picker"
 ### Task 4: Delete Old Pages and Update Redirects
 
 **Files:**
+
 - Delete: `admin-app/src/pages/ProductsPage.tsx`
 - Delete: `admin-app/src/pages/CategoriesPage.tsx`
 - Modify: `admin-app/src/App.tsx` (remove lazy imports for old pages)
 
 **Interfaces:**
+
 - Consumes: None (cleanup)
 - Produces: Clean codebase with no dead pages
 
@@ -797,10 +804,12 @@ git commit -m "refactor: remove old ProductsPage and CategoriesPage, use Invento
 ### Task 5: Create AI Types and Tool Definitions
 
 **Files:**
+
 - Create: `src/api/ai/types.ts`
 - Create: `src/api/ai/tools.ts`
 
 **Interfaces:**
+
 - Consumes: None (foundational types)
 - Produces: Tool definitions for OpenCode API
 
@@ -980,7 +989,11 @@ export const AI_TOOLS: AiTool[] = [
     name: 'invalidateCache',
     description: 'Invalidate KV cache for specific resources',
     parameters: {
-      prefix: { type: 'string', enum: ['products', 'categories', 'settings', 'menu-config', 'all'], required: true },
+      prefix: {
+        type: 'string',
+        enum: ['products', 'categories', 'settings', 'menu-config', 'all'],
+        required: true,
+      },
     },
   },
 ];
@@ -999,9 +1012,11 @@ git commit -m "feat: add AI types and tool definitions"
 ### Task 6: Implement AI Tool Executor
 
 **Files:**
+
 - Create: `src/api/ai/executor.ts`
 
 **Interfaces:**
+
 - Consumes: `AI_TOOLS` from `tools.ts`, D1 database, CacheService
 - Produces: `executeTool()` function that runs tool calls against D1/KV
 
@@ -1034,7 +1049,7 @@ export async function executeTool(
         await dbClient.insert(products).values({
           name: args.name as string,
           categoryId: args.categoryId as number,
-          price: args.price as number ?? null,
+          price: (args.price as number) ?? null,
           stock: (args.stock as number) ?? 0,
           unit: (args.unit as string) ?? 'item',
           description: (args.description as string) ?? null,
@@ -1050,7 +1065,10 @@ export async function executeTool(
 
       case 'updateProduct': {
         const { id, ...updateData } = toolCall.arguments;
-        await dbClient.update(products).set(updateData).where(eq(products.id, id as number));
+        await dbClient
+          .update(products)
+          .set(updateData)
+          .where(eq(products.id, id as number));
         if (cache) await cache.deleteByPrefix('products');
         return { type: 'updateProduct', result: 'success', details: toolCall.arguments };
       }
@@ -1066,7 +1084,10 @@ export async function executeTool(
         if (action === 'delete') {
           await dbClient.delete(products).where(inArray(products.id, ids as number[]));
         } else {
-          await dbClient.update(products).set(updateData).where(inArray(products.id, ids as number[]));
+          await dbClient
+            .update(products)
+            .set(updateData)
+            .where(inArray(products.id, ids as number[]));
         }
         if (cache) await cache.deleteByPrefix('products');
         return { type: 'batchUpdateProducts', result: 'success', details: toolCall.arguments };
@@ -1086,7 +1107,10 @@ export async function executeTool(
 
       case 'updateCategory': {
         const { id, ...updateData } = toolCall.arguments;
-        await dbClient.update(categories).set(updateData).where(eq(categories.id, id as number));
+        await dbClient
+          .update(categories)
+          .set(updateData)
+          .where(eq(categories.id, id as number));
         if (cache) await cache.deleteByPrefix('categories');
         return { type: 'updateCategory', result: 'success', details: toolCall.arguments };
       }
@@ -1111,9 +1135,16 @@ export async function executeTool(
 
       case 'updateSetting': {
         const { key, value } = toolCall.arguments;
-        const existing = await dbClient.select().from(settings).where(eq(settings.key, key as string)).get();
+        const existing = await dbClient
+          .select()
+          .from(settings)
+          .where(eq(settings.key, key as string))
+          .get();
         if (existing) {
-          await dbClient.update(settings).set({ value: value as string }).where(eq(settings.key, key as string));
+          await dbClient
+            .update(settings)
+            .set({ value: value as string })
+            .where(eq(settings.key, key as string));
         } else {
           await dbClient.insert(settings).values({ key: key as string, value: value as string });
         }
@@ -1150,7 +1181,7 @@ export async function executeTool(
       case 'invalidateCache': {
         const { prefix } = toolCall.arguments;
         if (cache) {
-          await cache.deleteByPrefix(prefix === 'all' ? '' : prefix as string);
+          await cache.deleteByPrefix(prefix === 'all' ? '' : (prefix as string));
         }
         return { type: 'invalidateCache', result: 'success', details: toolCall.arguments };
       }
@@ -1180,9 +1211,11 @@ git commit -m "feat: add AI tool executor for D1/KV operations"
 ### Task 7: Create AI Chat Handler
 
 **Files:**
+
 - Create: `src/api/ai/chat.ts`
 
 **Interfaces:**
+
 - Consumes: `executeTool()` from `executor.ts`, `AI_TOOLS` from `tools.ts`, OpenCode API
 - Produces: `handleAiChat()` function for Worker routes
 
@@ -1345,9 +1378,11 @@ git commit -m "feat: add AI chat handler with OpenCode API integration"
 ### Task 8: Add AI Routes to Router
 
 **Files:**
+
 - Modify: `src/api/router.ts`
 
 **Interfaces:**
+
 - Consumes: `handleAiChat()` from `chat.ts`
 - Produces: `/api/ai/*` routes in Worker
 
@@ -1368,7 +1403,12 @@ if (path.startsWith('ai/')) {
   // POST /ai/chat
   if (path === 'ai/chat' && method === 'POST') {
     const body = (await request.json()) as AiChatRequest;
-    const result = await handleAiChat(body, env.OPENCODE_API_KEY, env.DB, env.CACHE ? new CacheService(env.CACHE) : undefined);
+    const result = await handleAiChat(
+      body,
+      env.OPENCODE_API_KEY,
+      env.DB,
+      env.CACHE ? new CacheService(env.CACHE) : undefined,
+    );
     return jsonSuccess(result, corsHeaders);
   }
 
@@ -1397,9 +1437,11 @@ git commit -m "feat: add /api/ai/* routes to Worker router"
 ### Task 9: Create AI Chat Types and API Client
 
 **Files:**
+
 - Create: `admin-app/src/api/ai.ts`
 
 **Interfaces:**
+
 - Consumes: `apiFetch` from `admin-app/src/api/client.ts`
 - Produces: `sendAiMessage()`, `getAiHistory()` functions
 
@@ -1461,9 +1503,11 @@ git commit -m "feat: add AI API client for admin app"
 ### Task 10: Create useAIChat Hook
 
 **Files:**
+
 - Create: `admin-app/src/hooks/useAIChat.ts`
 
 **Interfaces:**
+
 - Consumes: `sendAiMessage()`, `getAiHistory()` from `api/ai.ts`
 - Produces: `useAIChat()` hook with messages, send, loading state
 
@@ -1541,9 +1585,11 @@ git commit -m "feat: add useAIChat hook for chat state management"
 ### Task 11: Create ChatPanel Component
 
 **Files:**
+
 - Create: `admin-app/src/components/ChatPanel.tsx`
 
 **Interfaces:**
+
 - Consumes: `useAIChat()` from `hooks/useAIChat.ts`
 - Produces: Chat panel UI with message list and input
 
@@ -1591,7 +1637,8 @@ export default function ChatPanel() {
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="chat-empty">
-            پیام خود را بنویسید...<br />
+            پیام خود را بنویسید...
+            <br />
             مثلاً: "افزودن ۳ محصول قهوه به دسته نوشیدنی‌ها"
           </div>
         )}
@@ -1603,10 +1650,7 @@ export default function ChatPanel() {
               {msg.actions && msg.actions.length > 0 && (
                 <div className="chat-actions">
                   {msg.actions.map((action, j) => (
-                    <span
-                      key={j}
-                      className={`chat-action ${action.result}`}
-                    >
+                    <span key={j} className={`chat-action ${action.result}`}>
                       {action.result === 'success' ? '✅' : '❌'} {action.type}
                     </span>
                   ))}
@@ -1730,8 +1774,13 @@ export default function ChatPanel() {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .chat-actions {
@@ -1794,9 +1843,11 @@ git commit -m "feat: add ChatPanel component with message UI"
 ### Task 12: Create ChatButton (Floating Action Button)
 
 **Files:**
+
 - Create: `admin-app/src/components/ChatButton.tsx`
 
 **Interfaces:**
+
 - Consumes: `useAIChat()` from `hooks/useAIChat.ts`
 - Produces: Floating action button that toggles chat panel
 
@@ -1840,7 +1891,9 @@ export default function ChatButton() {
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 999;
-  transition: transform 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s;
 }
 
 .chat-fab:hover {
@@ -1864,9 +1917,11 @@ git commit -m "feat: add ChatButton floating action button"
 ### Task 13: Integrate Chat Components into App
 
 **Files:**
+
 - Modify: `admin-app/src/App.tsx`
 
 **Interfaces:**
+
 - Consumes: `ChatPanel`, `ChatButton` components
 - Produces: Chat UI rendered in app
 
@@ -1878,12 +1933,14 @@ import ChatPanel from './components/ChatPanel';
 import ChatButton from './components/ChatButton';
 
 // Add inside AppInner, after ConfirmModal:
-{currentUser && (
-  <>
-    <ChatPanel />
-    <ChatButton />
-  </>
-)}
+{
+  currentUser && (
+    <>
+      <ChatPanel />
+      <ChatButton />
+    </>
+  );
+}
 ```
 
 - [ ] **Step 2: Run typecheck and lint**
@@ -1906,10 +1963,12 @@ git commit -m "feat: integrate chat panel and button into admin app"
 ### Task 14: Add Error Handling and Loading States
 
 **Files:**
+
 - Modify: `admin-app/src/components/ChatPanel.tsx`
 - Modify: `admin-app/src/hooks/useAIChat.ts`
 
 **Interfaces:**
+
 - Consumes: None
 - Produces: Better error messages, loading indicators
 
@@ -1917,23 +1976,27 @@ git commit -m "feat: integrate chat panel and button into admin app"
 
 ```tsx
 // In ChatPanel.tsx, add retry button for failed messages
-{msg.actions?.some(a => a.result === 'error') && (
-  <button className="btn-ghost btn-sm" onClick={() => void send(msg.content)}>
-    🔄 تلاش مجدد
-  </button>
-)}
+{
+  msg.actions?.some((a) => a.result === 'error') && (
+    <button className="btn-ghost btn-sm" onClick={() => void send(msg.content)}>
+      🔄 تلاش مجدد
+    </button>
+  );
+}
 ```
 
 - [ ] **Step 2: Add skeleton loading for initial history load**
 
 ```tsx
 // In ChatPanel.tsx, add loading state for initial load
-{isLoading && messages.length === 0 && (
-  <div className="chat-skeleton">
-    <div className="skeleton-line" />
-    <div className="skeleton-line short" />
-  </div>
-)}
+{
+  isLoading && messages.length === 0 && (
+    <div className="chat-skeleton">
+      <div className="skeleton-line" />
+      <div className="skeleton-line short" />
+    </div>
+  );
+}
 ```
 
 - [ ] **Step 3: Commit**
@@ -1948,9 +2011,11 @@ git commit -m "feat: add error handling and loading states to chat"
 ### Task 15: Add Mobile Responsiveness
 
 **Files:**
+
 - Modify: `admin-app/src/index.css`
 
 **Interfaces:**
+
 - Consumes: None
 - Produces: Responsive chat panel for mobile
 
@@ -1991,9 +2056,11 @@ git commit -m "feat: add mobile responsiveness to chat panel"
 ### Task 16: Run Full Test Suite
 
 **Files:**
+
 - None (testing only)
 
 **Interfaces:**
+
 - Consumes: None
 - Produces: Passing tests
 
@@ -2027,9 +2094,11 @@ git commit -m "fix: resolve test and lint issues"
 ### Task 17: Final Integration Test
 
 **Files:**
+
 - None (manual testing)
 
 **Interfaces:**
+
 - Consumes: All previous tasks
 - Produces: Verified working feature
 
@@ -2079,6 +2148,7 @@ git commit -m "feat: AI-powered admin panel with merged products/categories"
 **Estimated Time:** 4-6 hours
 
 **Files Created:**
+
 - `admin-app/src/pages/InventoryPage.tsx`
 - `admin-app/src/components/CategoriesSubTab.tsx`
 - `admin-app/src/components/ProductsSubTab.tsx`
@@ -2092,11 +2162,13 @@ git commit -m "feat: AI-powered admin panel with merged products/categories"
 - `src/api/ai/chat.ts`
 
 **Files Modified:**
+
 - `admin-app/src/App.tsx`
 - `admin-app/src/index.css`
 - `src/api/router.ts`
 - `src/env.ts`
 
 **Files Deleted:**
+
 - `admin-app/src/pages/ProductsPage.tsx`
 - `admin-app/src/pages/CategoriesPage.tsx`

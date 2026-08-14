@@ -219,7 +219,11 @@ async function handleBatchUpdateProducts(
   const action = requireString(params, 'action');
 
   if (action !== 'update' && action !== 'delete') {
-    return { type: 'batchUpdateProducts', result: 'error', error: 'action must be "update" or "delete"' };
+    return {
+      type: 'batchUpdateProducts',
+      result: 'error',
+      error: 'action must be "update" or "delete"',
+    };
   }
 
   const fetched = await repo.getProductsByIds(ids);
@@ -336,11 +340,7 @@ async function handleReorderCategories(
   const repo = new CategoryRepository(ctx.db);
   const orderedIds = requireNumberArray(params, 'orderedIds');
 
-  await Promise.all(
-    orderedIds.map((id, index) =>
-      repo.updateCategory(id, { sortOrder: index }),
-    ),
-  );
+  await Promise.all(orderedIds.map((id, index) => repo.updateCategory(id, { sortOrder: index })));
 
   await invalidate(ctx.cache, [CACHE_PREFIXES.categories, CACHE_PREFIXES.visibleCategories]);
   return {
@@ -392,9 +392,10 @@ async function handleGetSettings(
 
   const all = await repo.getAllSettings();
   const filtered = all.filter(
-    (s) => !['bot_token', 'api_key', 'secret', 'password', 'token'].some(
-      (blocked) => s.key.toLowerCase().includes(blocked),
-    ),
+    (s) =>
+      !['bot_token', 'api_key', 'secret', 'password', 'token'].some((blocked) =>
+        s.key.toLowerCase().includes(blocked),
+      ),
   );
   return {
     type: 'getSettings',
