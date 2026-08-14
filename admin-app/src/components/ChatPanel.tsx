@@ -12,6 +12,122 @@ const ERROR_MESSAGES: Record<string, string> = {
 /* Action card — renders a single AI tool execution result             */
 /* ------------------------------------------------------------------ */
 
+/** Format a Persian-style price with thousand separators. */
+function fmtPrice(n: number): string {
+  return n.toLocaleString('fa-IR');
+}
+
+/** Render the details payload of a successful tool action. */
+function ActionDetails({ action }: { action: AiAction }) {
+  const d = action.details;
+  if (!d) return null;
+
+  switch (action.type) {
+    case 'listProducts': {
+      const products = d.products as Array<{
+        id: number;
+        name: string;
+        price: number | null;
+        stock: number;
+        unit: string;
+        available: boolean;
+        featured: boolean;
+        isSeasonal: boolean;
+      }>;
+      const count = d.count as number;
+      if (!products?.length) return <div className="chat-action-detail">محصولی یافت نشد.</div>;
+      return (
+        <div className="chat-action-detail">
+          <div className="chat-action-detail-header">{count} محصول</div>
+          <ul className="chat-action-list">
+            {products.map((p) => (
+              <li key={p.id} dir="auto">
+                <span className="chat-action-product-name">{p.name}</span>
+                {p.price != null && (
+                  <span className="chat-action-product-price">{fmtPrice(p.price)} تومان</span>
+                )}
+                {p.featured && <span className="chat-action-tag">⭐</span>}
+                {p.isSeasonal && <span className="chat-action-tag">🌿</span>}
+                {!p.available && (
+                  <span className="chat-action-tag chat-action-unavailable">غیرفعال</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    case 'listCategories': {
+      const categories = d.categories as Array<{
+        id: number;
+        name: string;
+        emoji: string | null;
+      }>;
+      const count = d.count as number;
+      if (!categories?.length) return <div className="chat-action-detail">دسته‌ای یافت نشد.</div>;
+      return (
+        <div className="chat-action-detail">
+          <div className="chat-action-detail-header">{count} دسته‌بندی</div>
+          <ul className="chat-action-list">
+            {categories.map((c) => (
+              <li key={c.id} dir="auto">
+                {c.emoji && <span className="chat-action-emoji">{c.emoji}</span>}
+                <span>{c.name}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    case 'getMenuConfig': {
+      const entries = d.menuConfig as Array<{
+        id: number;
+        menuSection: string;
+        isVisible: boolean;
+        categoryName: string | null;
+      }>;
+      const count = d.count as number;
+      if (!entries?.length) return <div className="chat-action-detail">تنظیمات منو یافت نشد.</div>;
+      return (
+        <div className="chat-action-detail">
+          <div className="chat-action-detail-header">{count} آیتم منو</div>
+          <ul className="chat-action-list">
+            {entries.map((e) => (
+              <li key={e.id} dir="auto">
+                <span>{e.categoryName ?? `#${e.id}`}</span>
+                <span className="chat-action-tag">{e.menuSection}</span>
+                {!e.isVisible && (
+                  <span className="chat-action-tag chat-action-unavailable">مخفی</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    case 'getSettings': {
+      const settings = d.settings as Record<string, string | null>;
+      if (!settings || typeof settings !== 'object') return null;
+      const entries = Object.entries(settings);
+      if (!entries.length) return <div className="chat-action-detail">تنظیمی یافت نشد.</div>;
+      return (
+        <div className="chat-action-detail">
+          <ul className="chat-action-list">
+            {entries.map(([k, v]) => (
+              <li key={k} dir="auto">
+                <span className="chat-action-setting-key">{k}:</span>
+                <span>{v ?? '—'}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    default:
+      return null;
+  }
+}
+
 function ActionCard({ action }: { action: AiAction }) {
   const icon = action.result === 'success' ? '✅' : '❌';
   const label = action.type;
@@ -27,6 +143,7 @@ function ActionCard({ action }: { action: AiAction }) {
           {action.error}
         </span>
       )}
+      {action.result === 'success' && action.details && <ActionDetails action={action} />}
     </div>
   );
 }
