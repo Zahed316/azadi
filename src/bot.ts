@@ -13,6 +13,7 @@ import { setupCallbackHandlers } from './handlers/callbackQuery';
 import { MyContext } from './types/context';
 import { getEnv, getExecCtx } from './requestContext';
 import { D1SessionStorage } from './database/sessionStorage';
+import { ConditionalSessionStorage } from './database/conditionalSessionStorage';
 import { SettingsRepository, UserStateRepository } from './repositories';
 import { toPersianDigits } from './utils/numbers';
 import { DataService } from './services/data';
@@ -80,7 +81,7 @@ export function createBot(env: Env): Bot<MyContext> {
   bot.use(
     session({
       initial: () => ({}),
-      storage: new D1SessionStorage(env.DB),
+      storage: new ConditionalSessionStorage(env.DB),
     }),
   );
 

@@ -79,6 +79,16 @@ vi.mock('../database/sessionStorage', () => ({
   },
 }));
 
+vi.mock('../database/conditionalSessionStorage', () => ({
+  ConditionalSessionStorage: class {
+    async read() {
+      return undefined;
+    }
+    async write() {}
+    async delete() {}
+  },
+}));
+
 vi.mock('../utils/menuLifecycle', () => ({
   pushMessage: vi.fn().mockReturnValue(undefined),
 }));
