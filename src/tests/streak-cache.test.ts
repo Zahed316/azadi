@@ -45,10 +45,7 @@ vi.mock('../commands/admin', () => ({
 }));
 
 vi.mock('../menus/mainMenu', () => ({
-  mainMenu: Object.assign(
-    (_ctx: any, next: any) => next?.(),
-    { register: vi.fn() },
-  ),
+  mainMenu: Object.assign((_ctx: any, next: any) => next?.(), { register: vi.fn() }),
   getWelcomeText: vi.fn().mockResolvedValue('welcome'),
 }));
 

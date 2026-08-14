@@ -43,9 +43,6 @@ export class ConditionalSessionStorage<T> implements StorageAdapter<T> {
 
   async delete(key: string): Promise<void> {
     this.snapshots.delete(key);
-    await this.db
-      .prepare('DELETE FROM sessions WHERE key = ?')
-      .bind(key)
-      .run();
+    await this.db.prepare('DELETE FROM sessions WHERE key = ?').bind(key).run();
   }
 }

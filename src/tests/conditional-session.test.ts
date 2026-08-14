@@ -40,9 +40,7 @@ test('write is called when session changes after read', async () => {
   await storage.write('key1', { count: 2 });
 
   // The INSERT statement should have been prepared
-  expect(db.prepare).toHaveBeenCalledWith(
-    expect.stringContaining('INSERT INTO sessions'),
-  );
+  expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO sessions'));
 });
 
 test('write is skipped when session is unchanged after read', async () => {
@@ -64,9 +62,7 @@ test('write is always called when there was no prior read', async () => {
 
   await storage.write('new-key', { foo: 'bar' });
 
-  expect(db.prepare).toHaveBeenCalledWith(
-    expect.stringContaining('INSERT INTO sessions'),
-  );
+  expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO sessions'));
 });
 
 test('delete clears the snapshot', async () => {
@@ -77,15 +73,11 @@ test('delete clears the snapshot', async () => {
   await storage.read('key1');
   await storage.delete('key1');
 
-  expect(db.prepare).toHaveBeenCalledWith(
-    expect.stringContaining('DELETE FROM sessions'),
-  );
+  expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('DELETE FROM sessions'));
 
   // Now write should always go to D1 (no snapshot to compare against)
   await storage.write('key1', { count: 1 });
-  expect(db.prepare).toHaveBeenCalledWith(
-    expect.stringContaining('INSERT INTO sessions'),
-  );
+  expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO sessions'));
 });
 
 test('read returns parsed value from D1', async () => {
