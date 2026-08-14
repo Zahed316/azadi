@@ -1,4 +1,5 @@
 import { UserStateRepository, SettingsRepository } from '../../repositories';
+import { requireSuperAdmin, jsonSuccess, jsonError } from '../../utils/apiHelpers';
 import type { ResourceHandler } from './types';
 
 interface StreakConfigBody {
@@ -15,26 +16,17 @@ export const handleStreaks: ResourceHandler = async (method, path, ctx) => {
 
   // GET /streaks
   if (path === 'streaks' && method === 'GET') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new UserStateRepository(db);
     const users = await repo.listAll();
-    return new Response(JSON.stringify({ users }), {
-      status: 200,
-      headers: corsHeaders,
-    });
+    return jsonSuccess({ users }, corsHeaders);
   }
 
   // GET /streaks/config
   if (path === 'streaks/config' && method === 'GET') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new SettingsRepository(db);
     const [streakMessages, streakCronEnabled] = await Promise.all([
       repo.getValue('streak_messages'),
@@ -42,22 +34,19 @@ export const handleStreaks: ResourceHandler = async (method, path, ctx) => {
     ]);
     const streakMessagesVal = streakMessages ?? env.STREAK_MESSAGES ?? 'false';
     const streakCronEnabledVal = streakCronEnabled ?? env.STREAK_CRON_ENABLED ?? 'false';
-    return new Response(
-      JSON.stringify({
+    return jsonSuccess(
+      {
         streakMessages: streakMessagesVal === 'true',
         streakCronEnabled: streakCronEnabledVal === 'true',
-      }),
-      { headers: corsHeaders },
+      },
+      corsHeaders,
     );
   }
 
   // POST /streaks/config
   if (path === 'streaks/config' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as StreakConfigBody;
     const repo = new SettingsRepository(db);
@@ -68,26 +57,19 @@ export const handleStreaks: ResourceHandler = async (method, path, ctx) => {
     if (ctx.cache) {
       await ctx.cache.deleteByPrefix('cache:settings:');
     }
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders);
   }
 
   // POST /streaks/reset
   if (path === 'streaks/reset' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as StreakResetBody;
-    if (!body.telegramId)
-      return new Response(JSON.stringify({ error: 'telegramId required' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+    if (!body.telegramId) return jsonError('telegramId required', corsHeaders);
     const repo = new UserStateRepository(db);
     const ok = await repo.resetStreak(String(body.telegramId));
-    return new Response(JSON.stringify({ success: ok }), { headers: corsHeaders });
+    return jsonSuccess({ success: ok }, corsHeaders);
   }
 
   return null;

@@ -1,4 +1,5 @@
 import { MessageRepository } from '../../repositories';
+import { requireSuperAdmin, jsonSuccess, jsonError } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -11,83 +12,58 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
 
   // GET /messages/unread-count (must be before /messages/:id)
   if (path === 'messages/unread-count' && method === 'GET') {
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
-    }
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new MessageRepository(db);
     const count = await repo.getUnreadCount();
-    return new Response(JSON.stringify({ count }), { headers: corsHeaders });
+    return jsonSuccess({ count }, corsHeaders);
   }
 
   // GET /messages (list all)
   if (path === 'messages' && method === 'GET') {
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
-    }
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new MessageRepository(db);
     const messages = await repo.getAll();
-    return new Response(JSON.stringify({ messages }), { headers: corsHeaders });
+    return jsonSuccess({ messages }, corsHeaders);
   }
 
   // GET /messages/:id (must not match /reply)
   if (path.startsWith('messages/') && method === 'GET' && !path.includes('/reply')) {
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
-    }
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
     const repo = new MessageRepository(db);
     const message = await repo.getById(id);
     if (!message) {
-      return new Response(JSON.stringify({ error: 'Not found' }), {
-        status: 404,
-        headers: corsHeaders,
-      });
+      return jsonError('Not found', corsHeaders, 404);
     }
     // Mark as read
     if (!message.isRead) {
       await repo.markRead(id);
     }
-    return new Response(JSON.stringify(message), { headers: corsHeaders });
+    return jsonSuccess(message, corsHeaders);
   }
 
   // POST /messages/:id/reply
   if (path.match(/^messages\/\d+\/reply$/) && method === 'POST') {
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
-    }
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
     const repo = new MessageRepository(db);
     const message = await repo.getById(id);
     if (!message) {
-      return new Response(JSON.stringify({ error: 'Not found' }), {
-        status: 404,
-        headers: corsHeaders,
-      });
+      return jsonError('Not found', corsHeaders, 404);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as MessageReplyBody;
     if (!body.replyText || typeof body.replyText !== 'string') {
-      return new Response(JSON.stringify({ error: 'replyText required (string)' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return jsonError('replyText required (string)', corsHeaders);
     }
 
     // Save reply to database
@@ -123,7 +99,7 @@ export const handleMessages: ResourceHandler = async (method, path, ctx) => {
       console.error('Failed to send Telegram reply:', e);
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders, 201);
   }
 
   return null;

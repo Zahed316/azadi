@@ -13,7 +13,7 @@ export function toPersianDigits(input: string | number): string {
  * Format a price as Persian digits with a Persian thousands separator (٬ U+066C),
  * wrapped in LRI/PDI so the "number + unit" run stays LTR inside RTL Persian text.
  */
-export function formatPersianPrice(amount: number, unit: string): string {
+export function formatPersianPrice(amount: number, unit: string = 'تومان'): string {
   const grouped = amount
     .toLocaleString('en-US') // 1,234,567
     .replace(/,/g, '٬'); // 1٬234٬567 (Persian thousands sep)

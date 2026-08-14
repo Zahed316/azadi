@@ -1,4 +1,5 @@
 import { CategoryRepository } from '../../repositories';
+import { requireSuperAdmin, jsonSuccess, noContent } from '../../utils/apiHelpers';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -16,18 +17,13 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
   if (path === 'categories' && method === 'GET') {
     const repo = new CategoryRepository(db);
     const categoriesList = await repo.getAllCategories();
-    return new Response(JSON.stringify({ categories: categoriesList }), {
-      headers: corsHeaders,
-    });
+    return jsonSuccess({ categories: categoriesList }, corsHeaders);
   }
 
   // POST /categories
   if (path === 'categories' && method === 'POST') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const repo = new CategoryRepository(db);
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const body = (await request.json()) as CategoryBody;
@@ -42,16 +38,13 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.delete('cache:visible-categories');
       await ctx.cache.delete('cache:settings:categories');
     }
-    return new Response(JSON.stringify({ success: true }), { status: 201, headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders, 201);
   }
 
   // PUT /categories/:id
   if (path.startsWith('categories/') && method === 'PUT') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
@@ -69,16 +62,13 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.deleteByPrefix('cache:visible-categories');
       await ctx.cache.delete('cache:settings:categories');
     }
-    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    return jsonSuccess({ success: true }, corsHeaders);
   }
 
   // DELETE /categories/:id
   if (path.startsWith('categories/') && method === 'DELETE') {
-    if (!isSuperAdmin)
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: corsHeaders,
-      });
+    const guard = requireSuperAdmin(isSuperAdmin, corsHeaders);
+    if (guard) return guard;
     const idResult = parseRequiredInt(path.split('/')[1], 'id');
     if (idResult instanceof Response) return idResult;
     const id = idResult;
@@ -89,7 +79,7 @@ export const handleCategories: ResourceHandler = async (method, path, ctx) => {
       await ctx.cache.deleteByPrefix('cache:visible-categories');
       await ctx.cache.delete('cache:settings:categories');
     }
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return noContent(corsHeaders);
   }
 
   return null;

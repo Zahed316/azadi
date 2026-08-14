@@ -5,12 +5,8 @@ import { toPersianDigits } from '../utils/numbers';
 import { escapeHtml } from '../utils/htmlEscape';
 import { MyContext } from '../types/context';
 import type { IDataService } from '../services/types';
-import {
-  pushMessage,
-  popMessage,
-  getActiveMessage,
-  handleEditFailure,
-} from '../utils/menuLifecycle';
+import { pushMessage, popMessage, getActiveMessage } from '../utils/menuLifecycle';
+import { editOrSend } from '../utils/editOrSend';
 
 const DEFAULT_WELCOME_TEXT =
   'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
@@ -59,27 +55,7 @@ export const mainMenu = new Menu<MyContext>('main-menu')
       kb.text('🔙 بازگشت به منو', 'back:main');
       const body = `<b>⭐ منوهای من</b> (${toPersianDigits(items.length)} مورد)\n\nبرای دیدن جزئیات هر مورد، روی آن بزنید.`;
 
-      // Try to edit active message first
-      const active = getActiveMessage(ctx.session);
-      if (active) {
-        try {
-          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
-            parse_mode: 'HTML',
-            reply_markup: kb,
-          });
-          active.state = 'favorites';
-          return;
-        } catch (e) {
-          await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: kb }, e);
-          return;
-        }
-      }
-      // No active message — create new
-      const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
-      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'favorites');
-      if (evicted) {
-        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
-      }
+      await editOrSend(ctx, body, { parse_mode: 'HTML', reply_markup: kb }, 'favorites');
     } catch (e) {
       console.error(e);
     }
