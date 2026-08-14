@@ -5,7 +5,12 @@ import { toPersianDigits } from '../utils/numbers';
 import { escapeHtml } from '../utils/htmlEscape';
 import { MyContext } from '../types/context';
 import type { IDataService } from '../services/types';
-import { pushMessage, popMessage, getActiveMessage, handleEditFailure } from '../utils/menuLifecycle';
+import {
+  pushMessage,
+  popMessage,
+  getActiveMessage,
+  handleEditFailure,
+} from '../utils/menuLifecycle';
 
 const DEFAULT_WELCOME_TEXT =
   'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +

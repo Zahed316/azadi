@@ -90,7 +90,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         }
         // No active message — create new
         const sent = await ctx.reply(body, { reply_markup: backKb });
-        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'cancelled');
+        const evicted = pushMessage(ctx.session, ctx.chat.id, sent.message_id, 'cancelled');
         if (evicted) {
           await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
         }

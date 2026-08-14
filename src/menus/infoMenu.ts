@@ -7,11 +7,7 @@ import { buildListPage } from '../utils/faqPagination';
 import { escapeHtml } from '../utils/htmlEscape';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
-import {
-  pushMessage,
-  getActiveMessage,
-  handleEditFailure,
-} from '../utils/menuLifecycle';
+import { pushMessage, getActiveMessage, handleEditFailure } from '../utils/menuLifecycle';
 
 export const infoMenu = new Menu<MyContext>('info-menu')
   .text('🏠 درباره ما', async (ctx) => {

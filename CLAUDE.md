@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+# Write in ASD-STE100
+
 > **Persona-specific companion**: `AGENTS.md` is a parallel docs file that records the same kind of project context. It is the _first_ place to look for workflow conventions and pitfalls; this file is the canonical source. If they disagree, this file wins — and `AGENTS.md` should be updated to match.
 
 ## Memory
@@ -17,6 +19,8 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 - [favorites-toggle-pattern](memory/favorites-toggle-pattern.md) — IDataService has `toggleFavorite()`, not add/remove; use `isFavorited()` pre-check for guard messages
 - [plan-file-enumeration-incomplete](memory/plan-file-enumeration-incomplete.md) — plans under-enumerate files; typecheck catches missed call sites, not the plan text
 - [npm-termux-promotes-arm64-optional-deps](memory/npm-termux-promotes-arm64-optional-deps.md) — npm install on ARM64 Termux can add platform-specific optional deps to package.json, breaking x64 CI
+- [grammy-menu-plugin-conflicts-with-lifecycle](memory/grammy-menu-plugin-conflicts-with-lifecycle.md) — grammY menu plugin edits messages outside our lifecycle; use delete+recreate for back navigation
+- [handleeditfailure-must-pop-before-push](memory/handleeditfailure-must-pop-before-push.md) — handleEditFailure must pop the active message before creating a fallback
 
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 

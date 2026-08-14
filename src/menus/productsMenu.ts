@@ -5,11 +5,7 @@ import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
-import {
-  pushMessage,
-  getActiveMessage,
-  handleEditFailure,
-} from '../utils/menuLifecycle';
+import { pushMessage, getActiveMessage, handleEditFailure } from '../utils/menuLifecycle';
 
 /**
  * Pagination callback prefixes (page-size 5):
