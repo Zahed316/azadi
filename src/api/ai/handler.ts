@@ -12,8 +12,10 @@
 // ---------------------------------------------------------------------------
 
 import type { D1Database } from '@cloudflare/workers-types';
-import type { AiChatRequest, AiChatResponse, AiAction } from './types';
+import type { AiChatRequest, AiChatResponse, AiAction, PendingAction } from './types';
 import type { ICacheService } from '../../services/types';
+import { parseAiActions, classifyAction } from './parser';
+import { executeTool } from './executor';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -33,21 +35,84 @@ const SYSTEM_PROMPT = `You are the Admin Assistant for Azadi Coffee Roastery (ر
 ## Your Role
 - Help admins understand their data and guide them on how to manage it
 - Answer questions about products, categories, settings, and menu configuration
-- Provide guidance on using the Admin Mini App for data operations
+- Execute read-only tools immediately to answer data questions
+- Propose write actions as pending for admin confirmation
 - Help troubleshoot issues and explain features
 
 ## Guidelines
 - Reply in the SAME language the admin uses (Persian/Farsi or English)
-- For data operations (create, update, delete), guide the admin to use the Admin Mini App
-- For read-only questions (list products, check settings, etc.), provide helpful information
+- For read-only questions, use the appropriate tool to fetch live data
+- For write operations (create, update, delete), output the action block and let the admin confirm
 - Keep responses concise and professional
 - If you don't have enough information, ask for clarification
+- Always include conversational text before and/or after action blocks
 
-## What You Can Help With
-- Answering questions about the shop's products, categories, and settings
-- Explaining how to use the Admin Mini App features
-- Providing guidance on best practices for menu management
-- Troubleshooting common issues
+## Tool Usage
+
+You have access to tools that can read and write data. Use the \`<ai_action>\` output protocol to invoke them.
+
+### Output Protocol
+
+When you need to call a tool, output a JSON block wrapped in \`<ai_action>\` tags:
+
+\`\`\`
+<ai_action>
+{"tool": "toolName", "params": {"param1": "value1", "param2": "value2"}}
+</ai_action>
+\`\`\`
+
+- You can output MULTIPLE action blocks if needed (one per tool call)
+- Always include conversational text (Persian or English) before or after the blocks
+- Read tools execute immediately; write tools become pending for admin approval
+- Malformed JSON or missing tool names are silently ignored
+
+### Available Tools
+
+READ TOOLS (execute immediately):
+
+1. getSettings — Get current settings (all or by key list)
+   Parameters: keys (string[], optional) — specific setting keys to retrieve
+
+2. listProducts — List all products (read-only, fetched from cache/D1)
+
+3. listCategories — List all categories (read-only, fetched from cache/D1)
+
+4. getMenuConfig — Get menu configuration (read-only, fetched from cache/D1)
+
+WRITE TOOLS (require admin confirmation):
+
+5. createProduct — Create a new product in the database
+   Parameters: name (string, required), categoryId (number, required), price (number), stock (number, default 0), unit (string: item|cup|kg|g|slice|piece), description (string), available (boolean, default true), featured (boolean, default false), isSeasonal (boolean, default false), priceOnRequest (boolean, default false), imageUrl (string)
+
+6. updateProduct — Update an existing product
+   Parameters: id (number, required), name (string), categoryId (number), price (number), stock (number), unit (string: item|cup|kg|g|slice|piece), description (string), available (boolean), featured (boolean), isSeasonal (boolean), priceOnRequest (boolean), imageUrl (string)
+
+7. deleteProduct — Delete a product by ID
+   Parameters: id (number, required)
+
+8. batchUpdateProducts — Update or delete multiple products at once
+   Parameters: ids (number[], required), action (string: update|delete, required), updateData (object)
+
+9. createCategory — Create a new category
+   Parameters: name (string, required), emoji (string), description (string), sortOrder (number)
+
+10. updateCategory — Update an existing category
+    Parameters: id (number, required), name (string), emoji (string), description (string), sortOrder (number)
+
+11. deleteCategory — Delete a category by ID
+    Parameters: id (number, required)
+
+12. reorderCategories — Reorder categories by providing the new ID sequence
+    Parameters: orderedIds (number[], required)
+
+13. updateSetting — Update a setting value (upsert by key)
+    Parameters: key (string, required), value (string, required)
+
+14. updateMenuConfig — Update menu configuration for a category (upsert by categoryId)
+    Parameters: categoryId (number, required), menuSection (string), displayOrder (number), isVisible (boolean), buttonLabel (string), specialMessage (string)
+
+15. invalidateCache — Invalidate KV cache for specific resource prefixes
+    Parameters: prefix (string, required: products|categories|settings|menu-config|all)
 `;
 
 // ---------------------------------------------------------------------------
@@ -86,8 +151,8 @@ interface OpenAiChoice {
 export async function handleAiChat(
   request: AiChatRequest,
   apiKey: string,
-  _db: D1Database,
-  _cache?: ICacheService,
+  db: D1Database,
+  cache?: ICacheService,
 ): Promise<AiChatResponse> {
   const conversationId = request.conversationId || generateConversationId();
   const message = request.message?.trim();
@@ -96,6 +161,7 @@ export async function handleAiChat(
     return {
       reply: 'لطفاً پیامی ارسال کنید.',
       actions: [],
+      pendingActions: [],
       conversationId,
     };
   }
@@ -154,6 +220,7 @@ export async function handleAiChat(
         return {
           reply: `متأسفانه در پاسخگویی مشکلی پیش آمد.${detail ? ` (${detail})` : ''} لطفاً دوباره تلاش کنید.`,
           actions: allActions,
+          pendingActions: [],
           conversationId,
         };
       }
@@ -170,6 +237,7 @@ export async function handleAiChat(
       return {
         reply: 'متأسفانه در اتصال به سرویس AI مشکلی پیش آمد. لطفاً دوباره تلاش کنید.',
         actions: allActions,
+        pendingActions: [],
         conversationId,
       };
     }
@@ -187,6 +255,7 @@ export async function handleAiChat(
       return {
         reply: `متأسفانه در پردازش درخواست مشکلی پیش آمد. (${errMsg})`,
         actions: allActions,
+        pendingActions: [],
         conversationId,
       };
     }
@@ -196,6 +265,7 @@ export async function handleAiChat(
       return {
         reply: 'متأسفانه پاسخی دریافت نشد. لطفاً دوباره تلاش کنید.',
         actions: allActions,
+        pendingActions: [],
         conversationId,
       };
     }
@@ -203,9 +273,43 @@ export async function handleAiChat(
     finalReply = choice.message.content || '';
   }
 
+  // Parse <ai_action> blocks from model output
+  const { actions: parsedActions, cleanText } = parseAiActions(finalReply);
+  finalReply = cleanText; // Use cleaned text (blocks stripped) as the reply
+
+  // Classify actions: reads execute immediately, writes become pending
+  const readActions: AiAction[] = [];
+  const pendingActions: PendingAction[] = [];
+
+  for (const parsed of parsedActions) {
+    const classification = classifyAction(parsed);
+
+    if (classification === 'read') {
+      // Execute read tools immediately
+      try {
+        const result = await executeTool(parsed.tool, parsed.params, { db, cache });
+        readActions.push(result);
+      } catch (err) {
+        readActions.push({
+          type: parsed.tool,
+          result: 'error',
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    } else {
+      // Write tools become pending actions for admin confirmation
+      pendingActions.push({
+        tool: parsed.tool,
+        params: parsed.params,
+        description: generateDescription(parsed.tool, parsed.params),
+      });
+    }
+  }
+
   return {
     reply: finalReply,
-    actions: allActions,
+    actions: readActions,
+    pendingActions,
     conversationId,
   };
 }
@@ -254,4 +358,38 @@ function generateConversationId(): string {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).slice(2, 8);
   return `conv_${timestamp}_${random}`;
+}
+
+/**
+ * Generate a human-readable Persian description for a pending write action.
+ * Used in the confirmation UI so admins understand what they're approving.
+ */
+function generateDescription(tool: string, params: Record<string, unknown>): string {
+  const name = (k: string) => String(params[k] ?? '');
+  switch (tool) {
+    case 'createProduct':
+      return `ایجاد محصول جدید: ${name('name')}`;
+    case 'updateProduct':
+      return `ویرایش محصول #${name('id')}`;
+    case 'deleteProduct':
+      return `حذف محصول #${name('id')}`;
+    case 'batchUpdateProducts':
+      return `به‌روزرسانی گروهی ${Array.isArray(params.ids) ? params.ids.length : ''} محصول`;
+    case 'createCategory':
+      return `ایجاد دسته‌بندی جدید: ${name('name')}`;
+    case 'updateCategory':
+      return `ویرایش دسته‌بندی #${name('id')}`;
+    case 'deleteCategory':
+      return `حذف دسته‌بندی #${name('id')}`;
+    case 'reorderCategories':
+      return `تغییر ترتیب دسته‌بندی‌ها`;
+    case 'updateSetting':
+      return `تغییر تنظیم ${name('key')}`;
+    case 'updateMenuConfig':
+      return `به‌روزرسانی تنظیمات منو برای دسته #${name('categoryId')}`;
+    case 'invalidateCache':
+      return `پاکسازی کش ${name('prefix')}`;
+    default:
+      return `اجرای ${tool}`;
+  }
 }
