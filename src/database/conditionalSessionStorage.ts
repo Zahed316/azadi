@@ -8,10 +8,14 @@ import type { D1Database } from '@cloudflare/workers-types';
  */
 export class ConditionalSessionStorage<T> implements StorageAdapter<T> {
   private snapshots = new Map<string, string>();
+  private readCache = new Map<string, T>();
 
   constructor(private db: D1Database) {}
 
   async read(key: string): Promise<T | undefined> {
+    const cached = this.readCache.get(key);
+    if (cached !== undefined) return cached;
+
     const result: { value: string } | null = await this.db
       .prepare('SELECT value FROM sessions WHERE key = ?')
       .bind(key)
@@ -20,6 +24,7 @@ export class ConditionalSessionStorage<T> implements StorageAdapter<T> {
     try {
       const parsed = JSON.parse(result.value) as T;
       this.snapshots.set(key, result.value);
+      this.readCache.set(key, parsed);
       return parsed;
     } catch {
       return undefined;
@@ -39,10 +44,12 @@ export class ConditionalSessionStorage<T> implements StorageAdapter<T> {
       .bind(key, serialized)
       .run();
     this.snapshots.set(key, serialized);
+    this.readCache.set(key, value);
   }
 
   async delete(key: string): Promise<void> {
     this.snapshots.delete(key);
+    this.readCache.delete(key);
     await this.db.prepare('DELETE FROM sessions WHERE key = ?').bind(key).run();
   }
 }

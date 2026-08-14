@@ -14,7 +14,7 @@ import { MyContext } from './types/context';
 import { getEnv, getExecCtx } from './requestContext';
 import { D1SessionStorage } from './database/sessionStorage';
 import { ConditionalSessionStorage } from './database/conditionalSessionStorage';
-import { SettingsRepository, UserStateRepository } from './repositories';
+import { UserStateRepository } from './repositories';
 import { toPersianDigits } from './utils/numbers';
 import { DataService } from './services/data';
 import { CacheService } from './services/cache';
@@ -53,12 +53,9 @@ export function createBot(env: Env): Bot<MyContext> {
   // via `wrangler secret put STREAK_MESSAGES`. Never re-throw — streak path
   // must not break the rest of the bot chain.
   bot.use(async (ctx, next) => {
-    // Check env var first to avoid a D1 round-trip when the flag is set.
-    const streakEnabled =
-      ctx.env.STREAK_MESSAGES === 'true'
-        ? 'true'
-        : ((await new SettingsRepository(ctx.env.DB).getValue('streak_messages')) ?? 'false');
-    if (ctx.from?.id && streakEnabled === 'true') {
+    // Gate entirely on the env var — no D1 fallback. When unset (default), the
+    // middleware is a pure pass-through with zero queries or allocations.
+    if (ctx.env.STREAK_MESSAGES === 'true' && ctx.from?.id) {
       try {
         const repo = new UserStateRepository(ctx.env.DB);
         const { streakDays, isNewStreak } = await repo.upsertVisit(String(ctx.from.id));

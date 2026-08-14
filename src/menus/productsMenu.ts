@@ -1,6 +1,5 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
-import { ProductRepository, MenuConfigRepository } from '../repositories';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
 import { mainMenu, getWelcomeText } from './mainMenu';
@@ -27,11 +26,11 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
         });
         return;
       }
-      const repo = new ProductRepository(ctx.env.DB);
-      const menuRepo = new MenuConfigRepository(ctx.env.DB);
-      const configs = await menuRepo.getBySection('cakes');
+      const configs = await ctx.dataService.getBySection('cakes');
       const products =
-        configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
+        configs.length > 0
+          ? await ctx.dataService.getProductsByCategory(configs[0].categoryId)
+          : [];
 
       if (products.length === 0) {
         await ctx.reply('📭 در حال حاضر کیک یا کوکی موجود نیست.');
@@ -73,11 +72,11 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
         });
         return;
       }
-      const repo = new ProductRepository(ctx.env.DB);
-      const menuRepo = new MenuConfigRepository(ctx.env.DB);
-      const configs = await menuRepo.getBySection('beans');
+      const configs = await ctx.dataService.getBySection('beans');
       const products =
-        configs.length > 0 ? await repo.getProductsByCategory(configs[0].categoryId) : [];
+        configs.length > 0
+          ? await ctx.dataService.getProductsByCategory(configs[0].categoryId)
+          : [];
 
       if (products.length === 0) {
         await ctx.reply('📭 در حال حاضر دانه قهوه موجود نیست.');

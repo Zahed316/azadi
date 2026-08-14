@@ -136,7 +136,7 @@ function makeUpdate(userId = 123) {
   } as any;
 }
 
-describe('streak middleware env-var cache', () => {
+describe('streak middleware env-var gate', () => {
   const bot = createBot(makeEnv());
   bot.botInfo = BOT_INFO;
 
@@ -153,11 +153,11 @@ describe('streak middleware env-var cache', () => {
     expect(MockSettingsRepository).not.toHaveBeenCalled();
   });
 
-  test('env STREAK_MESSAGES undefined falls back to D1 read (SettingsRepository instantiated)', async () => {
+  test('env STREAK_MESSAGES undefined skips all D1 queries (SettingsRepository not instantiated)', async () => {
     mockGetEnv.mockReturnValue(makeEnv({ STREAK_MESSAGES: undefined }));
 
     await bot.handleUpdate(makeUpdate());
 
-    expect(MockSettingsRepository).toHaveBeenCalled();
+    expect(MockSettingsRepository).not.toHaveBeenCalled();
   });
 });

@@ -231,10 +231,21 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         return ctx.reply('⏳ لطفاً چند ثانیه صبر کنید و دوباره سؤال بپرسید.');
       }
 
+      // Typing heartbeat — send every 5s until AI responds or errors
+      let heartbeatActive = true;
+      let heartbeat: ReturnType<typeof setInterval> | undefined;
+
       try {
         const requestStartedAt = performance.now();
-        // Best-effort typing indicator — Telegram timeout is expected
-        await ctx.replyWithChatAction('typing').catch(() => {});
+
+        heartbeat = setInterval(() => {
+          if (heartbeatActive) {
+            ctx.replyWithChatAction('typing').catch(() => {});
+          }
+        }, 5000);
+        // Also send immediately
+        ctx.replyWithChatAction('typing').catch(() => {});
+
         const aiLogRepo = new AiLogRepository(ctx.env.DB);
 
         const catalogStartedAt = performance.now();
@@ -267,6 +278,11 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
           setTimeout(() => reject(new Error('AI_TIMEOUT')), AI_TIMEOUT_MS),
         );
         const answer = await Promise.race([aiPromise, timeoutPromise]);
+
+        // Stop heartbeat before any async reply work
+        heartbeatActive = false;
+        if (heartbeat !== undefined) clearInterval(heartbeat);
+
         const aiDuration = performance.now() - aiStartedAt;
 
         const MAX_TELEGRAM_MSG = 4096;
@@ -303,6 +319,10 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
           );
         }
       } catch (e: unknown) {
+        // Stop heartbeat on error path
+        heartbeatActive = false;
+        if (heartbeat !== undefined) clearInterval(heartbeat);
+
         const msg = e instanceof Error ? e.message : String(e);
         console.error(
           JSON.stringify({
