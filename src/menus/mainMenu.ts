@@ -5,7 +5,7 @@ import { toPersianDigits } from '../utils/numbers';
 import { escapeHtml } from '../utils/htmlEscape';
 import { MyContext } from '../types/context';
 import type { IDataService } from '../services/types';
-import { pushMessage, getActiveMessage, handleEditFailure } from '../utils/menuLifecycle';
+import { pushMessage, popMessage, getActiveMessage, handleEditFailure } from '../utils/menuLifecycle';
 
 const DEFAULT_WELCOME_TEXT =
   'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
@@ -94,6 +94,14 @@ export const mainMenu = new Menu<MyContext>('main-menu')
         });
         return;
       }
+      // Pop and delete the current menu message from Telegram before
+      // sending the contact prompt — prevents the orphaned-menu-below bug.
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        popMessage(ctx.session);
+        await ctx.api.deleteMessage(active.chatId, active.messageId).catch(() => {});
+      }
+
       ctx.session.messageFlow = { step: 'name' };
       const sent = await ctx.reply('نام شما چیست؟', {
         reply_markup: new InlineKeyboard()
