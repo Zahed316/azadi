@@ -306,6 +306,62 @@ export async function handleAiChat(
     }
   }
 
+  // Second round: if reads executed but no write actions were generated,
+  // feed the tool results back so the model can complete the request
+  // (e.g., "list products" → see results → "update product #3").
+  if (readActions.length > 0 && pendingActions.length === 0) {
+    try {
+      const toolContext = readActions
+        .map((a) => `Tool ${a.type} result:\n${JSON.stringify(a.details)}`)
+        .join('\n\n');
+
+      messages.push(
+        { role: 'assistant', content: finalReply },
+        {
+          role: 'user',
+          content: `نتایج ابزارها:\n${toolContext}\n\nحالا بر اساس این اطلاعات، درخواست اصلی کاربر را کامل کنید. اگر نیاز به تغییر داده دارید، حتماً <ai_action> تولید کنید.`,
+        },
+      );
+
+      const secondResponse = await callOpenCodeApi(apiKey, messages);
+
+      if (secondResponse.ok) {
+        const secondData = await secondResponse.json();
+        const secondChoice = (secondData as { choices?: OpenAiChoice[] })?.choices?.[0];
+        if (secondChoice) {
+          const secondText = secondChoice.message.content || '';
+          const { actions: secondParsed } = parseAiActions(secondText);
+
+          for (const parsed of secondParsed) {
+            const classification = classifyAction(parsed);
+            if (classification === 'write') {
+              pendingActions.push({
+                tool: parsed.tool,
+                params: parsed.params,
+                description: generateDescription(parsed.tool, parsed.params),
+              });
+            }
+          }
+
+          // Append second-round conversational text to the reply
+          const secondClean = secondText.replace(/<ai_action>[\s\S]*?<\/ai_action>/g, '').trim();
+          if (secondClean) {
+            finalReply = finalReply ? `${finalReply}\n\n${secondClean}` : secondClean;
+          }
+        }
+      }
+    } catch (err) {
+      // Second-round failure is non-fatal — return first-round results
+      console.error(
+        JSON.stringify({
+          ts: new Date().toISOString(),
+          operation: 'ai-chat-second-round-error',
+          error: err instanceof Error ? err.message : String(err),
+        }),
+      );
+    }
+  }
+
   return {
     reply: finalReply,
     actions: readActions,
