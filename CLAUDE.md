@@ -22,6 +22,7 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 - [grammy-menu-plugin-conflicts-with-lifecycle](memory/grammy-menu-plugin-conflicts-with-lifecycle.md) — grammY menu plugin edits messages outside our lifecycle; use delete+recreate for back navigation
 - [handleeditfailure-must-pop-before-push](memory/handleeditfailure-must-pop-before-push.md) — handleEditFailure must pop the active message before creating a fallback
 - [worktrees-lack-node-modules](memory/worktrees-lack-node-modules.md) — SDD worktrees don't have node_modules; run typecheck/lint/format from main repo before merge
+- [dead-helper-extraction-risk](memory/dead-helper-extraction-risk.md) — extracted helpers must be integrated in the same task; dead helpers create false dedup confidence
 
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 
