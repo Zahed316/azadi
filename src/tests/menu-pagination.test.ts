@@ -4,20 +4,28 @@ import { buildCategoryPage } from '../menus/drinksNavMenu';
 /**
  * Mocked MyContext that captures the most recent editMessageText call so we
  * can assert the rendered body, page label, and prev/next callback data
- * without spinning up a real Telegram bot. `.catch(() => {})` keeps
- * `editMessageText` resolvable when test cases need it to reject.
+ * without spinning up a real Telegram bot.
+ *
+ * Pattern A: the code calls ctx.api.editMessageText(active.chatId, active.messageId, text, opts)
+ * on the active menu stack entry. The mock captures these calls via ctx.api.
  */
 function makeMockCtx() {
   const last: { text?: string; opts?: any } = {};
   const ctx: any = {
     chat: { id: 123 },
-    session: {},
-    editMessageText: vi.fn((text: string, opts: any) => {
-      last.text = text;
-      last.opts = opts;
-      return Promise.resolve({ message_id: 1 });
-    }),
+    session: {
+      menuStack: [{ chatId: 123, messageId: 1, state: 'drinks', timestamp: Date.now() }],
+    },
+    api: {
+      editMessageText: vi.fn((_chatId: number, _messageId: number, text: string, opts: any) => {
+        last.text = text;
+        last.opts = opts;
+        return Promise.resolve({ message_id: 1 });
+      }),
+      deleteMessage: vi.fn().mockResolvedValue({}),
+    },
     reply: vi.fn(() => Promise.resolve({ message_id: 2 })),
+    answerCallbackQuery: vi.fn().mockResolvedValue({}),
   };
   return { ctx, last };
 }

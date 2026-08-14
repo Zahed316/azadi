@@ -91,10 +91,12 @@ export async function cleanupOldMessages(
 /**
  * Handle editMessageText failure with smart fallback:
  * - "message is not modified" → answerCallbackQuery with "Already showing this"
- * - Other errors → pop the failed message from stack, then create new message
+ * - Other errors → pop the failed message from stack, delete the orphaned
+ *   Telegram message, then create a new message as fallback
  */
 export async function handleEditFailure(
   ctx: {
+    api?: { deleteMessage: (chatId: number, messageId: number) => Promise<unknown> };
     answerCallbackQuery: (opts?: { text?: string; show_alert?: boolean }) => Promise<unknown>;
     reply: (text: string, opts?: Record<string, unknown>) => Promise<{ message_id: number }>;
     session?: SessionData;
@@ -113,15 +115,19 @@ export async function handleEditFailure(
     return;
   }
 
-  // Pop the failed-to-edit message from the stack before creating a new one.
-  // This prevents the stale message from being referenced by getActiveMessage later.
-  if (ctx.session) {
-    popMessage(ctx.session);
-  }
+  // Pop the failed-to-edit message from the stack and capture it so we can
+  // delete the orphaned Telegram message after creating the fallback.
+  const popped = ctx.session ? popMessage(ctx.session) : null;
 
   // All other errors: create new message as fallback and track it
   const sent = await ctx.reply(newContent, opts).catch(() => null);
   if (sent && ctx.session && ctx.chat) {
     pushMessage(ctx.session, ctx.chat.id, sent.message_id, 'fallback');
+  }
+
+  // Delete the orphaned message from Telegram so the user doesn't see
+  // both the old (failed-to-edit) message and the new fallback message.
+  if (popped && ctx.api) {
+    await ctx.api.deleteMessage(popped.chatId, popped.messageId).catch(() => {});
   }
 }

@@ -181,42 +181,67 @@ describe('handleEditFailure', () => {
     expect(ctx.reply).not.toHaveBeenCalled();
   });
 
-  test('"message to edit not found" creates new message', async () => {
+  test('"message to edit not found" creates new message and deletes orphan', async () => {
+    const api = { deleteMessage: vi.fn().mockResolvedValue({}) };
+    const session = makeSession([{ chatId: 1, messageId: 10, state: 'espresso', timestamp: 1 }]);
     const ctx = {
+      api,
       answerCallbackQuery: vi.fn().mockResolvedValue({}),
       reply: vi.fn().mockResolvedValue({ message_id: 99 }),
+      session,
+      chat: { id: 1 },
     };
     const error = new Error('message to edit not found');
     await handleEditFailure(ctx, 'new text', { parse_mode: 'HTML' }, error);
     expect(ctx.reply).toHaveBeenCalledWith('new text', { parse_mode: 'HTML' });
+    // Orphaned message (messageId: 10) should be deleted from Telegram
+    expect(api.deleteMessage).toHaveBeenCalledWith(1, 10);
+    // Stack: old entry popped, new fallback pushed
+    expect(session.menuStack).toHaveLength(1);
+    expect(session.menuStack![0].messageId).toBe(99);
+    expect(session.menuStack![0].state).toBe('fallback');
   });
 
-  test("message can't be edited creates new message", async () => {
+  test("message can't be edited creates new message and deletes orphan", async () => {
+    const api = { deleteMessage: vi.fn().mockResolvedValue({}) };
+    const session = makeSession([{ chatId: 1, messageId: 20, state: 'featured', timestamp: 1 }]);
     const ctx = {
+      api,
       answerCallbackQuery: vi.fn().mockResolvedValue({}),
-      reply: vi.fn().mockResolvedValue({ message_id: 99 }),
+      reply: vi.fn().mockResolvedValue({ message_id: 88 }),
+      session,
+      chat: { id: 1 },
     };
     const error = new Error("message can't be edited");
     await handleEditFailure(ctx, 'new text', {}, error);
     expect(ctx.reply).toHaveBeenCalled();
+    expect(api.deleteMessage).toHaveBeenCalledWith(1, 20);
   });
 
-  test('unknown error creates new message', async () => {
+  test('unknown error creates new message and deletes orphan', async () => {
+    const api = { deleteMessage: vi.fn().mockResolvedValue({}) };
+    const session = makeSession([{ chatId: 1, messageId: 30, state: 'main', timestamp: 1 }]);
     const ctx = {
+      api,
       answerCallbackQuery: vi.fn().mockResolvedValue({}),
-      reply: vi.fn().mockResolvedValue({ message_id: 99 }),
+      reply: vi.fn().mockResolvedValue({ message_id: 77 }),
+      session,
+      chat: { id: 1 },
     };
     const error = new Error('network timeout');
     await handleEditFailure(ctx, 'new text', {}, error);
     expect(ctx.reply).toHaveBeenCalled();
+    expect(api.deleteMessage).toHaveBeenCalledWith(1, 30);
   });
 
   test('pops active message then pushes fallback to stack', async () => {
+    const api = { deleteMessage: vi.fn().mockResolvedValue({}) };
     const session = makeSession([
       { chatId: 1, messageId: 10, state: 'drinks', timestamp: 1 },
       { chatId: 1, messageId: 20, state: 'espresso', timestamp: 2 },
     ]);
     const ctx = {
+      api,
       answerCallbackQuery: vi.fn().mockResolvedValue({}),
       reply: vi.fn().mockResolvedValue({ message_id: 77 }),
       session,
@@ -239,6 +264,8 @@ describe('handleEditFailure', () => {
       state: 'fallback',
       timestamp: expect.any(Number),
     });
+    // Orphaned message deleted from Telegram
+    expect(api.deleteMessage).toHaveBeenCalledWith(1, 20);
   });
 
   test('does not push to stack when ctx has no session', async () => {
@@ -250,5 +277,21 @@ describe('handleEditFailure', () => {
     await handleEditFailure(ctx, 'fallback text', {}, error);
     expect(ctx.reply).toHaveBeenCalled();
     // No crash — just no stack push
+  });
+
+  test('does not delete when ctx has no api (backward compat)', async () => {
+    const session = makeSession([{ chatId: 1, messageId: 10, state: 'main', timestamp: 1 }]);
+    const ctx = {
+      answerCallbackQuery: vi.fn().mockResolvedValue({}),
+      reply: vi.fn().mockResolvedValue({ message_id: 55 }),
+      session,
+      chat: { id: 1 },
+    };
+    const error = new Error('some error');
+    await handleEditFailure(ctx, 'new text', {}, error);
+    // No crash — api is optional, so no deleteMessage call
+    expect(ctx.reply).toHaveBeenCalled();
+    expect(session.menuStack).toHaveLength(1);
+    expect(session.menuStack![0].messageId).toBe(55);
   });
 });

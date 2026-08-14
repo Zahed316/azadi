@@ -18,16 +18,53 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   .text('⭐ پیشنهاد ویژه', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.dataService, 'featured'))) {
-        await ctx.reply(HIDDEN_MESSAGE, {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, HIDDEN_MESSAGE, {
+              parse_mode: 'HTML',
+              reply_markup: backKb,
+            });
+            active.state = 'hidden:featured';
+            return;
+          } catch (e) {
+            await handleEditFailure(
+              ctx,
+              HIDDEN_MESSAGE,
+              { parse_mode: 'HTML', reply_markup: backKb },
+              e,
+            );
+            return;
+          }
+        }
+        await ctx.reply(HIDDEN_MESSAGE, { reply_markup: backKb });
         return;
       }
       const items = await ctx.dataService.getByFlag('featured');
       if (items.length === 0) {
-        await ctx.reply('📭 در حال حاضر محصول ویژه‌ای نداریم.', {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const emptyText = '📭 در حال حاضر محصول ویژه‌ای نداریم.';
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, emptyText, {
+              parse_mode: 'HTML',
+              reply_markup: backKb,
+            });
+            active.state = 'empty:featured';
+            return;
+          } catch (e) {
+            await handleEditFailure(
+              ctx,
+              emptyText,
+              { parse_mode: 'HTML', reply_markup: backKb },
+              e,
+            );
+            return;
+          }
+        }
+        await ctx.reply(emptyText, { reply_markup: backKb });
         return;
       }
       const priceUnit = await loadPriceUnit(ctx.dataService);
@@ -75,16 +112,53 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   .text('🌿 محصول فصلی', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.dataService, 'seasonal'))) {
-        await ctx.reply(HIDDEN_MESSAGE, {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, HIDDEN_MESSAGE, {
+              parse_mode: 'HTML',
+              reply_markup: backKb,
+            });
+            active.state = 'hidden:seasonal';
+            return;
+          } catch (e) {
+            await handleEditFailure(
+              ctx,
+              HIDDEN_MESSAGE,
+              { parse_mode: 'HTML', reply_markup: backKb },
+              e,
+            );
+            return;
+          }
+        }
+        await ctx.reply(HIDDEN_MESSAGE, { reply_markup: backKb });
         return;
       }
       const items = await ctx.dataService.getByFlag('isSeasonal');
       if (items.length === 0) {
-        await ctx.reply('📭 در حال حاضر محصول فصلی موجود نیست.', {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const emptyText = '📭 در حال حاضر محصول فصلی موجود نیست.';
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, emptyText, {
+              parse_mode: 'HTML',
+              reply_markup: backKb,
+            });
+            active.state = 'empty:seasonal';
+            return;
+          } catch (e) {
+            await handleEditFailure(
+              ctx,
+              emptyText,
+              { parse_mode: 'HTML', reply_markup: backKb },
+              e,
+            );
+            return;
+          }
+        }
+        await ctx.reply(emptyText, { reply_markup: backKb });
         return;
       }
       const priceUnit = await loadPriceUnit(ctx.dataService);
@@ -132,16 +206,53 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   .text('📖 پاسپورت', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.dataService, 'passport'))) {
-        await ctx.reply(HIDDEN_MESSAGE, {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, HIDDEN_MESSAGE, {
+              parse_mode: 'HTML',
+              reply_markup: backKb,
+            });
+            active.state = 'hidden:passport';
+            return;
+          } catch (e) {
+            await handleEditFailure(
+              ctx,
+              HIDDEN_MESSAGE,
+              { parse_mode: 'HTML', reply_markup: backKb },
+              e,
+            );
+            return;
+          }
+        }
+        await ctx.reply(HIDDEN_MESSAGE, { reply_markup: backKb });
         return;
       }
       const rows = await ctx.dataService.getBeansWithCoffeeDetails();
       if (rows.length === 0) {
-        await ctx.reply('📭 هنوز دانه قهوه‌ای با جزئیات کشت ثبت نشده است.', {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const emptyText = '📭 هنوز دانه قهوه‌ای با جزئیات کشت ثبت نشده است.';
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, emptyText, {
+              parse_mode: 'HTML',
+              reply_markup: backKb,
+            });
+            active.state = 'empty:passport';
+            return;
+          } catch (e) {
+            await handleEditFailure(
+              ctx,
+              emptyText,
+              { parse_mode: 'HTML', reply_markup: backKb },
+              e,
+            );
+            return;
+          }
+        }
+        await ctx.reply(emptyText, { reply_markup: backKb });
         return;
       }
       const priceUnit = await loadPriceUnit(ctx.dataService);
@@ -208,16 +319,47 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   .text('🔍 جستجو', async (ctx: MyContext) => {
     try {
       if (!(await isMenuVisible(ctx.dataService, 'search'))) {
-        await ctx.reply(HIDDEN_MESSAGE, {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, HIDDEN_MESSAGE, {
+              parse_mode: 'HTML',
+              reply_markup: backKb,
+            });
+            active.state = 'hidden:search';
+            return;
+          } catch (e) {
+            await handleEditFailure(
+              ctx,
+              HIDDEN_MESSAGE,
+              { parse_mode: 'HTML', reply_markup: backKb },
+              e,
+            );
+            return;
+          }
+        }
+        await ctx.reply(HIDDEN_MESSAGE, { reply_markup: backKb });
         return;
       }
       await ctx.replyWithChatAction('typing');
-      await ctx.reply('سؤال خود را بنویسید — دستیار هوشمند پاسخ می‌دهد 🤖', {
-        parse_mode: 'HTML',
-        reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-      });
+      const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+      const body = 'سؤال خود را بنویسید — دستیار هوشمند پاسخ می‌دهد 🤖';
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        try {
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+            parse_mode: 'HTML',
+            reply_markup: backKb,
+          });
+          active.state = 'search';
+          return;
+        } catch (e) {
+          await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: backKb }, e);
+          return;
+        }
+      }
+      await ctx.reply(body, { parse_mode: 'HTML', reply_markup: backKb });
     } catch (e) {
       console.error(e);
       await ctx.reply('خطا در ارتباط با سرور.');
@@ -227,13 +369,21 @@ export const discoverMenu = new Menu<MyContext>('discover-menu')
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
     const body = await getWelcomeText(ctx.dataService);
-    await ctx
-      .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
-      .catch(async () => {
-        const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
-        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
-        if (evicted) {
-          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
-        }
-      });
+    const active = getActiveMessage(ctx.session);
+    if (active) {
+      try {
+        await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+          parse_mode: 'HTML',
+          reply_markup: mainMenu,
+        });
+        active.state = 'main';
+        return;
+      } catch (e) {
+        await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: mainMenu }, e);
+        return;
+      }
+    }
+    const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
+    const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+    if (evicted) await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
   });

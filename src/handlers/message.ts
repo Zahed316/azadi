@@ -13,6 +13,7 @@ import {
 } from '../repositories';
 import { buildMinimalContext } from '../utils/menuContext';
 import { checkAndSetCooldown } from '../utils/rateLimit';
+import { getActiveMessage } from '../utils/menuLifecycle';
 
 /**
  * Run an AI query against the Azadi context without bot-specific plumbing.
@@ -72,43 +73,76 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
 
       if (text === '/cancel') {
         ctx.session.messageFlow = undefined;
-        await ctx.reply('❌ ارسال پیام لغو شد.', {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
+        const backKb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
+        const body = '❌ ارسال پیام لغو شد.';
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+              reply_markup: backKb,
+            });
+            active.state = 'cancelled';
+            return;
+          } catch {
+            // Edit failed — fall through to reply
+          }
+        }
+        await ctx.reply(body, { reply_markup: backKb });
         return;
       }
 
       if (flow.step === 'name') {
+        const cancelKb = new InlineKeyboard().text('❌ انصراف', 'msg:cancel');
+        let body: string;
         if (text === '/skip') {
           flow.isAnonymous = true;
           flow.step = 'content';
-          await ctx.reply('پیام خود را بنویسید:', {
-            reply_markup: new InlineKeyboard().text('❌ انصراف', 'msg:cancel'),
-          });
+          body = 'پیام خود را بنویسید:';
         } else {
           flow.name = text;
           flow.step = 'content';
-          await ctx.reply(`متشکرم ${text}! حالا پیام خود را بنویسید:`, {
-            reply_markup: new InlineKeyboard().text('❌ انصراف', 'msg:cancel'),
-          });
+          body = `متشکرم ${text}! حالا پیام خود را بنویسید:`;
         }
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+              reply_markup: cancelKb,
+            });
+            return;
+          } catch {
+            // Edit failed — fall through to reply
+          }
+        }
+        await ctx.reply(body, { reply_markup: cancelKb });
         return;
       }
 
       if (flow.step === 'content') {
         flow.content = text;
         flow.step = 'rating';
-        await ctx.reply('آیا می‌خواهید امتیاز بدهید؟', {
-          reply_markup: new InlineKeyboard()
-            .text('۱ ⭐', 'rate:1')
-            .text('۲ ⭐', 'rate:2')
-            .text('۳ ⭐', 'rate:3')
-            .row()
-            .text('۴ ⭐', 'rate:4')
-            .text('۵ ⭐', 'rate:5')
-            .row()
-            .text('⏭ رد کردن', 'rate:skip'),
-        });
+        const ratingKb = new InlineKeyboard()
+          .text('۱ ⭐', 'rate:1')
+          .text('۲ ⭐', 'rate:2')
+          .text('۳ ⭐', 'rate:3')
+          .row()
+          .text('۴ ⭐', 'rate:4')
+          .text('۵ ⭐', 'rate:5')
+          .row()
+          .text('⏭ رد کردن', 'rate:skip');
+        const body = 'آیا می‌خواهید امتیاز بدهید؟';
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+              reply_markup: ratingKb,
+            });
+            return;
+          } catch {
+            // Edit failed — fall through to reply
+          }
+        }
+        await ctx.reply(body, { reply_markup: ratingKb });
         return;
       }
 
@@ -119,31 +153,51 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         } else if (num >= 1 && num <= 5) {
           flow.rating = num;
         } else {
-          await ctx.reply('لطفاً عددی بین ۱ تا ۵ وارد کنید یا دکمه رد کردن را بزنید.', {
-            reply_markup: new InlineKeyboard()
-              .text('۱ ⭐', 'rate:1')
-              .text('۲ ⭐', 'rate:2')
-              .text('۳ ⭐', 'rate:3')
-              .row()
-              .text('۴ ⭐', 'rate:4')
-              .text('۵ ⭐', 'rate:5')
-              .row()
-              .text('⏭ رد کردن', 'rate:skip'),
-          });
+          // Invalid rating — re-prompt in-place
+          const retryKb = new InlineKeyboard()
+            .text('۱ ⭐', 'rate:1')
+            .text('۲ ⭐', 'rate:2')
+            .text('۳ ⭐', 'rate:3')
+            .row()
+            .text('۴ ⭐', 'rate:4')
+            .text('۵ ⭐', 'rate:5')
+            .row()
+            .text('⏭ رد کردن', 'rate:skip');
+          const retryBody = 'لطفاً عددی بین ۱ تا ۵ وارد کنید یا دکمه رد کردن را بزنید.';
+          const active = getActiveMessage(ctx.session);
+          if (active) {
+            try {
+              await ctx.api.editMessageText(active.chatId, active.messageId, retryBody, {
+                reply_markup: retryKb,
+              });
+              return;
+            } catch {
+              // Edit failed — fall through to reply
+            }
+          }
+          await ctx.reply(retryBody, { reply_markup: retryKb });
           return;
         }
         flow.step = 'confirm';
         const stars = flow.rating ? '⭐'.repeat(flow.rating) : 'بدون امتیاز';
         const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
-        await ctx.reply(
-          `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`,
-          {
-            parse_mode: 'HTML',
-            reply_markup: new InlineKeyboard()
-              .text('✅ ارسال', 'msg:confirm')
-              .text('❌ انصراف', 'msg:cancel'),
-          },
-        );
+        const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`;
+        const confirmKb = new InlineKeyboard()
+          .text('✅ ارسال', 'msg:confirm')
+          .text('❌ انصراف', 'msg:cancel');
+        const active = getActiveMessage(ctx.session);
+        if (active) {
+          try {
+            await ctx.api.editMessageText(active.chatId, active.messageId, preview, {
+              parse_mode: 'HTML',
+              reply_markup: confirmKb,
+            });
+            return;
+          } catch {
+            // Edit failed — fall through to reply
+          }
+        }
+        await ctx.reply(preview, { parse_mode: 'HTML', reply_markup: confirmKb });
         return;
       }
     }
