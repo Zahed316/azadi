@@ -365,6 +365,7 @@ function generateConversationId(): string {
  * Used in the confirmation UI so admins understand what they're approving.
  */
 function generateDescription(tool: string, params: Record<string, unknown>): string {
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- params are JSON primitives from the model
   const name = (k: string) => String(params[k] ?? '');
   switch (tool) {
     case 'createProduct':

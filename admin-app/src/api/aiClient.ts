@@ -1,10 +1,5 @@
 import { apiFetch } from './client';
-import type {
-  AiAction,
-  AiChatRequest,
-  AiChatResponse,
-  AiHistoryParams,
-} from './aiTypes';
+import type { AiAction, AiChatRequest, AiChatResponse, AiHistoryParams } from './aiTypes';
 import type { AiLogsResponse } from './types';
 
 /**
