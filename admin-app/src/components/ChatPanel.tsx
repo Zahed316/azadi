@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAIChat } from '../hooks/useAIChat';
-import type { AiAction } from '../api/aiTypes';
+import type { AiAction, PendingAction } from '../api/aiTypes';
 
 /** User-friendly error message map for common failure scenarios. */
 const ERROR_MESSAGES: Record<string, string> = {
@@ -32,6 +32,58 @@ function ActionCard({ action }: { action: AiAction }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Pending actions card — confirmation UI for write actions            */
+/* ------------------------------------------------------------------ */
+
+function PendingActionsCard({
+  pendingActions,
+  confirmed,
+  onConfirm,
+  onCancel,
+}: {
+  pendingActions: PendingAction[];
+  confirmed: boolean;
+  onConfirm: (tool: string, params: Record<string, unknown>) => void | Promise<void>;
+  onCancel: () => void;
+}) {
+  if (confirmed) {
+    return (
+      <div className="chat-pending-confirmed">
+        <span>✅ تأیید شد</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="chat-pending-actions">
+      <div className="chat-pending-label">عملیات پیشنهادی:</div>
+      {pendingActions.map((action, i) => (
+        <div key={`${action.tool}-${i}`} className="chat-pending-item" dir="auto">
+          <span className="chat-pending-desc">{action.description}</span>
+        </div>
+      ))}
+      <div className="chat-pending-buttons">
+        <button
+          type="button"
+          className="chat-confirm-btn"
+          onClick={() => {
+            // For now, confirm the first pending action
+            // Multi-action confirmation can be added later
+            const first = pendingActions[0];
+            void onConfirm(first.tool, first.params);
+          }}
+        >
+          ✅ تأیید
+        </button>
+        <button type="button" className="chat-cancel-btn" onClick={onCancel}>
+          ❌ لغو
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Single chat bubble                                                  */
 /* ------------------------------------------------------------------ */
 
@@ -40,11 +92,19 @@ function ChatBubble({
   text,
   timestamp,
   actions,
+  pendingActions,
+  confirmed,
+  onConfirm,
+  onCancel,
 }: {
   role: 'user' | 'assistant';
   text: string;
   timestamp: Date;
   actions?: AiAction[];
+  pendingActions?: PendingAction[];
+  confirmed?: boolean;
+  onConfirm?: (tool: string, params: Record<string, unknown>) => void | Promise<void>;
+  onCancel?: () => void;
 }) {
   const isUser = role === 'user';
 
@@ -59,6 +119,14 @@ function ChatBubble({
             <ActionCard key={`${a.type}-${i}`} action={a} />
           ))}
         </div>
+      )}
+      {pendingActions && pendingActions.length > 0 && onConfirm && onCancel && (
+        <PendingActionsCard
+          pendingActions={pendingActions}
+          confirmed={confirmed ?? false}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />
       )}
       <div className="chat-bubble-time">
         {timestamp.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}
@@ -92,8 +160,17 @@ function TypingIndicator() {
  * button. Uses `useAIChat` for state management and API calls.
  */
 export default function ChatPanel() {
-  const { messages, isSending, error, sendMessage, retryLastMessage, canRetry, clearHistory } =
-    useAIChat();
+  const {
+    messages,
+    isSending,
+    error,
+    sendMessage,
+    retryLastMessage,
+    canRetry,
+    clearHistory,
+    confirmAction,
+    cancelAction,
+  } = useAIChat();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -150,6 +227,10 @@ export default function ChatPanel() {
             text={msg.text}
             timestamp={msg.timestamp}
             actions={msg.actions}
+            pendingActions={msg.pendingActions}
+            confirmed={msg.confirmed}
+            onConfirm={msg.role === 'assistant' ? confirmAction : undefined}
+            onCancel={msg.role === 'assistant' ? cancelAction : undefined}
           />
         ))}
 

@@ -820,6 +820,73 @@ button.secondary:hover {
   font-size: 11px;
 }
 
+/* Pending actions confirmation UI */
+.chat-pending-actions {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.chat-pending-label {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.chat-pending-item {
+  font-size: 0.85rem;
+  padding: 4px 0;
+  color: #333;
+}
+
+.chat-pending-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chat-confirm-btn,
+.chat-cancel-btn {
+  flex: 1;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.chat-confirm-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.chat-confirm-btn:hover {
+  background: #388e3c;
+}
+
+.chat-cancel-btn {
+  background: #f44336;
+  color: white;
+}
+
+.chat-cancel-btn:hover {
+  background: #d32f2f;
+}
+
+.chat-pending-confirmed {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #388e3c;
+  text-align: center;
+}
+
 /* Typing indicator */
 .chat-typing {
   display: flex;
