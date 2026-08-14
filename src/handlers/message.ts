@@ -116,8 +116,9 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
               reply_markup: cancelKb,
             });
             return;
-          } catch {
-            // Edit failed — fall through to reply
+          } catch (e) {
+            await handleEditFailure(ctx, body, { reply_markup: cancelKb }, e, 'name');
+            return;
           }
         }
         await ctx.reply(body, { reply_markup: cancelKb });
@@ -144,8 +145,9 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
               reply_markup: ratingKb,
             });
             return;
-          } catch {
-            // Edit failed — fall through to reply
+          } catch (e) {
+            await handleEditFailure(ctx, body, { reply_markup: ratingKb }, e, 'content');
+            return;
           }
         }
         await ctx.reply(body, { reply_markup: ratingKb });
@@ -177,8 +179,9 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
                 reply_markup: retryKb,
               });
               return;
-            } catch {
-              // Edit failed — fall through to reply
+            } catch (e) {
+              await handleEditFailure(ctx, retryBody, { reply_markup: retryKb }, e, 'rating');
+              return;
             }
           }
           await ctx.reply(retryBody, { reply_markup: retryKb });
@@ -199,8 +202,15 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
               reply_markup: confirmKb,
             });
             return;
-          } catch {
-            // Edit failed — fall through to reply
+          } catch (e) {
+            await handleEditFailure(
+              ctx,
+              preview,
+              { parse_mode: 'HTML', reply_markup: confirmKb },
+              e,
+              'confirm',
+            );
+            return;
           }
         }
         await ctx.reply(preview, { parse_mode: 'HTML', reply_markup: confirmKb });
