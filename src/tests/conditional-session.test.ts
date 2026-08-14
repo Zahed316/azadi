@@ -5,7 +5,7 @@ function createMockDB() {
   const store = new Map<string, string>();
   const prepare = vi.fn((sql: string) => {
     const bind = vi.fn((...args: string[]) => ({
-      first: vi.fn(async () => {
+      first: vi.fn(() => {
         if (sql.startsWith('SELECT')) {
           const key = args[0];
           const value = store.get(key);
@@ -13,7 +13,7 @@ function createMockDB() {
         }
         return null;
       }),
-      run: vi.fn(async () => {
+      run: vi.fn(() => {
         if (sql.includes('INSERT')) {
           store.set(args[0], args[1]);
         } else if (sql.includes('DELETE')) {

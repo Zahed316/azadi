@@ -71,21 +71,21 @@ vi.mock('../services/cache', () => ({
 
 vi.mock('../database/sessionStorage', () => ({
   D1SessionStorage: class {
-    async read() {
+    read() {
       return undefined;
     }
-    async write() {}
-    async delete() {}
+    write() {}
+    delete() {}
   },
 }));
 
 vi.mock('../database/conditionalSessionStorage', () => ({
   ConditionalSessionStorage: class {
-    async read() {
+    read() {
       return undefined;
     }
-    async write() {}
-    async delete() {}
+    write() {}
+    delete() {}
   },
 }));
 
