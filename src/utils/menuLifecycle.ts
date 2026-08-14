@@ -105,6 +105,7 @@ export async function handleEditFailure(
   newContent: string,
   opts: Record<string, unknown>,
   error: unknown,
+  newState: string = 'fallback',
 ): Promise<void> {
   const msg = error instanceof Error ? error.message : String(error);
 
@@ -122,7 +123,7 @@ export async function handleEditFailure(
   // All other errors: create new message as fallback and track it
   const sent = await ctx.reply(newContent, opts).catch(() => null);
   if (sent && ctx.session && ctx.chat) {
-    pushMessage(ctx.session, ctx.chat.id, sent.message_id, 'fallback');
+    pushMessage(ctx.session, ctx.chat.id, sent.message_id, newState);
   }
 
   // Delete the orphaned message from Telegram so the user doesn't see

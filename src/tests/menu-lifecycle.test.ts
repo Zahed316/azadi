@@ -279,6 +279,26 @@ describe('handleEditFailure', () => {
     // No crash — just no stack push
   });
 
+  test('uses custom newState when provided', async () => {
+    const api = { deleteMessage: vi.fn().mockResolvedValue({}) };
+    const session = makeSession([{ chatId: 1, messageId: 10, state: 'old', timestamp: 1 }]);
+    const ctx = {
+      api,
+      answerCallbackQuery: vi.fn().mockResolvedValue({}),
+      reply: vi.fn().mockResolvedValue({ message_id: 200 }),
+      session,
+      chat: { id: 1 },
+    };
+    const error = new Error('message to edit not found');
+
+    await handleEditFailure(ctx, 'new text', { parse_mode: 'HTML' }, error, 'name');
+
+    // New entry pushed with custom state
+    expect(session.menuStack).toHaveLength(1);
+    expect(session.menuStack![0].messageId).toBe(200);
+    expect(session.menuStack![0].state).toBe('name');
+  });
+
   test('does not delete when ctx has no api (backward compat)', async () => {
     const session = makeSession([{ chatId: 1, messageId: 10, state: 'main', timestamp: 1 }]);
     const ctx = {
