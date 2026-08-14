@@ -37,33 +37,77 @@ import type { ICacheService, IDataService, MenuSectionEntry } from '../types';
 import { CACHE_KEYS, DEFAULT_TTL } from '../cache/keys';
 
 export class DataService implements IDataService {
-  private products: ProductRepository;
-  private categories: CategoryRepository;
-  private branchesRepo: BranchRepository;
-  private faq: FaqRepository;
-  private settingsRepo: SettingsRepository;
-  private aiLogs: AiLogRepository;
-  private menuConfigRepo: MenuConfigRepository;
-  private userState: UserStateRepository;
-  private favoritesRepo: FavoritesRepository;
-  private messages: MessageRepository;
+  private _products?: ProductRepository;
+  private _categories?: CategoryRepository;
+  private _branchesRepo?: BranchRepository;
+  private _faq?: FaqRepository;
+  private _settingsRepo?: SettingsRepository;
+  private _aiLogs?: AiLogRepository;
+  private _menuConfigRepo?: MenuConfigRepository;
+  private _userState?: UserStateRepository;
+  private _favoritesRepo?: FavoritesRepository;
+  private _messages?: MessageRepository;
   private db: ReturnType<typeof getDb>;
 
   constructor(
-    d1Binding: D1Database,
+    private d1Binding: D1Database,
     private cache?: ICacheService,
   ) {
     this.db = getDb(d1Binding);
-    this.products = new ProductRepository(d1Binding);
-    this.categories = new CategoryRepository(d1Binding);
-    this.branchesRepo = new BranchRepository(d1Binding);
-    this.faq = new FaqRepository(d1Binding);
-    this.settingsRepo = new SettingsRepository(d1Binding);
-    this.aiLogs = new AiLogRepository(d1Binding);
-    this.menuConfigRepo = new MenuConfigRepository(d1Binding);
-    this.userState = new UserStateRepository(d1Binding);
-    this.favoritesRepo = new FavoritesRepository(d1Binding);
-    this.messages = new MessageRepository(d1Binding);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Lazy repository getters (??= avoids re-creating on every access)
+  // ---------------------------------------------------------------------------
+
+  private get products(): ProductRepository {
+    this._products ??= new ProductRepository(this.d1Binding);
+    return this._products;
+  }
+
+  private get categories(): CategoryRepository {
+    this._categories ??= new CategoryRepository(this.d1Binding);
+    return this._categories;
+  }
+
+  private get branchesRepo(): BranchRepository {
+    this._branchesRepo ??= new BranchRepository(this.d1Binding);
+    return this._branchesRepo;
+  }
+
+  private get faq(): FaqRepository {
+    this._faq ??= new FaqRepository(this.d1Binding);
+    return this._faq;
+  }
+
+  private get settingsRepo(): SettingsRepository {
+    this._settingsRepo ??= new SettingsRepository(this.d1Binding);
+    return this._settingsRepo;
+  }
+
+  private get aiLogs(): AiLogRepository {
+    this._aiLogs ??= new AiLogRepository(this.d1Binding);
+    return this._aiLogs;
+  }
+
+  private get menuConfigRepo(): MenuConfigRepository {
+    this._menuConfigRepo ??= new MenuConfigRepository(this.d1Binding);
+    return this._menuConfigRepo;
+  }
+
+  private get userState(): UserStateRepository {
+    this._userState ??= new UserStateRepository(this.d1Binding);
+    return this._userState;
+  }
+
+  private get favoritesRepo(): FavoritesRepository {
+    this._favoritesRepo ??= new FavoritesRepository(this.d1Binding);
+    return this._favoritesRepo;
+  }
+
+  private get messages(): MessageRepository {
+    this._messages ??= new MessageRepository(this.d1Binding);
+    return this._messages;
   }
 
   // ---------------------------------------------------------------------------
