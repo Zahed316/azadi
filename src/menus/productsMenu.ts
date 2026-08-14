@@ -5,7 +5,11 @@ import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
 import { buildListPage } from '../utils/faqPagination';
 import { mainMenu, getWelcomeText } from './mainMenu';
 import { MyContext } from '../types/context';
-import { pushMessage } from '../utils/menuLifecycle';
+import {
+  pushMessage,
+  getActiveMessage,
+  handleEditFailure,
+} from '../utils/menuLifecycle';
 
 /**
  * Pagination callback prefixes (page-size 5):
@@ -51,19 +55,24 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
       kb.text('🔙 بازگشت به منو', 'back:main');
 
       const body = `<b>کیک و کوکی</b> (${page.pageLabel})\n\nیک کیک یا کوکی انتخاب کنید:`;
-      const sent = await ctx
-        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
-        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
-      if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        const evicted = pushMessage(
-          ctx.session,
-          ctx.chat!.id,
-          (sent as { message_id: number }).message_id,
-          'cakes',
-        );
-        if (evicted) {
-          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        try {
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+            parse_mode: 'HTML',
+            reply_markup: kb,
+          });
+          active.state = 'cakes';
+          return;
+        } catch (e) {
+          await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: kb }, e);
+          return;
         }
+      }
+      const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'cakes');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
       }
     } catch (e) {
       console.error(e);
@@ -74,15 +83,25 @@ export const cakesMenu = new Menu<MyContext>('products-menu-cakes')
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
     const body = await getWelcomeText(ctx.dataService);
-    await ctx
-      .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
-      .catch(async () => {
-        const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
-        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
-        if (evicted) {
-          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
-        }
-      });
+    const active = getActiveMessage(ctx.session);
+    if (active) {
+      try {
+        await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+          parse_mode: 'HTML',
+          reply_markup: mainMenu,
+        });
+        active.state = 'main';
+        return;
+      } catch (e) {
+        await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: mainMenu }, e);
+        return;
+      }
+    }
+    const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
+    const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+    if (evicted) {
+      await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+    }
   });
 
 export const beansMenu = new Menu<MyContext>('products-menu-beans')
@@ -118,19 +137,24 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
       kb.text('🔙 بازگشت به منو', 'back:main');
 
       const body = `<b>دانه‌های قهوه</b> (${page.pageLabel})\n\nدانه قهوه مورد نظر را انتخاب کنید:`;
-      const sent = await ctx
-        .editMessageText(body, { parse_mode: 'HTML', reply_markup: kb })
-        .catch(() => ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb }));
-      if (sent && typeof sent === 'object' && 'message_id' in sent) {
-        const evicted = pushMessage(
-          ctx.session,
-          ctx.chat!.id,
-          (sent as { message_id: number }).message_id,
-          'beans',
-        );
-        if (evicted) {
-          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+      const active = getActiveMessage(ctx.session);
+      if (active) {
+        try {
+          await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+            parse_mode: 'HTML',
+            reply_markup: kb,
+          });
+          active.state = 'beans';
+          return;
+        } catch (e) {
+          await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: kb }, e);
+          return;
         }
+      }
+      const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: kb });
+      const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'beans');
+      if (evicted) {
+        await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
       }
     } catch (e) {
       console.error(e);
@@ -143,13 +167,23 @@ export const beansMenu = new Menu<MyContext>('products-menu-beans')
   .text('↩️ بازگشت', async (ctx) => {
     await ctx.answerCallbackQuery();
     const body = await getWelcomeText(ctx.dataService);
-    await ctx
-      .editMessageText(body, { parse_mode: 'HTML', reply_markup: mainMenu })
-      .catch(async () => {
-        const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
-        const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
-        if (evicted) {
-          await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
-        }
-      });
+    const active = getActiveMessage(ctx.session);
+    if (active) {
+      try {
+        await ctx.api.editMessageText(active.chatId, active.messageId, body, {
+          parse_mode: 'HTML',
+          reply_markup: mainMenu,
+        });
+        active.state = 'main';
+        return;
+      } catch (e) {
+        await handleEditFailure(ctx, body, { parse_mode: 'HTML', reply_markup: mainMenu }, e);
+        return;
+      }
+    }
+    const sent = await ctx.reply(body, { parse_mode: 'HTML', reply_markup: mainMenu });
+    const evicted = pushMessage(ctx.session, ctx.chat!.id, sent.message_id, 'main');
+    if (evicted) {
+      await ctx.api.deleteMessage(evicted.chatId, evicted.messageId).catch(() => {});
+    }
   });
