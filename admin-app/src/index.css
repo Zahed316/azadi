@@ -295,18 +295,46 @@ button.secondary:hover {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 8px 14px;
+  padding: 8px 4px;
   width: auto;
   border-radius: 8px;
   flex-shrink: 0;
   white-space: nowrap;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: color var(--duration-tab) var(--ease-spring);
 }
 
 .nav-item.active {
   color: var(--primary);
-  background: rgba(79, 70, 229, 0.1);
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  inset: auto 25% 4px 25%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--primary);
+  animation: nav-pill-in var(--duration-tab) var(--ease-spring);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes nav-pill-in {
+    from {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    to {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
 }
 
 .nav-icon {
