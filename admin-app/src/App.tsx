@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
-import { HashRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, NavLink, Navigate } from 'react-router';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import LoadingScreen from './components/Spinner';
 import { useToast, Toast } from './components/Toast';
