@@ -1871,3 +1871,66 @@ button.secondary:hover {
     margin-top: 4px;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Drawer — bottom-sheet panel for forms (ProductFormDrawer)           */
+/* ------------------------------------------------------------------ */
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: drawer-overlay-in var(--duration-drawer) var(--ease-out-quint);
+}
+
+@keyframes drawer-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.drawer-panel {
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  background: var(--bg-dark);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  overflow-y: auto;
+  animation: drawer-panel-in var(--duration-drawer) var(--ease-spring);
+}
+
+@keyframes drawer-panel-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.drawer-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 8px;
+}
+
+.drawer-content {
+  padding: 0 20px 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-overlay,
+  .drawer-panel {
+    animation: none;
+  }
+}
