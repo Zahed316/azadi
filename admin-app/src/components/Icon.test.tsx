@@ -56,6 +56,6 @@ describe('Icon', () => {
     expect(sprite).toBeInTheDocument();
 
     const symbols = sprite!.querySelectorAll('symbol');
-    expect(symbols.length).toBe(22);
+    expect(symbols.length).toBe(23);
   });
 });
