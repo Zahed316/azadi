@@ -33,12 +33,11 @@ export function SegmentedControl({ options, value, onChange }: SegmentedControlP
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     updateIndicator();
   }, [value]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (typeof ResizeObserver === 'undefined') return undefined;
     const observer = new ResizeObserver(() => {
@@ -49,6 +48,7 @@ export function SegmentedControl({ options, value, onChange }: SegmentedControlP
     }
     return () => observer.disconnect();
   }, []);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const handleClick = (opt: SegmentedControlOption) => {
     if (opt.value !== value) {
