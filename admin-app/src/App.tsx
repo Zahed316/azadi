@@ -83,7 +83,7 @@ function AppInner() {
           )}
           <Toast toast={toast} />
           {ConfirmModal}
-          <main>
+          <main className="page-enter">
             <Suspense fallback={<LoadingScreen />}>
               <ErrorBoundary>
                 <Routes>

@@ -1120,7 +1120,7 @@ button.secondary:hover {
 
 @media (prefers-reduced-motion: no-preference) {
   .chat-typing-dot {
-    animation: chat-bounce 1.4s infinite ease-in-out;
+    animation: chat-bounce 1.4s infinite var(--ease-in-out-quart);
   }
   .chat-typing-dot:nth-child(1) {
     animation-delay: 0s;
@@ -1897,6 +1897,31 @@ button.secondary:hover {
     width: 100%;
     justify-content: flex-end;
     margin-top: 4px;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Page enter animation                                               */
+/* ------------------------------------------------------------------ */
+
+.page-enter {
+  animation: page-in var(--duration-page) var(--ease-out-quint);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
   }
 }
 
