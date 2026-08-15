@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
 import type { ProductsResponse, CategoriesResponse, ProductRow } from '../api/types';
+import { useToggleProductField } from '../hooks/useProductMutations';
 import { useAppContext } from '../AppContext';
 import Field from './Field';
 import EmptyState from './EmptyState';
@@ -159,27 +160,7 @@ export default function ProductsSubTab() {
     },
   });
 
-  const toggleProductField = useMutation({
-    mutationFn: ({ id, field, value }: { id: number; field: string; value: boolean }) =>
-      field === 'available'
-        ? apiFetch(`/products/${id}/toggle`, { method: 'PUT', body: { available: value } })
-        : apiFetch(`/products/${id}`, { method: 'PUT', body: { [field]: value } }),
-    onMutate: async ({ id, field, value }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.products });
-      const prev = queryClient.getQueryData(queryKeys.products);
-      queryClient.setQueryData<ProductRow[]>(queryKeys.products, (old) =>
-        old?.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, context) => {
-      if (context?.prev) queryClient.setQueryData(queryKeys.products, context.prev);
-      showToast('خطا در تغییر وضعیت', 'error');
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
-    },
-  });
+  const toggleProductField = useToggleProductField();
 
   const batchMutation = useMutation({
     mutationFn: (data: { ids: number[]; action: string; updateData?: Record<string, unknown> }) =>
