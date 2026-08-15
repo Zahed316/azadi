@@ -35,48 +35,48 @@ These apply to every task. Values are copied verbatim from the spec or `CLAUDE.m
 
 ### New files
 
-| File | Purpose | Phase |
-|---|---|---|
-| `admin-app/vitest.config.ts` | vitest setup (jsdom, RTL plugin) | 0 |
-| `admin-app/src/__tests__/setup.ts` | test bootstrap (jest-dom matchers) | 0 |
-| `admin-app/src/__tests__/smoke.test.ts` | verify test infra works | 0 |
-| `admin-app/src/hooks/useTelegramTheme.ts` | subscribe to Telegram theme params | 1 |
-| `admin-app/src/hooks/useTelegramTheme.test.ts` | RTL test | 1 |
-| `admin-app/src/hooks/useTelegramHaptics.ts` | wrapper around `hapticFeedback` | 1 |
-| `admin-app/src/hooks/useTelegramHaptics.test.ts` | RTL test | 1 |
-| `admin-app/src/icons.tsx` | inline SVG sprite | 1 |
-| `admin-app/src/components/DoubleBezelCard.tsx` | nested-shell card primitive | 2 |
-| `admin-app/src/hooks/useProductMutations.ts` | extracted `toggleProductField` + shared mutations | 3 |
-| `admin-app/src/hooks/useProductMutations.test.ts` | TDD test for optimistic updates + rollback | 3 |
-| `admin-app/src/components/InlineStockEditor.tsx` | tap-to-edit stock with panic-zero | 3 |
-| `admin-app/src/components/InlineStockEditor.test.tsx` | RTL test | 3 |
-| `admin-app/src/components/SegmentedToggle.tsx` | two/three-state segmented control | 3 |
-| `admin-app/src/components/SegmentedToggle.test.tsx` | RTL test | 3 |
-| `admin-app/src/components/BranchSelector.tsx` | sticky branch picker pill | 3 |
-| `admin-app/src/components/BranchSelector.test.tsx` | RTL test | 3 |
-| `admin-app/src/components/InventoryList.tsx` | product card grid (extracted from ProductsSubTab) | 3 |
-| `admin-app/src/components/InventoryList.test.tsx` | RTL test for inline edits | 3 |
-| `admin-app/src/pages/CounterPage.tsx` | barista home screen | 4 |
-| `admin-app/src/pages/CounterPage.test.tsx` | RTL smoke test | 4 |
-| `admin-app/src/components/ProductFormDrawer.tsx` | bottom-sheet drawer for full CRUD | 5 |
-| `admin-app/src/components/ProductFormDrawer.test.tsx` | RTL test for form submission | 5 |
-| `admin-app/src/components/EmptyState.tsx` (modify) | support custom illustrations | 6 |
-| `admin-app/src/pages/SettingsPage.tsx` (modify — restructure) | sub-tabs `عمومی` / `محتوا` / `مدیریت` | 6 |
+| File                                                          | Purpose                                           | Phase |
+| ------------------------------------------------------------- | ------------------------------------------------- | ----- |
+| `admin-app/vitest.config.ts`                                  | vitest setup (jsdom, RTL plugin)                  | 0     |
+| `admin-app/src/__tests__/setup.ts`                            | test bootstrap (jest-dom matchers)                | 0     |
+| `admin-app/src/__tests__/smoke.test.ts`                       | verify test infra works                           | 0     |
+| `admin-app/src/hooks/useTelegramTheme.ts`                     | subscribe to Telegram theme params                | 1     |
+| `admin-app/src/hooks/useTelegramTheme.test.ts`                | RTL test                                          | 1     |
+| `admin-app/src/hooks/useTelegramHaptics.ts`                   | wrapper around `hapticFeedback`                   | 1     |
+| `admin-app/src/hooks/useTelegramHaptics.test.ts`              | RTL test                                          | 1     |
+| `admin-app/src/icons.tsx`                                     | inline SVG sprite                                 | 1     |
+| `admin-app/src/components/DoubleBezelCard.tsx`                | nested-shell card primitive                       | 2     |
+| `admin-app/src/hooks/useProductMutations.ts`                  | extracted `toggleProductField` + shared mutations | 3     |
+| `admin-app/src/hooks/useProductMutations.test.ts`             | TDD test for optimistic updates + rollback        | 3     |
+| `admin-app/src/components/InlineStockEditor.tsx`              | tap-to-edit stock with panic-zero                 | 3     |
+| `admin-app/src/components/InlineStockEditor.test.tsx`         | RTL test                                          | 3     |
+| `admin-app/src/components/SegmentedToggle.tsx`                | two/three-state segmented control                 | 3     |
+| `admin-app/src/components/SegmentedToggle.test.tsx`           | RTL test                                          | 3     |
+| `admin-app/src/components/BranchSelector.tsx`                 | sticky branch picker pill                         | 3     |
+| `admin-app/src/components/BranchSelector.test.tsx`            | RTL test                                          | 3     |
+| `admin-app/src/components/InventoryList.tsx`                  | product card grid (extracted from ProductsSubTab) | 3     |
+| `admin-app/src/components/InventoryList.test.tsx`             | RTL test for inline edits                         | 3     |
+| `admin-app/src/pages/CounterPage.tsx`                         | barista home screen                               | 4     |
+| `admin-app/src/pages/CounterPage.test.tsx`                    | RTL smoke test                                    | 4     |
+| `admin-app/src/components/ProductFormDrawer.tsx`              | bottom-sheet drawer for full CRUD                 | 5     |
+| `admin-app/src/components/ProductFormDrawer.test.tsx`         | RTL test for form submission                      | 5     |
+| `admin-app/src/components/EmptyState.tsx` (modify)            | support custom illustrations                      | 6     |
+| `admin-app/src/pages/SettingsPage.tsx` (modify — restructure) | sub-tabs `عمومی` / `محتوا` / `مدیریت`             | 6     |
 
 ### Modified files
 
-| File | Change | Phase |
-|---|---|---|
-| `admin-app/package.json` | add vitest + RTL + jsdom devDeps; add `test` and `test:watch` scripts | 0 |
-| `admin-app/src/index.css` | Vazirmatn+Geist CDN import; replace Inter; Double-Bezel tokens; motion tokens; `prefers-reduced-motion` fallbacks; bottom-nav sliding-pill | 1, 2 |
-| `admin-app/src/main.tsx` | bootstrap `useTelegramTheme` early; remove `prefers-color-scheme` hack | 1 |
-| `admin-app/src/pages/InventoryPage.tsx` | role-aware `initialTab` (Decision §2.3 verified gap); add `<BranchSelector>` above category chips | 1, 3 |
-| `admin-app/src/components/ProductsSubTab.tsx` | split into `<InventoryList>` + `<ProductFormDrawer>`; remove extracted mutations (now in `useProductMutations`) | 3, 5 |
-| `admin-app/src/components/ChatButton.tsx` | remove `if (!isSuperAdmin) return null` gate (line 14); restructure as nav tab | 2, 4 |
-| `admin-app/src/App.tsx` | add `/counter` route; theme bootstrap; bottom nav restructure (3 tabs + chat for both roles after Decision #5); role-based landing | 2, 4, 6 |
-| `admin-app/src/pages/ConfigurePage.tsx` | delete (content moves into SettingsPage sub-tabs) | 6 |
-| `admin-app/src/pages/InfoPage.tsx` | delete (content moves into SettingsPage sub-tabs) | 6 |
-| `admin-app/src/pages/SettingsPage.tsx` | add sub-tab switcher; render Settings + MenuConfig + AboutUs + Content + Admins + Messages via sub-tabs | 6 |
+| File                                          | Change                                                                                                                                     | Phase   |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `admin-app/package.json`                      | add vitest + RTL + jsdom devDeps; add `test` and `test:watch` scripts                                                                      | 0       |
+| `admin-app/src/index.css`                     | Vazirmatn+Geist CDN import; replace Inter; Double-Bezel tokens; motion tokens; `prefers-reduced-motion` fallbacks; bottom-nav sliding-pill | 1, 2    |
+| `admin-app/src/main.tsx`                      | bootstrap `useTelegramTheme` early; remove `prefers-color-scheme` hack                                                                     | 1       |
+| `admin-app/src/pages/InventoryPage.tsx`       | role-aware `initialTab` (Decision §2.3 verified gap); add `<BranchSelector>` above category chips                                          | 1, 3    |
+| `admin-app/src/components/ProductsSubTab.tsx` | split into `<InventoryList>` + `<ProductFormDrawer>`; remove extracted mutations (now in `useProductMutations`)                            | 3, 5    |
+| `admin-app/src/components/ChatButton.tsx`     | remove `if (!isSuperAdmin) return null` gate (line 14); restructure as nav tab                                                             | 2, 4    |
+| `admin-app/src/App.tsx`                       | add `/counter` route; theme bootstrap; bottom nav restructure (3 tabs + chat for both roles after Decision #5); role-based landing         | 2, 4, 6 |
+| `admin-app/src/pages/ConfigurePage.tsx`       | delete (content moves into SettingsPage sub-tabs)                                                                                          | 6       |
+| `admin-app/src/pages/InfoPage.tsx`            | delete (content moves into SettingsPage sub-tabs)                                                                                          | 6       |
+| `admin-app/src/pages/SettingsPage.tsx`        | add sub-tab switcher; render Settings + MenuConfig + AboutUs + Content + Admins + Messages via sub-tabs                                    | 6       |
 
 ### Don't touch
 
@@ -93,6 +93,7 @@ Prerequisite for TDD on hooks and stateful components. The admin-app currently h
 ### Task 0.1: Install vitest + React Testing Library + jsdom
 
 **Files:**
+
 - Modify: `admin-app/package.json`
 - Create: `admin-app/vitest.config.ts`
 - Create: `admin-app/src/__tests__/setup.ts`
@@ -101,6 +102,7 @@ Prerequisite for TDD on hooks and stateful components. The admin-app currently h
 - [ ] **Step 1: Install dev dependencies**
 
 Run:
+
 ```bash
 cd admin-app && npm install -D vitest@^2 @vitest/ui @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom @vitest/coverage-v8
 ```
@@ -110,6 +112,7 @@ Expected: 7 packages added to `package.json` `devDependencies`. No `dependencies
 - [ ] **Step 2: Add scripts to package.json**
 
 Edit `admin-app/package.json` `scripts` block. Add after `format:check`:
+
 ```json
 "test": "node ./node_modules/vitest/vitest.mjs run",
 "test:watch": "node ./node_modules/vitest/vitest.mjs"
@@ -120,6 +123,7 @@ Verify: `cat admin-app/package.json | grep -A1 '"test"'` shows both lines.
 - [ ] **Step 3: Create vitest.config.ts**
 
 Create `admin-app/vitest.config.ts`:
+
 ```typescript
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
@@ -138,6 +142,7 @@ export default defineConfig({
 - [ ] **Step 4: Create test setup file**
 
 Create `admin-app/src/__tests__/setup.ts`:
+
 ```typescript
 import '@testing-library/jest-dom/vitest';
 import { afterEach } from 'vitest';
@@ -151,6 +156,7 @@ afterEach(() => {
 - [ ] **Step 5: Write smoke test**
 
 Create `admin-app/src/__tests__/smoke.test.ts`:
+
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -198,6 +204,7 @@ Visual + theme groundwork with zero behavior change. Also fixes the role-aware `
 ### Task 1.1: Add Vazirmatn + Geist fonts via CDN
 
 **Files:**
+
 - Modify: `admin-app/src/index.css`
 
 - [ ] **Step 1: Read current index.css top section**
@@ -222,7 +229,8 @@ Then find the existing `:root` block (or wherever the font-family is declared) a
   --font-latin: 'Geist', var(--font-persian);
   font-family: var(--font-persian);
 }
-.digits, [dir='ltr'] {
+.digits,
+[dir='ltr'] {
   font-family: var(--font-latin);
 }
 ```
@@ -252,15 +260,18 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 1.2: Create `useTelegramTheme` hook
 
 **Files:**
+
 - Create: `admin-app/src/hooks/useTelegramTheme.ts`
 - Create: `admin-app/src/hooks/useTelegramTheme.test.ts`
 
 **Interfaces:**
+
 - Produces: `function useTelegramTheme(): { bg_color: string; text_color: string; button_color: string; hint_color: string; link_color: string; secondary_bg_color: string } | Record<string, never>`
 
 - [ ] **Step 1: Write failing test**
 
 Create `admin-app/src/hooks/useTelegramTheme.test.ts`:
+
 ```typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -292,6 +303,7 @@ Expected: FAIL with "Cannot find module './useTelegramTheme'".
 - [ ] **Step 3: Implement the hook**
 
 Create `admin-app/src/hooks/useTelegramTheme.ts`:
+
 ```typescript
 import { themeParamsState, mountThemeParams, bindThemeParamsCssVars } from '@telegram-apps/sdk';
 import { useEffect, useState } from 'react';
@@ -338,15 +350,18 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 1.3: Create `useTelegramHaptics` hook
 
 **Files:**
+
 - Create: `admin-app/src/hooks/useTelegramHaptics.ts`
 - Create: `admin-app/src/hooks/useTelegramHaptics.test.ts`
 
 **Interfaces:**
+
 - Produces: `function useTelegramHaptics(): { tap: () => void; success: () => void; error: () => void; select: () => void }`
 
 - [ ] **Step 1: Write failing test**
 
 Create `admin-app/src/hooks/useTelegramHaptics.test.ts`:
+
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
 
@@ -406,6 +421,7 @@ Expected: FAIL with "Cannot find module './useTelegramHaptics'".
 - [ ] **Step 3: Implement the hook**
 
 Create `admin-app/src/hooks/useTelegramHaptics.ts`:
+
 ```typescript
 import { hapticFeedback } from '@telegram-apps/sdk';
 
@@ -447,9 +463,11 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 1.4: Create inline SVG icon sprite
 
 **Files:**
+
 - Create: `admin-app/src/icons.tsx`
 
 **Interfaces:**
+
 - Produces: `<Sprite />` component (renders hidden SVG sprite) + `Icon` component for `<use href="#icon-name">` references.
 
 - [ ] **Step 1: Read App.tsx to inventory current emoji icons**
@@ -460,6 +478,7 @@ Expected: a list of emoji usage sites. Note which icons are needed.
 - [ ] **Step 2: Create icons.tsx with sprite + Icon component**
 
 Create `admin-app/src/icons.tsx`:
+
 ```tsx
 // Inline SVG icon sprite. No external icon library — see spec §6.3.
 // Each <symbol id="icon-NAME"> defines one icon. <Icon name="NAME" /> renders it via <use>.
@@ -467,16 +486,20 @@ Create `admin-app/src/icons.tsx`:
 const ICONS: Record<string, string> = {
   inventory: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/>',
   stats: '<path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/>',
-  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  settings:
+    '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
   info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
   chat: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
-  counter: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/>',
+  counter:
+    '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/>',
   close: '<path d="M18 6L6 18M6 6l12 12"/>',
   edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
-  trash: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  trash:
+    '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
   check: '<path d="M20 6L9 17l-5-5"/>',
   star: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
-  branch: '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M6 9v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V9M12 15v3"/>',
+  branch:
+    '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M6 9v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V9M12 15v3"/>',
 };
 
 export function Sprite() {
@@ -528,6 +551,7 @@ Edit `admin-app/src/main.tsx`. Find the `createRoot(...)` call and wrap `<App />
 The cleanest approach: import `Sprite` at the top of `App.tsx` and add `<Sprite />` as the first child of the root JSX element.
 
 Edit `admin-app/src/App.tsx`:
+
 - Add: `import { Sprite } from './icons';`
 - Inside the root `<>` fragment, add `<Sprite />` as the first element.
 
@@ -554,6 +578,7 @@ Note: this task creates the icon system but does NOT yet replace existing emoji 
 ### Task 1.5: Fix role-aware `initialTab` in InventoryPage
 
 **Files:**
+
 - Modify: `admin-app/src/pages/InventoryPage.tsx:17`
 
 - [ ] **Step 1: Read AppContext to find role flag**
@@ -588,6 +613,7 @@ Expected: PASS.
 
 Run: `cd admin-app && npm run dev`
 Test with both roles in Telegram:
+
 - `super_admin` opening `/inventory` → lands on `categories` sub-tab
 - `category_admin` opening `/inventory` → lands on `products` sub-tab
 - Both roles can switch via the sub-tab pill
@@ -614,11 +640,13 @@ Card primitive, motion tokens, sliding-pill nav, chat FAB → nav tab visual mov
 ### Task 2.1: Create `DoubleBezelCard` primitive
 
 **Files:**
+
 - Create: `admin-app/src/components/DoubleBezelCard.tsx`
 
 - [ ] **Step 1: Implement the component**
 
 Create `admin-app/src/components/DoubleBezelCard.tsx`:
+
 ```tsx
 import type { ReactNode } from 'react';
 
@@ -685,6 +713,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 2.2: Add motion tokens + `prefers-reduced-motion` fallbacks
 
 **Files:**
+
 - Modify: `admin-app/src/index.css`
 
 - [ ] **Step 1: Add motion tokens**
@@ -708,7 +737,9 @@ Add at the bottom of `index.css`:
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -738,6 +769,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 2.3: Refine bottom-nav active state with sliding pill indicator
 
 **Files:**
+
 - Modify: `admin-app/src/index.css`
 
 - [ ] **Step 1: Read current bottom-nav CSS**
@@ -780,8 +812,14 @@ Add a new rule:
 }
 
 @keyframes nav-pill-in {
-  from { transform: scaleX(0); opacity: 0; }
-  to { transform: scaleX(1); opacity: 1; }
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
 }
 ```
 
@@ -813,6 +851,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 2.4: Restructure ChatButton as a nav tab (visual only, gate stays)
 
 **Files:**
+
 - Modify: `admin-app/src/components/ChatButton.tsx`
 
 This task moves the visual structure only. The `if (!isSuperAdmin) return null` gate STAYS for now — removal is Task 4.4 (paired with the `/counter` route change).
@@ -846,6 +885,7 @@ export { ChatPanelView as ChatPanel };
 ```
 
 Add to `admin-app/src/AppContext.tsx`:
+
 ```typescript
 const [isChatOpen, setIsChatOpen] = useState(false);
 const openChat = () => setIsChatOpen(true);
@@ -859,13 +899,9 @@ Wire `isChatOpen`, `openChat`, `closeChat` into the context value.
 In `admin-app/src/App.tsx`, find the bottom nav `<nav>` element. Add a fifth `<NavLink>` item that calls `openChat()` instead of navigating. Use `<Icon name="chat" />` from the sprite.
 
 Example (find the existing nav and adapt):
+
 ```tsx
-<button
-  type="button"
-  className="nav-item"
-  onClick={openChat}
-  aria-label="دستیار"
->
+<button type="button" className="nav-item" onClick={openChat} aria-label="دستیار">
   <Icon name="chat" />
   <span>دستیار</span>
 </button>
@@ -907,10 +943,12 @@ The workhorse phase. Extract mutations, split the inventory list, build three ne
 ### Task 3.1: Create `useProductMutations` hook (TDD)
 
 **Files:**
+
 - Create: `admin-app/src/hooks/useProductMutations.ts`
 - Create: `admin-app/src/hooks/useProductMutations.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `function useToggleProductField(): UseMutationResult<{ id: number; field: string; value: boolean | number }, Error, { id: number; field: string; value: boolean | number }>`
   - `function useSaveProduct(): UseMutationResult<...>` (full product create/update)
@@ -922,6 +960,7 @@ The `toggleProductField` dispatch logic (from `ProductsSubTab.tsx:162-182`) is t
 - [ ] **Step 1: Write failing test**
 
 Create `admin-app/src/hooks/useProductMutations.test.ts`:
+
 ```typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -982,6 +1021,7 @@ Expected: FAIL — hook doesn't exist.
 - [ ] **Step 3: Implement the hook**
 
 Create `admin-app/src/hooks/useProductMutations.ts`:
+
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
@@ -1045,6 +1085,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 3.2: Replace ProductsSubTab's `toggleProductField` with the new hook
 
 **Files:**
+
 - Modify: `admin-app/src/components/ProductsSubTab.tsx`
 
 This is a pure refactor — no behavior change. Verifies the hook extraction works in production code before Phase 3 builds on it.
@@ -1054,11 +1095,13 @@ This is a pure refactor — no behavior change. Verifies the hook extraction wor
 In `ProductsSubTab.tsx`, find the `const toggleProductField = useMutation({ ... })` block (lines ~162-182). Delete it.
 
 Add near the top of the file (after the existing imports and hooks):
+
 ```typescript
 import { useToggleProductField } from '../hooks/useProductMutations';
 ```
 
 Inside the component:
+
 ```typescript
 const toggleProductField = useToggleProductField();
 ```
@@ -1088,16 +1131,19 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 3.3: Create `InlineStockEditor` component (TDD)
 
 **Files:**
+
 - Create: `admin-app/src/components/InlineStockEditor.tsx`
 - Create: `admin-app/src/components/InlineStockEditor.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `value: number`, `onChange: (n: number) => void`, `onZero?: () => void`
 - Produces: a tap-to-edit stock number with `+`/`−` buttons, long-press menu showing "صفر" (zero) and "نامحدود" (unlimited).
 
 - [ ] **Step 1: Write failing test**
 
 Create `admin-app/src/components/InlineStockEditor.test.tsx`:
+
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -1151,6 +1197,7 @@ Expected: FAIL.
 - [ ] **Step 3: Implement the component**
 
 Create `admin-app/src/components/InlineStockEditor.tsx`:
+
 ```tsx
 import { useState, useRef } from 'react';
 import { useTelegramHaptics } from '../hooks/useTelegramHaptics';
@@ -1234,7 +1281,9 @@ export function InlineStockEditor({ value, onChange, onZero }: InlineStockEditor
       >
         −
       </button>
-      <span className="stock-value" dir="ltr">{value}</span>
+      <span className="stock-value" dir="ltr">
+        {value}
+      </span>
       <button
         type="button"
         aria-label="+"
@@ -1258,6 +1307,7 @@ Adjust the test until it passes. The fourth test may need a different setup (e.g
 - [ ] **Step 5: Add CSS**
 
 In `admin-app/src/index.css`, add:
+
 ```css
 .stock-editor {
   display: inline-flex;
@@ -1311,16 +1361,19 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 3.4: Create `SegmentedToggle` component (TDD)
 
 **Files:**
+
 - Create: `admin-app/src/components/SegmentedToggle.tsx`
 - Create: `admin-app/src/components/SegmentedToggle.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `value: T`, `options: Array<{ value: T; label: string; ariaLabel?: string }>`, `onChange: (v: T) => void`
 - Produces: a horizontal segmented control with haptic feedback on change.
 
 - [ ] **Step 1: Write failing test**
 
 Create `admin-app/src/components/SegmentedToggle.test.tsx`:
+
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -1356,6 +1409,7 @@ Expected: FAIL.
 - [ ] **Step 3: Implement the component**
 
 Create `admin-app/src/components/SegmentedToggle.tsx`:
+
 ```tsx
 import { useTelegramHaptics } from '../hooks/useTelegramHaptics';
 
@@ -1408,6 +1462,7 @@ export function SegmentedToggle<T extends string | number | boolean>({
 - [ ] **Step 4: Add CSS**
 
 In `admin-app/src/index.css`:
+
 ```css
 .segmented-toggle {
   display: inline-flex;
@@ -1434,10 +1489,12 @@ In `admin-app/src/index.css`:
 - [ ] **Step 5: Run tests + check**
 
 Run:
+
 ```bash
 cd admin-app && npx vitest run src/components/SegmentedToggle.test.tsx
 cd admin-app && npm run check
 ```
+
 Expected: tests PASS, check PASS.
 
 - [ ] **Step 6: Commit**
@@ -1456,10 +1513,12 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 3.5: Create `BranchSelector` component (TDD)
 
 **Files:**
+
 - Create: `admin-app/src/components/BranchSelector.tsx`
 - Create: `admin-app/src/components/BranchSelector.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `branches: Branch[]`, `value: number | null` (`null` = "all branches"), `onChange: (v: number | null) => void`
 - Produces: a sticky pill with current branch name + ▾; tapping opens a sheet with "همه" + each branch.
 
@@ -1468,6 +1527,7 @@ Per Decision #4, the selection is **local state at the consumer**, not in this c
 - [ ] **Step 1: Write failing test**
 
 Create `admin-app/src/components/BranchSelector.test.tsx`:
+
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -1515,6 +1575,7 @@ Expected: FAIL.
 - [ ] **Step 3: Implement the component**
 
 Create `admin-app/src/components/BranchSelector.tsx`:
+
 ```tsx
 import { useState } from 'react';
 import { useTelegramHaptics } from '../hooks/useTelegramHaptics';
@@ -1534,7 +1595,7 @@ export function BranchSelector({ branches, value, onChange }: BranchSelectorProp
   const [open, setOpen] = useState(false);
   const haptics = useTelegramHaptics();
 
-  const current = value === null ? 'همه' : branches.find((b) => b.id === value)?.name ?? 'همه';
+  const current = value === null ? 'همه' : (branches.find((b) => b.id === value)?.name ?? 'همه');
 
   const select = (v: number | null) => {
     haptics.select();
@@ -1583,6 +1644,7 @@ export function BranchSelector({ branches, value, onChange }: BranchSelectorProp
 - [ ] **Step 4: Add CSS**
 
 In `admin-app/src/index.css`:
+
 ```css
 .branch-selector-pill {
   display: inline-flex;
@@ -1630,10 +1692,12 @@ In `admin-app/src/index.css`:
 - [ ] **Step 5: Run tests + check**
 
 Run:
+
 ```bash
 cd admin-app && npx vitest run src/components/BranchSelector.test.tsx
 cd admin-app && npm run check
 ```
+
 Expected: tests PASS, check PASS.
 
 - [ ] **Step 6: Commit**
@@ -1652,12 +1716,14 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 3.6: Extract `InventoryList` from `ProductsSubTab`
 
 **Files:**
+
 - Create: `admin-app/src/components/InventoryList.tsx`
 - Modify: `admin-app/src/components/ProductsSubTab.tsx`
 
 The current `ProductsSubTab.tsx` mixes list rendering and form. This task splits out the list portion. The form remains in `ProductsSubTab.tsx` for now (Phase 5 will move it to the drawer).
 
 **Interfaces:**
+
 - Consumes (InventoryList): `products: ProductRow[]`, `categories: Category[]`, `filterCatId: number | null`, `onFilterChange: (id: number | null) => void`, `branchId: number | null` (optional branch filter)
 - Produces: just the list UI — no mutations. Calls `onEdit(p: ProductRow)` to open the form, and accepts an `onToggle(id, field, value)` callback for inline edits.
 
@@ -1670,6 +1736,7 @@ Re-read `admin-app/src/components/ProductsSubTab.tsx` to identify the list porti
 Create `admin-app/src/components/InventoryList.tsx` with the extracted list + filter chips. Use `useToggleProductField` from the new hook for inline edits. Use `InlineStockEditor` and `SegmentedToggle` from Tasks 3.3 and 3.4. Use `BranchSelector` from Task 3.5 for branch filtering.
 
 Skeleton:
+
 ```tsx
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
@@ -1731,6 +1798,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 3.7: Wire panic-zero + haptic feedback in `InventoryList`
 
 **Files:**
+
 - Modify: `admin-app/src/components/InventoryList.tsx`
 
 - [ ] **Step 1: Wire `onZero` to useToggleProductField**
@@ -1743,6 +1811,7 @@ const haptics = useTelegramHaptics();
 ```
 
 Pass `onZero` to `<InlineStockEditor>`:
+
 ```tsx
 <InlineStockEditor
   value={p.stock}
@@ -1791,11 +1860,13 @@ New barista home. Reuses hooks from Phase 3, adds routing + nav restructure.
 ### Task 4.1: Create `CounterPage`
 
 **Files:**
+
 - Create: `admin-app/src/pages/CounterPage.tsx`
 
 - [ ] **Step 1: Implement CounterPage**
 
 Create `admin-app/src/pages/CounterPage.tsx`:
+
 ```tsx
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -1852,7 +1923,7 @@ export default function CounterPage() {
   }, [visibleProducts]);
 
   const handleActionSheet = async (p: ProductRow) => {
-    const choice = await (window.confirm(`عملیات روی ${p.name}:\nOK = مخفی کردن`));
+    const choice = await window.confirm(`عملیات روی ${p.name}:\nOK = مخفی کردن`);
     if (choice) {
       toggle.mutate({ id: p.id, field: 'available', value: false });
       showToast(`${p.name} مخفی شد`, 'success');
@@ -1876,7 +1947,9 @@ export default function CounterPage() {
           const cat = categories.find((c) => c.id === catId);
           return (
             <section key={catId} className="counter-category">
-              <h2>{cat?.emoji} {cat?.name ?? 'سایر'}</h2>
+              <h2>
+                {cat?.emoji} {cat?.name ?? 'سایر'}
+              </h2>
               {items.map((p) => (
                 <article key={p.id} className="counter-product">
                   <span className="counter-product-name">{p.name}</span>
@@ -1949,16 +2022,18 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 4.2: Wire `/counter` route + role-based landing
 
 **Files:**
+
 - Modify: `admin-app/src/App.tsx`
 
 - [ ] **Step 1: Add the route**
 
 In `App.tsx`, find the existing routes. Add a new route above `/inventory`:
+
 ```tsx
 import CounterPage from './pages/CounterPage';
 
 // inside <Routes>:
-<Route path="/counter" element={<CounterPage />} />
+<Route path="/counter" element={<CounterPage />} />;
 ```
 
 - [ ] **Step 2: Add role-based landing**
@@ -2004,6 +2079,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 4.3: Remove `isSuperAdmin` gate in `ChatButton`
 
 **Files:**
+
 - Modify: `admin-app/src/components/ChatButton.tsx`
 
 Per Decision #2, the chat panel becomes reachable by both roles.
@@ -2040,6 +2116,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 4.4: Trim bottom nav to 3 tabs + chat for `category_admin`
 
 **Files:**
+
 - Modify: `admin-app/src/App.tsx`
 
 - [ ] **Step 1: Read current nav rendering in App.tsx**
@@ -2049,21 +2126,22 @@ Run: `grep -n -A20 "bottom-nav\|NavLink" admin-app/src/App.tsx | head -60`
 - [ ] **Step 2: Update nav structure**
 
 For `category_admin`:
+
 - Tabs: `پیشخوان` (`/counter`) / `موجودی` (`/inventory?tab=products`) + chat tab
 - 3 total items in the nav
 
 For `super_admin`:
+
 - Tabs: `موجودی` / `آمار` / `تنظیمات` + chat tab
 - (Configure + Info consolidation is Phase 6 — for now, keep all 4 super_admin tabs)
 - 4 total items
 
 Wrap the nav rendering:
+
 ```tsx
-{isSuperAdmin ? (
-  <SuperAdminNav />
-) : (
-  <CategoryAdminNav />
-)}
+{
+  isSuperAdmin ? <SuperAdminNav /> : <CategoryAdminNav />;
+}
 ```
 
 Each nav component returns the appropriate NavLinks.
@@ -2099,15 +2177,18 @@ Move the form into a Telegram-native bottom-sheet drawer with `backButton` close
 ### Task 5.1: Create `ProductFormDrawer` component
 
 **Files:**
+
 - Create: `admin-app/src/components/ProductFormDrawer.tsx`
 
 **Interfaces:**
+
 - Consumes: `product: ProductRow | null` (null = closed), `onClose: () => void`, `onSubmit: (data) => void`
 - Produces: a bottom-sheet drawer with the full product form.
 
 - [ ] **Step 1: Implement the drawer**
 
 Create `admin-app/src/components/ProductFormDrawer.tsx`:
+
 ```tsx
 import { useState, useEffect } from 'react';
 import { backButton, mainButton } from '@telegram-apps/sdk';
@@ -2139,7 +2220,12 @@ export interface ProductFormData {
   imageUrl: string | null;
 }
 
-export function ProductFormDrawer({ product, onClose, onSubmit, isPending }: ProductFormDrawerProps) {
+export function ProductFormDrawer({
+  product,
+  onClose,
+  onSubmit,
+  isPending,
+}: ProductFormDrawerProps) {
   // ... full form state, mirroring the current ProductsSubTab form ...
   // Render only when product !== null; otherwise return null.
 }
@@ -2150,6 +2236,7 @@ The full implementation mirrors the form fields in `ProductsSubTab.tsx` lines ~3
 - [ ] **Step 2: Wire Telegram backButton + mainButton**
 
 Inside the component, in a `useEffect` that runs when the drawer opens:
+
 ```typescript
 useEffect(() => {
   if (!product) return;
@@ -2195,11 +2282,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 5.2: Use `ProductFormDrawer` from `InventoryList`
 
 **Files:**
+
 - Modify: `admin-app/src/components/InventoryList.tsx`
 
 - [ ] **Step 1: Replace the inline form trigger**
 
 In `InventoryList.tsx`, replace the "edit" button behavior to open the drawer:
+
 ```tsx
 const [editingProduct, setEditingProduct] = useState<ProductRow | null>(null);
 
@@ -2207,9 +2296,11 @@ const [editingProduct, setEditingProduct] = useState<ProductRow | null>(null);
 <ProductFormDrawer
   product={editingProduct}
   onClose={() => setEditingProduct(null)}
-  onSubmit={(data) => saveProductMutation.mutate({ method: 'PUT', id: editingProduct.id, body: data })}
+  onSubmit={(data) =>
+    saveProductMutation.mutate({ method: 'PUT', id: editingProduct.id, body: data })
+  }
   isPending={saveProductMutation.isPending}
-/>
+/>;
 ```
 
 - [ ] **Step 2: Move `saveProductMutation` from ProductsSubTab to useProductMutations (or duplicate)**
@@ -2254,12 +2345,14 @@ Clone-to-other-branch action, empty states, Configure+Info consolidation, final 
 ### Task 6.1: Add "Clone to other branch" action
 
 **Files:**
+
 - Modify: `admin-app/src/pages/CounterPage.tsx`
 - Modify: `admin-app/src/components/InventoryList.tsx`
 
 - [ ] **Step 1: Implement the clone action**
 
 Create a small helper in `admin-app/src/api/client.ts` or a new file `admin-app/src/api/products.ts`:
+
 ```typescript
 export async function cloneProductToBranch(id: number, targetBranchId: number) {
   return apiFetch(`/products/${id}/clone`, {
@@ -2296,6 +2389,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 6.2: Empty state illustrations
 
 **Files:**
+
 - Modify: `admin-app/src/components/EmptyState.tsx`
 - Modify: `admin-app/src/pages/CounterPage.tsx`
 - Modify: `admin-app/src/components/InventoryList.tsx`
@@ -2312,6 +2406,7 @@ interface EmptyStateProps {
 - [ ] **Step 2: Add inline SVG illustrations**
 
 Create a small set of inline SVG illustrations in `admin-app/src/illustrations.tsx`:
+
 - `<NoProductsIllustration />` — empty basket
 - `<NoSearchResultsIllustration />` — magnifying glass with question mark
 
@@ -2340,6 +2435,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 6.3: Merge Configure + Info into SettingsPage (sub-tabs)
 
 **Files:**
+
 - Modify: `admin-app/src/pages/SettingsPage.tsx`
 - Delete: `admin-app/src/pages/ConfigurePage.tsx`
 - Delete: `admin-app/src/pages/InfoPage.tsx`
@@ -2350,19 +2446,41 @@ Per Decision #5.
 - [ ] **Step 1: Add sub-tab switcher to SettingsPage**
 
 SettingsPage becomes:
+
 ```tsx
 export default function SettingsPage() {
   const [tab, setTab] = useState<'general' | 'content' | 'admin'>('general');
   return (
     <div className="settings-page">
       <div className="sub-tab-switcher" role="tablist">
-        <button role="tab" aria-selected={tab === 'general'} onClick={() => setTab('general')}>عمومی</button>
-        <button role="tab" aria-selected={tab === 'content'} onClick={() => setTab('content')}>محتوا</button>
-        <button role="tab" aria-selected={tab === 'admin'} onClick={() => setTab('admin')}>مدیریت</button>
+        <button role="tab" aria-selected={tab === 'general'} onClick={() => setTab('general')}>
+          عمومی
+        </button>
+        <button role="tab" aria-selected={tab === 'content'} onClick={() => setTab('content')}>
+          محتوا
+        </button>
+        <button role="tab" aria-selected={tab === 'admin'} onClick={() => setTab('admin')}>
+          مدیریت
+        </button>
       </div>
-      {tab === 'general' && (<><SettingsForm /><MenuConfigPage /></>)}
-      {tab === 'content' && (<><AboutUsPage /><ContentPage /></>)}
-      {tab === 'admin' && (<><AdminsPage /><MessagesPage /></>)}
+      {tab === 'general' && (
+        <>
+          <SettingsForm />
+          <MenuConfigPage />
+        </>
+      )}
+      {tab === 'content' && (
+        <>
+          <AboutUsPage />
+          <ContentPage />
+        </>
+      )}
+      {tab === 'admin' && (
+        <>
+          <AdminsPage />
+          <MessagesPage />
+        </>
+      )}
     </div>
   );
 }
@@ -2373,6 +2491,7 @@ Move the existing Settings form code into a private `<SettingsForm>` component a
 - [ ] **Step 2: Remove ConfigurePage and InfoPage from routing**
 
 In `App.tsx`, find the routes for `/configure` and `/info`. Replace them with a single route:
+
 ```tsx
 <Route path="/settings" element={<SettingsPage />} />
 ```
@@ -2415,6 +2534,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 6.4: Final motion polish + verify Success Criteria
 
 **Files:**
+
 - Modify: `admin-app/src/index.css`
 
 - [ ] **Step 1: Audit transitions**
@@ -2424,13 +2544,20 @@ Search for `transition:` and `animation:` in `index.css`. Replace any `linear` o
 - [ ] **Step 2: Add page-enter animation**
 
 In `index.css`:
+
 ```css
 .page-enter {
   animation: page-in var(--duration-page) var(--ease-out-quint);
 }
 @keyframes page-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 ```
 
@@ -2439,15 +2566,18 @@ Apply `className="page-enter"` to the main `<Outlet>` wrapper in `App.tsx` (or t
 - [ ] **Step 3: Run full check + build**
 
 Run:
+
 ```bash
 cd admin-app && npm run check
 cd admin-app && npm run build
 ```
+
 Expected: PASS.
 
 - [ ] **Step 4: Verify all 9 success criteria from spec §11**
 
 Walk through the 9-item list manually on a real Telegram client. Confirm:
+
 1. Barista lands on `/counter`, can mark any product out of stock in 1 tap.
 2. Owner can edit stock/availability/featured inline without opening the drawer.
 3. `category_admin` opening `/inventory` lands on `products` sub-tab.
@@ -2479,35 +2609,36 @@ Run the spec → plan checklist:
 
 ### 1. Spec coverage
 
-| Spec section / requirement | Covered by |
-|---|---|
-| §1 Problem statement (no impl required) | n/a |
-| §2 Recommended direction (one-app-two-homes) | Phase 4 (Counter + role-based landing) |
-| §3 Per-branch Path A | Phase 3.6 (BranchSelector + branch filter), Phase 6.1 (clone action) |
-| §4.1 Inventory refined | Phase 1.5 (role-aware tab), Phase 3.6 (InventoryList) |
-| §4.2 NEW /counter | Phase 4.1 (CounterPage) |
-| §4.3 Editor trigger | Phase 5 (ProductFormDrawer replaces inline form) |
-| §4.4 Configure + Info consolidation | Phase 6.3 |
-| §5.1 Telegram affordances v2 API | Phase 1.2 (useTelegramTheme), 1.3 (useTelegramHaptics), 5.1 (backButton + mainButton) |
-| §5.2 Double-Bezel cards | Phase 2.1 |
-| §5.3 Inline editing | Phase 3 (InlineStockEditor, SegmentedToggle, panic-zero) |
-| §5.4 Bottom nav refinement | Phase 2.3 (sliding pill), 2.4 (FAB→nav), 4.4 (role-specific nav), 6.3 (consolidation) |
-| §5.5 Motion language | Phase 2.2 (tokens), 6.4 (polish) |
-| §6.1 Vazirmatn + Geist via CDN | Phase 1.1 |
-| §6.2 Color tokens + Telegram theme | Phase 1.2 (theme hook auto-applies via bindThemeParamsCssVars) |
-| §6.3 Iconography | Phase 1.4 (sprite), 2.4 (use Icon in nav) |
-| §6.4 Layout archetype | Implicit (no layout change beyond CSS tokens) |
-| §7.1 Modify files | All covered |
-| §7.2 Create files | All covered |
-| §7.3 Don't touch | Honored (no backend/schema changes) |
-| §9 Phase 1-6 | All 6 phases mapped |
-| §11 SC1-9 | Phase 6.4 explicitly verifies all 9 |
+| Spec section / requirement                   | Covered by                                                                            |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- |
+| §1 Problem statement (no impl required)      | n/a                                                                                   |
+| §2 Recommended direction (one-app-two-homes) | Phase 4 (Counter + role-based landing)                                                |
+| §3 Per-branch Path A                         | Phase 3.6 (BranchSelector + branch filter), Phase 6.1 (clone action)                  |
+| §4.1 Inventory refined                       | Phase 1.5 (role-aware tab), Phase 3.6 (InventoryList)                                 |
+| §4.2 NEW /counter                            | Phase 4.1 (CounterPage)                                                               |
+| §4.3 Editor trigger                          | Phase 5 (ProductFormDrawer replaces inline form)                                      |
+| §4.4 Configure + Info consolidation          | Phase 6.3                                                                             |
+| §5.1 Telegram affordances v2 API             | Phase 1.2 (useTelegramTheme), 1.3 (useTelegramHaptics), 5.1 (backButton + mainButton) |
+| §5.2 Double-Bezel cards                      | Phase 2.1                                                                             |
+| §5.3 Inline editing                          | Phase 3 (InlineStockEditor, SegmentedToggle, panic-zero)                              |
+| §5.4 Bottom nav refinement                   | Phase 2.3 (sliding pill), 2.4 (FAB→nav), 4.4 (role-specific nav), 6.3 (consolidation) |
+| §5.5 Motion language                         | Phase 2.2 (tokens), 6.4 (polish)                                                      |
+| §6.1 Vazirmatn + Geist via CDN               | Phase 1.1                                                                             |
+| §6.2 Color tokens + Telegram theme           | Phase 1.2 (theme hook auto-applies via bindThemeParamsCssVars)                        |
+| §6.3 Iconography                             | Phase 1.4 (sprite), 2.4 (use Icon in nav)                                             |
+| §6.4 Layout archetype                        | Implicit (no layout change beyond CSS tokens)                                         |
+| §7.1 Modify files                            | All covered                                                                           |
+| §7.2 Create files                            | All covered                                                                           |
+| §7.3 Don't touch                             | Honored (no backend/schema changes)                                                   |
+| §9 Phase 1-6                                 | All 6 phases mapped                                                                   |
+| §11 SC1-9                                    | Phase 6.4 explicitly verifies all 9                                                   |
 
 Gaps: none.
 
 ### 2. Placeholder scan
 
 Searched for: `TODO`, `TBD`, `implement later`, `add appropriate`, `fill in details`. Found in earlier draft (now resolved):
+
 - `Phase 0.1` has no placeholders.
 - `Task 3.3` Step 4 has a contingency note about long-press test limitations — that's documented behavior, not a placeholder.
 - `Task 5.2` Step 2 has a decision point (move or duplicate `saveProductMutation`) — that's a real choice the implementer makes based on remaining form structure, not a placeholder.
