@@ -1,6 +1,7 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import LoadingScreen from '../components/Spinner';
+import { useAppContext } from '../AppContext';
 
 type SubTab = 'categories' | 'products';
 
@@ -13,8 +14,10 @@ const CategoriesSubTab = lazy(() => import('../components/CategoriesSubTab'));
 const ProductsSubTab = lazy(() => import('../components/ProductsSubTab'));
 
 export default function InventoryPage() {
+  const { isSuperAdmin } = useAppContext();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = (searchParams.get('tab') as SubTab) || 'categories';
+  const requestedTab = (searchParams.get('tab') as SubTab) || null;
+  const initialTab: SubTab = requestedTab ?? (isSuperAdmin ? 'categories' : 'products');
   const [activeTab, setActiveTab] = useState<SubTab>(initialTab);
 
   const switchTab = useCallback(
