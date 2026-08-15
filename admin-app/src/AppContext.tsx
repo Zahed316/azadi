@@ -9,6 +9,9 @@ export interface AppContextValue {
   showToast: (msg: string, kind?: 'success' | 'error') => void;
   confirm: (message: string) => Promise<boolean>;
   setError: (msg: string) => void;
+  isChatOpen: boolean;
+  openChat: () => void;
+  closeChat: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);

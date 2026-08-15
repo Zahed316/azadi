@@ -276,7 +276,7 @@ function TypingIndicator() {
  * Renders a scrollable message list, an input bar, and a clear-history
  * button. Uses `useAIChat` for state management and API calls.
  */
-export default function ChatPanel() {
+export default function ChatPanel({ onClose }: { onClose?: () => void } = {}) {
   const {
     messages,
     isSending,
@@ -316,14 +316,21 @@ export default function ChatPanel() {
       {/* Header */}
       <div className="chat-header">
         <h3 style={{ margin: 0 }}>دستیار هوش مصنوعی</h3>
-        <button
-          type="button"
-          className="chat-clear-btn"
-          onClick={handleClear}
-          disabled={messages.length === 0 && !isSending}
-        >
-          پاک کردن تاریخچه
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {onClose && (
+            <button type="button" className="chat-clear-btn" onClick={onClose}>
+              بستن
+            </button>
+          )}
+          <button
+            type="button"
+            className="chat-clear-btn"
+            onClick={handleClear}
+            disabled={messages.length === 0 && !isSending}
+          >
+            پاک کردن تاریخچه
+          </button>
+        </div>
       </div>
 
       {/* Messages area */}

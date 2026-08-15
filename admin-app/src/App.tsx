@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import LoadingScreen from './components/Spinner';
@@ -9,17 +9,22 @@ import { apiFetch } from './api/client';
 import { queryKeys } from './api/keys';
 import type { CurrentUserResponse } from './api/types';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import IconSprite from './components/IconSprite';
+import Icon from './components/Icon';
+import ChatPanel from './components/ChatPanel';
 
 const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 const InsightsPage = lazy(() => import('./pages/InsightsPage'));
 const ConfigurePage = lazy(() => import('./pages/ConfigurePage'));
 const InfoPage = lazy(() => import('./pages/InfoPage'));
-const ChatButton = lazy(() => import('./components/ChatButton'));
 
 const queryClient = new QueryClient();
 
 function AppInner() {
   const [error, setError] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const openChat = useCallback(() => setIsChatOpen(true), []);
+  const closeChat = useCallback(() => setIsChatOpen(false), []);
 
   const { toast, showToast } = useToast();
   const { confirm, ConfirmModal } = useConfirm();
@@ -46,8 +51,22 @@ function AppInner() {
       showToast,
       confirm,
       setError,
+      isChatOpen,
+      openChat,
+      closeChat,
     }),
-    [currentUser, currentUserLoading, isSuperAdmin, allowedCatId, showToast, confirm, setError],
+    [
+      currentUser,
+      currentUserLoading,
+      isSuperAdmin,
+      allowedCatId,
+      showToast,
+      confirm,
+      setError,
+      isChatOpen,
+      openChat,
+      closeChat,
+    ],
   );
 
   if (currentUserLoading) return <LoadingScreen />;
@@ -55,6 +74,7 @@ function AppInner() {
   return (
     <AppContext.Provider value={ctxValue}>
       <HashRouter>
+        <IconSprite />
         <div className="container" style={{ paddingBottom: '80px' }}>
           {error && (
             <div className="error" role="alert" aria-live="assertive">
@@ -141,10 +161,21 @@ function AppInner() {
                 </NavLink>
               </>
             )}
+            <button
+              type="button"
+              className={`nav-item ${isChatOpen ? 'active' : ''}`}
+              onClick={() => (isChatOpen ? closeChat() : openChat())}
+              aria-label="دستیار"
+            >
+              <Icon name="chat" size={18} />
+              <span style={{ marginRight: 6 }}>دستیار</span>
+            </button>
           </nav>
-          <Suspense fallback={null}>
-            <ChatButton />
-          </Suspense>
+          {isChatOpen && (
+            <Suspense fallback={null}>
+              <ChatPanel onClose={closeChat} />
+            </Suspense>
+          )}
         </div>
       </HashRouter>
     </AppContext.Provider>
