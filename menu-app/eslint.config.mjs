@@ -7,7 +7,13 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['node_modules/**', 'dist/**', 'eslint.config.mjs', 'vite.config.ts'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'eslint.config.mjs',
+      'vite.config.ts',
+      'vitest.config.ts', // not in tsconfig's include
+    ],
   },
 
   js.configs.recommended,

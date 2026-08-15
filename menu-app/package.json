@@ -11,7 +11,8 @@
     "format:check": "node ./node_modules/prettier/bin/prettier.cjs --check .",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
     "build": "node ./node_modules/typescript/bin/tsc && node ./node_modules/vite/bin/vite.js build && rm -f dist/assets/*.woff",
-    "check": "npm run typecheck && npm run lint && npm run format:check"
+    "test": "node ./node_modules/vitest/vitest.mjs run",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.3.0",
@@ -22,16 +23,22 @@
     "react-router-dom": "^6.30.4"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.4",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.26",
     "globals": "^15.15.0",
+    "jsdom": "^30.0.1",
     "prettier": "^3.9.6",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.66.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^2.1.9"
   }
 }
