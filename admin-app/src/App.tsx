@@ -15,8 +15,7 @@ import ChatPanel from './components/ChatPanel';
 
 const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 const InsightsPage = lazy(() => import('./pages/InsightsPage'));
-const ConfigurePage = lazy(() => import('./pages/ConfigurePage'));
-const InfoPage = lazy(() => import('./pages/InfoPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const CounterPage = lazy(() => import('./pages/CounterPage'));
 
 const queryClient = new QueryClient();
@@ -105,26 +104,21 @@ function AppInner() {
                     element={isSuperAdmin ? <InsightsPage /> : <Navigate to="/inventory" replace />}
                   />
                   <Route
-                    path="/configure"
-                    element={
-                      isSuperAdmin ? <ConfigurePage /> : <Navigate to="/inventory" replace />
-                    }
-                  />
-                  <Route
-                    path="/info"
-                    element={isSuperAdmin ? <InfoPage /> : <Navigate to="/inventory" replace />}
+                    path="/settings"
+                    element={isSuperAdmin ? <SettingsPage /> : <Navigate to="/inventory" replace />}
                   />
                   {/* Redirect old routes to grouped pages */}
-                  <Route path="/settings" element={<Navigate to="/configure" replace />} />
-                  <Route path="/branches" element={<Navigate to="/info" replace />} />
-                  <Route path="/faqs" element={<Navigate to="/info" replace />} />
-                  <Route path="/admins" element={<Navigate to="/configure" replace />} />
-                  <Route path="/menu-config" element={<Navigate to="/configure" replace />} />
+                  <Route path="/configure" element={<Navigate to="/settings" replace />} />
+                  <Route path="/info" element={<Navigate to="/settings" replace />} />
+                  <Route path="/branches" element={<Navigate to="/settings" replace />} />
+                  <Route path="/faqs" element={<Navigate to="/settings" replace />} />
+                  <Route path="/admins" element={<Navigate to="/settings" replace />} />
+                  <Route path="/menu-config" element={<Navigate to="/settings" replace />} />
                   <Route path="/streaks" element={<Navigate to="/insights" replace />} />
                   <Route path="/favorites" element={<Navigate to="/insights" replace />} />
                   <Route path="/ai-logs" element={<Navigate to="/insights" replace />} />
                   <Route path="/ai-test" element={<Navigate to="/insights" replace />} />
-                  <Route path="/messages" element={<Navigate to="/info" replace />} />
+                  <Route path="/messages" element={<Navigate to="/settings" replace />} />
                   <Route
                     path="*"
                     element={<Navigate to={isSuperAdmin ? '/inventory' : '/counter'} replace />}
@@ -151,18 +145,11 @@ function AppInner() {
                   <span className="nav-icon">📊</span>آمار و گزارش
                 </NavLink>
                 <NavLink
-                  to="/configure"
+                  to="/settings"
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   onClick={scrollToTop}
                 >
                   <span className="nav-icon">⚙️</span>تنظیمات
-                </NavLink>
-                <NavLink
-                  to="/info"
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  onClick={scrollToTop}
-                >
-                  <span className="nav-icon">ℹ️</span>اطلاعات
                 </NavLink>
               </>
             ) : (
