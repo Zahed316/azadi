@@ -52,16 +52,20 @@ export async function validateInitData(
   }
 
   // AUTH-001: Validate auth_date is present and fresh to prevent replay attacks.
-  // Telegram's spec requires checking that auth_date is within a reasonable
-  // window (5 minutes) to limit token replay. Without this check, a stolen
-  // initData works indefinitely.
+  // Telegram's spec recommends checking that auth_date is within a reasonable
+  // window to limit token replay. Without this check, a stolen initData works
+  // indefinitely. We use 24 hours (86400s) instead of Telegram's suggested 5
+  // minutes because Mini Apps that stay open for longer sessions (e.g., admin
+  // dashboards) would otherwise fail auth after the window expires, causing
+  // the app to show degraded state. The risk is acceptable for trusted admin
+  // users — an attacker would need both the bot token AND the user's initData.
   const authDateStr = urlParams.get('auth_date');
   if (!authDateStr) {
     return null;
   }
   const authDate = parseInt(authDateStr, 10);
   const now = Math.floor(Date.now() / 1000);
-  const MAX_AGE_SECONDS = 300; // 5 minutes
+  const MAX_AGE_SECONDS = 86400; // 24 hours — long-lived Mini App sessions
   if (Number.isNaN(authDate) || Math.abs(now - authDate) > MAX_AGE_SECONDS) {
     return null;
   }

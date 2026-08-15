@@ -93,8 +93,8 @@ test('missing auth_date returns null', async () => {
 });
 
 // AUTH-001: auth_date freshness check
-test('auth_date outside 5-minute window returns null', async () => {
-  const oldDate = Math.floor(Date.now() / 1000) - 600; // 10 minutes ago
+test('auth_date outside 24-hour window returns null', async () => {
+  const oldDate = Math.floor(Date.now() / 1000) - 90000; // 25 hours ago
   const { initData } = await buildInitData({
     auth_date: String(oldDate),
     user: JSON.stringify({ id: 1, first_name: 'Test' }),
@@ -105,7 +105,7 @@ test('auth_date outside 5-minute window returns null', async () => {
 });
 
 test('auth_date in the future returns null', async () => {
-  const futureDate = Math.floor(Date.now() / 1000) + 600; // 10 minutes ahead
+  const futureDate = Math.floor(Date.now() / 1000) + 90000; // 25 hours ahead
   const { initData } = await buildInitData({
     auth_date: String(futureDate),
     user: JSON.stringify({ id: 1, first_name: 'Test' }),
