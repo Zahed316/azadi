@@ -1587,3 +1587,287 @@ button.secondary:hover {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* CounterPage — barista home screen                                   */
+/* ------------------------------------------------------------------ */
+
+.counter-page {
+  padding-bottom: 16px;
+}
+
+.counter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.counter-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.counter-search-btn {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.counter-search-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  transform: none;
+}
+
+/* Category groups */
+.counter-category {
+  margin-bottom: 20px;
+}
+
+.counter-category-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.counter-category-emoji {
+  font-size: 18px;
+}
+
+.counter-products {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Product rows */
+.counter-product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+}
+
+.counter-product-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.counter-product-name {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.counter-product-badge {
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.counter-product-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.counter-product-action {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.counter-product-action:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  transform: none;
+}
+
+/* Search overlay */
+.counter-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 60px;
+  animation: counter-overlay-in 0.15s ease;
+}
+
+@keyframes counter-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.counter-search-dialog {
+  width: calc(100% - 32px);
+  max-width: 400px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.counter-search-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.counter-search-input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-main);
+  font-size: 15px;
+  margin-bottom: 0;
+}
+
+.counter-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.counter-search-close {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.counter-search-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  transform: none;
+}
+
+/* Action sheet */
+.counter-action-sheet {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: counter-sheet-in 0.2s var(--ease-spring);
+}
+
+@keyframes counter-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.counter-action-sheet-item {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.counter-action-sheet-item:last-child {
+  border-bottom: none;
+}
+
+.counter-action-sheet-item:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.counter-action-sheet-item.danger {
+  color: var(--danger);
+}
+
+.counter-action-sheet-item.danger:active {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .counter-search-overlay,
+  .counter-action-sheet {
+    animation: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .counter-product {
+    flex-wrap: wrap;
+  }
+
+  .counter-product-controls {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+}
