@@ -134,15 +134,15 @@ function AppInner() {
             </Suspense>
           </main>
           <nav className="bottom-nav" aria-label="ناوبری اصلی">
-            <NavLink
-              to="/inventory"
-              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-              onClick={scrollToTop}
-            >
-              <span className="nav-icon">📋</span>موجودی
-            </NavLink>
-            {isSuperAdmin && (
+            {isSuperAdmin ? (
               <>
+                <NavLink
+                  to="/inventory"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={scrollToTop}
+                >
+                  <span className="nav-icon">📋</span>موجودی
+                </NavLink>
                 <NavLink
                   to="/insights"
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
@@ -163,6 +163,23 @@ function AppInner() {
                   onClick={scrollToTop}
                 >
                   <span className="nav-icon">ℹ️</span>اطلاعات
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to="/counter"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={scrollToTop}
+                >
+                  <span className="nav-icon">📋</span>پیشخوان
+                </NavLink>
+                <NavLink
+                  to="/inventory?tab=products"
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={scrollToTop}
+                >
+                  <span className="nav-icon">📦</span>موجودی
                 </NavLink>
               </>
             )}
