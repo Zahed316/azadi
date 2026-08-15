@@ -8,7 +8,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
+          vendor: ['react', 'react-dom', 'react-router'],
           query: ['@tanstack/react-query'],
           telegram: ['@tma.js/sdk'],
         },

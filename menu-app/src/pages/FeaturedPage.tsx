@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
@@ -55,7 +55,12 @@ export default function FeaturedPage() {
         <EmptyState
           message="محصول ویژه‌ای یافت نشد"
           detail="به زودی محصولات ویژه اضافه می‌شود"
-          action={{ label: 'بازگشت به خانه', onClick: () => navigate('/') }}
+          action={{
+            label: 'بازگشت به خانه',
+            onClick: () => {
+              void navigate('/');
+            },
+          }}
         />
       )}
     </>

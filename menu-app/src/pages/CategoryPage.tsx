@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
@@ -64,7 +64,12 @@ export default function CategoryPage() {
         <EmptyState
           message="محصولی یافت نشد"
           detail="این دسته‌بندی خالی است"
-          action={{ label: 'بازگشت به خانه', onClick: () => navigate('/') }}
+          action={{
+            label: 'بازگشت به خانه',
+            onClick: () => {
+              void navigate('/');
+            },
+          }}
         />
       )}
     </>

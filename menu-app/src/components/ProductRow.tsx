@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { formatPersianPrice } from '../utils/numbers';
 import ProductImage from './ProductImage';
 import type { Product } from '../api/types';
