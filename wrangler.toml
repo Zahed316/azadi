@@ -18,6 +18,3 @@ migrations_dir = "drizzle"
 [[kv_namespaces]]
 binding = "CACHE"
 id = "cf01f801bdae488b9196782f2541d288"
-
-[triggers]
-crons = ["0 21 * * *"]  # Daily at 21:00 UTC ≈ 00:30 IRST. Body is gated by env.STREAK_CRON_ENABLED; the cron trigger is harmless if the body is inert.

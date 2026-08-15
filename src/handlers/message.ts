@@ -31,15 +31,15 @@ export async function runAiQuery(
   const menuConfigRepo = new MenuConfigRepository(db);
   const settingsRepo = new SettingsRepository(db);
 
-  const [productsWithDetails, branches, faqs, visibleCategoryIds, aboutSetting, popularProducts] =
-    await Promise.all([
+  const [productsWithDetails, branches, faqs, visibleCategoryIds, aboutSetting] = await Promise.all(
+    [
       productRepo.getAllProductsWithDetails(),
       branchRepo.getActiveBranches(),
       faqRepo.getAll(),
       menuConfigRepo.getVisibleCategoryIds(),
       settingsRepo.getValue('about'),
-      productRepo.getPopularProducts(5),
-    ]);
+    ],
+  );
 
   const menuContext = buildMinimalContext({
     query,
@@ -48,11 +48,10 @@ export async function runAiQuery(
     faqs,
     visibleCategoryIds,
     settings: aboutSetting ? { about: aboutSetting } : undefined,
-    popularProducts,
   });
 
   const aiService = new AiService(apiKey, menuContext);
-  return aiService.processQuery(query, userId, [], []);
+  return aiService.processQuery(query, userId, []);
 }
 
 export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
@@ -260,7 +259,6 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
           faqs: batch.faqs,
           visibleCategoryIds: undefined,
           settings: batch.about ? { about: batch.about } : undefined,
-          popularProducts: batch.popularProducts,
         });
         const contextDuration = performance.now() - contextStartedAt;
 
@@ -268,12 +266,7 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
 
         const AI_TIMEOUT_MS = 20_000;
         const aiStartedAt = performance.now();
-        const aiPromise = aiService.processQuery(
-          ctx.message.text,
-          userId,
-          batch.recentLogs,
-          batch.favorites.map((f) => f.name),
-        );
+        const aiPromise = aiService.processQuery(ctx.message.text, userId, batch.recentLogs);
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('AI_TIMEOUT')), AI_TIMEOUT_MS),
         );

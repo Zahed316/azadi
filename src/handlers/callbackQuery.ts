@@ -273,15 +273,6 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
         const vatNoteRaw = await ctx.dataService.getSetting('vat_note');
         const vatNote = vatNoteRaw ? escapeHtml(vatNoteRaw) : DEFAULT_VAT_NOTE;
         const kb = backKeyboard();
-        // Phase 5.2: favorite toggle
-        if (ctx.from?.id) {
-          const isFav = await ctx.dataService.isFavorited(String(ctx.from.id), id);
-          if (isFav) {
-            kb.row().text('💔 حذف از علاقمندی‌ها', `fav:remove:${id}`);
-          } else {
-            kb.row().text('⭐ ذخیره', `fav:add:${id}`);
-          }
-        }
         let caption = formatProduct(product, priceUnit, vatNote);
         // Show brew guide for coffee beans with details
         const details = await ctx.dataService.getCoffeeDetails(id);
@@ -442,54 +433,6 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     } catch (e) {
       console.error(e);
       // Telegram timeout — safe to ignore
-      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
-    }
-  });
-
-  // --- Phase 5.2: favorites ---
-
-  bot.callbackQuery(/^fav:add:(\d+)$/, async (ctx) => {
-    try {
-      await ctx.answerCallbackQuery();
-      if (!ctx.from?.id) return;
-      const productId = Number(ctx.match[1]);
-      const uid = String(ctx.from.id);
-      const alreadyFav = await ctx.dataService.isFavorited(uid, productId);
-      if (alreadyFav) {
-        const body = 'ℹ️ این محصول از قبل در علاقمندی‌های شما بود.';
-        const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-        await editOrSend(ctx, body, { reply_markup: kb }, 'fav');
-        return;
-      }
-      await ctx.dataService.toggleFavorite(uid, productId);
-      const body = '✅ به علاقمندی‌ها اضافه شد.';
-      const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-      await editOrSend(ctx, body, { reply_markup: kb }, 'fav');
-    } catch (e) {
-      console.error(e);
-      await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
-    }
-  });
-
-  bot.callbackQuery(/^fav:remove:(\d+)$/, async (ctx) => {
-    try {
-      await ctx.answerCallbackQuery();
-      if (!ctx.from?.id) return;
-      const productId = Number(ctx.match[1]);
-      const uid = String(ctx.from.id);
-      const isFav = await ctx.dataService.isFavorited(uid, productId);
-      if (!isFav) {
-        const body = 'ℹ️ این محصول در علاقمندی‌های شما نبود.';
-        const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-        await editOrSend(ctx, body, { reply_markup: kb }, 'fav');
-        return;
-      }
-      await ctx.dataService.toggleFavorite(uid, productId);
-      const body = '❌ از علاقمندی‌ها حذف شد.';
-      const kb = new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main');
-      await editOrSend(ctx, body, { reply_markup: kb }, 'fav');
-    } catch (e) {
-      console.error(e);
       await ctx.answerCallbackQuery({ text: '❌ خطایی رخ داد' }).catch(() => {});
     }
   });

@@ -30,7 +30,6 @@ export interface MenuContextOptions {
   faqs: FaqRow[];
   visibleCategoryIds?: Set<number>;
   settings?: Record<string, string>;
-  popularProducts?: Array<{ name: string; category: string; favoritedCount: number }>;
   productCap?: number;
   faqCap?: number;
 }
@@ -61,7 +60,6 @@ export function buildMinimalContext(
     faqs: allFaqs,
     visibleCategoryIds: visIds,
     settings,
-    popularProducts,
     productCap = 8,
     faqCap = 3,
   } = opts;
@@ -157,14 +155,6 @@ export function buildMinimalContext(
         : 'Price TBD';
 
     ctx += `- ${p.name} (${catName}): ${priceStr}${flagStr}${coffeeStr}${nutritionStr} | Stock: ${p.stock}\n`;
-  }
-
-  // Popular products (most favorited across all users)
-  if (popularProducts && popularProducts.length > 0) {
-    ctx += '\n=== POPULAR ITEMS (most favorited by customers) ===\n';
-    for (const pop of popularProducts.slice(0, 5)) {
-      ctx += `- ${pop.name} (${pop.category}) — ${pop.favoritedCount} favorites\n`;
-    }
   }
 
   // FAQs

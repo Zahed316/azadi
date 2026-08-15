@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, primaryKey, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 
 // Data integrity constraints (stock, price, unit, menu_section, admin role,
 // message rating) are enforced via SQLite triggers in drizzle/0001_add_check_constraints.sql.
@@ -123,37 +123,6 @@ export const menuConfig = sqliteTable('menu_config', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });
-
-// Phase 5.1: per-user streak counter state. Implicit identity by Telegram
-// user_id (cast to text); no signup. Drizzle's `mode: 'timestamp'` columns
-// store integer epoch under the hood, matching the rest of the schema.
-// last_quiz_at is reserved for a future quiz mechanic (Phase 5b/6).
-export const userState = sqliteTable('user_state', {
-  telegramId: text('telegram_id').primaryKey(),
-  firstSeenAt: integer('first_seen_at', { mode: 'timestamp' }).notNull(),
-  lastSeenAt: integer('last_seen_at', { mode: 'timestamp' }).notNull(),
-  visitsTotal: integer('visits_total').notNull().default(0),
-  streakDays: integer('streak_days').notNull().default(0),
-  lastQuizAt: integer('last_quiz_at', { mode: 'timestamp' }),
-});
-
-// Phase 5.2: per-user product favorites. Composite PK prevents duplicates;
-// the foreign key cascades on product delete so favorites don't outlive
-// the products they reference. The "user" index supports the
-// "⭐ منوهای من" list query (WHERE telegram_id = ? ORDER BY created_at DESC).
-export const favorites = sqliteTable(
-  'favorites',
-  {
-    telegramId: text('telegram_id').notNull(),
-    productId: integer('product_id')
-      .notNull()
-      .references(() => products.id, { onDelete: 'cascade' }),
-    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  },
-  (t) => ({
-    pk: primaryKey({ columns: [t.telegramId, t.productId] }),
-  }),
-);
 
 // User-to-admin messaging: feedback, contact, and anonymous messages.
 // Single reply per message (admin_reply column), not threaded chat.

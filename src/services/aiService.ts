@@ -71,7 +71,6 @@ export class AiService {
     query: string,
     userId: string,
     recentLogs: Array<{ question: string; response: string }>,
-    userFavorites: string[] = [],
   ): Promise<string> {
     // AI-002: Truncate input to prevent abuse and reduce prompt injection surface.
     // Note: this is length truncation, not sanitization — the LLM itself handles
@@ -81,16 +80,6 @@ export class AiService {
 
     // Build the complete system prompt
     let systemPrompt = SYSTEM_PROMPT_BASE;
-
-    // Add user's favorites for personalization
-    if (userFavorites.length > 0) {
-      systemPrompt += `\n## This Customer's Favorites\nThe customer has favorited these products — use them to understand their taste preferences:\n`;
-      for (const fav of userFavorites) {
-        systemPrompt += `- ${fav}\n`;
-      }
-      systemPrompt +=
-        '\nWhen recommending, suggest products similar to their favorites or from the same categories.\n';
-    }
 
     // Add the dynamic menu context (branches, products, FAQs, etc.)
     systemPrompt += `\n## Current Menu & Shop Data\n${this.menuContext}`;

@@ -7,15 +7,7 @@
  * @module services/types
  */
 
-import {
-  products,
-  coffeeDetails,
-  categories,
-  branches,
-  faq,
-  userState,
-  messages,
-} from '../database/schema';
+import { products, coffeeDetails, categories, branches, faq, messages } from '../database/schema';
 export type { Env } from '../bot';
 
 // Re-export schema types for convenience — consumers can import from here
@@ -55,14 +47,6 @@ export interface AIContext {
     response: string;
     timestamp: Date;
   }>;
-  /** User's favorited product names (for personalization) */
-  userFavorites: string[];
-  /** Most-favorited products across all users */
-  popularProducts?: Array<{
-    name: string;
-    category: string;
-    favoritedCount: number;
-  }>;
 }
 
 /**
@@ -92,12 +76,6 @@ export interface AIContextBatchResult {
     question: string;
     response: string;
     timestamp: Date;
-  }>;
-  favorites: Array<{ name: string }>;
-  popularProducts: Array<{
-    name: string;
-    category: string;
-    favoritedCount: number;
   }>;
 }
 
@@ -157,14 +135,12 @@ export interface IAIService {
    * @param query - User's message text
    * @param userId - Telegram user ID
    * @param recentLogs - Recent conversation history for context
-   * @param userFavorites - User's favorited product names
    * @returns AI response text (Persian, HTML-formatted)
    */
   processQuery(
     query: string,
     userId: string,
     recentLogs: Array<{ question: string; response: string; timestamp: Date }>,
-    userFavorites?: string[],
   ): Promise<string>;
 
   /**
@@ -262,13 +238,6 @@ export interface IDataService {
   >;
   getProductById(id: number): Promise<typeof products.$inferSelect | undefined>;
   getProductsByCategory(categoryId: number): Promise<(typeof products.$inferSelect)[]>;
-  getPopularProducts(limit?: number): Promise<
-    Array<{
-      name: string;
-      category: string;
-      favoritedCount: number;
-    }>
-  >;
 
   /**
    * Get all available products with a given boolean flag set to true.
@@ -325,29 +294,6 @@ export interface IDataService {
       timestamp: Date;
     }>
   >;
-
-  // -- Favorites --
-  getUserFavorites(telegramId: string): Promise<string[]>;
-  toggleFavorite(telegramId: string, productId: number): Promise<boolean>;
-
-  /**
-   * Check whether a single product is favorited by the user.
-   * Used to render the right toggle button on the product-detail page.
-   */
-  isFavorited(telegramId: string, productId: number): Promise<boolean>;
-
-  /**
-   * List all products the user has favorited, ordered newest first.
-   * Returns the full product shape plus a `favoritedAt` timestamp.
-   */
-  list(telegramId: string): Promise<Array<typeof products.$inferSelect & { favoritedAt: Date }>>;
-
-  // -- User State --
-  getUserState(telegramId: string): Promise<typeof userState.$inferSelect | null>;
-  upsertVisit(telegramId: string): Promise<{
-    streakDays: number;
-    isNewStreak: boolean;
-  }>;
 
   // -- Messages --
   createMessage(data: {

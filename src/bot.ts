@@ -14,8 +14,6 @@ import { MyContext } from './types/context';
 import { getEnv, getExecCtx } from './requestContext';
 import { D1SessionStorage } from './database/sessionStorage';
 import { ConditionalSessionStorage } from './database/conditionalSessionStorage';
-import { UserStateRepository } from './repositories';
-import { toPersianDigits } from './utils/numbers';
 import { DataService } from './services/data';
 import { CacheService } from './services/cache';
 import { pushMessage } from './utils/menuLifecycle';
@@ -31,8 +29,6 @@ export interface Env {
   // them being present in wrangler.toml/[vars]. Set via `wrangler secret put`.
   USE_CONVERSATIONS?: string;
   PERF_LOG?: string;
-  STREAK_MESSAGES?: string;
-  STREAK_CRON_ENABLED?: string;
 }
 
 export function createBot(env: Env): Bot<MyContext> {
@@ -45,33 +41,6 @@ export function createBot(env: Env): Bot<MyContext> {
       ctx.env.DB,
       ctx.env.CACHE ? new CacheService(ctx.env.CACHE) : undefined,
     );
-    await next();
-  });
-
-  // Streak counter: track consecutive-day visits and notify the user when the
-  // streak increments. Env-gated so the middleware is inert by default; flip on
-  // via `wrangler secret put STREAK_MESSAGES`. Never re-throw — streak path
-  // must not break the rest of the bot chain.
-  bot.use(async (ctx, next) => {
-    // Gate entirely on the env var — no D1 fallback. When unset (default), the
-    // middleware is a pure pass-through with zero queries or allocations.
-    if (ctx.env.STREAK_MESSAGES === 'true' && ctx.from?.id) {
-      try {
-        const repo = new UserStateRepository(ctx.env.DB);
-        const { streakDays, isNewStreak } = await repo.upsertVisit(String(ctx.from.id));
-        if (isNewStreak && streakDays > 1) {
-          // Defer: don't block the rest of the handler chain.
-          ctx.execCtx?.waitUntil(
-            ctx
-              .reply(`🔥 ${toPersianDigits(streakDays)} روز متوالی از رستوری بازدید کردید!`)
-              .catch(() => {}),
-          );
-        }
-      } catch (e) {
-        console.error('streak middleware:', e);
-        /* never break the chain */
-      }
-    }
     await next();
   });
 

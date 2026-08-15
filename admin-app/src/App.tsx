@@ -114,8 +114,6 @@ function AppInner() {
                   <Route path="/faqs" element={<Navigate to="/settings" replace />} />
                   <Route path="/admins" element={<Navigate to="/settings" replace />} />
                   <Route path="/menu-config" element={<Navigate to="/settings" replace />} />
-                  <Route path="/streaks" element={<Navigate to="/insights" replace />} />
-                  <Route path="/favorites" element={<Navigate to="/insights" replace />} />
                   <Route path="/ai-logs" element={<Navigate to="/insights" replace />} />
                   <Route path="/ai-test" element={<Navigate to="/insights" replace />} />
                   <Route path="/messages" element={<Navigate to="/settings" replace />} />

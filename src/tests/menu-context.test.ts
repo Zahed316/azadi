@@ -126,33 +126,6 @@ test('omits about section when settings not provided', () => {
   expect(ctx).not.toContain('ABOUT AZADI COFFEE ROASTERY');
 });
 
-test('includes popular products section', () => {
-  const ctx = buildMinimalContext({
-    query: 'coffee',
-    productsWithDetails: mockProducts,
-    branches: [],
-    faqs: [],
-    popularProducts: [
-      { name: 'Espresso', category: 'Hot Coffee', favoritedCount: 12 },
-      { name: 'Latte', category: 'Cold Coffee', favoritedCount: 8 },
-    ],
-  });
-  expect(ctx).toContain('POPULAR ITEMS');
-  expect(ctx).toContain('Espresso');
-  expect(ctx).toContain('12 favorites');
-});
-
-test('omits popular products when array is empty', () => {
-  const ctx = buildMinimalContext({
-    query: 'coffee',
-    productsWithDetails: mockProducts,
-    branches: [],
-    faqs: [],
-    popularProducts: [],
-  });
-  expect(ctx).not.toContain('POPULAR ITEMS');
-});
-
 test('includes coffee details when present', () => {
   const productsWithDetails: ProductWithDetails[] = [
     {

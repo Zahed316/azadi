@@ -3,7 +3,6 @@ import { createBot, Env } from './bot';
 import { setRequestContext } from './requestContext';
 import { handleApiRequest } from './api/router';
 import { handlePublicApiRequest } from './api/public';
-import { sweepStreaks } from './scripts/streaks';
 import { timingSafeEqual } from './utils/crypto';
 
 let botInstance: ReturnType<typeof createBot> | null = null;
@@ -74,7 +73,6 @@ export default {
           JSON.stringify({
             ts: new Date().toISOString(),
             operation: 'bot-init',
-            streakEnabled: env.STREAK_MESSAGES === 'true',
             conversationsEnabled: env.USE_CONVERSATIONS === 'true',
           }),
         );
@@ -108,30 +106,6 @@ export default {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });
-    }
-  },
-  async scheduled(event: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
-    const start = performance.now();
-    try {
-      await sweepStreaks(env);
-      console.log(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          operation: 'streak-sweep',
-          status: 'ok',
-          ms: Math.round(performance.now() - start),
-        }),
-      );
-    } catch (e) {
-      console.error(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          operation: 'streak-sweep',
-          status: 'error',
-          error: e instanceof Error ? e.message : String(e),
-          ms: Math.round(performance.now() - start),
-        }),
-      );
     }
   },
 };

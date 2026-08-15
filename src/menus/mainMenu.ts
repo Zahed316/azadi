@@ -1,12 +1,10 @@
 import { Menu } from '@grammyjs/menu';
 import { InlineKeyboard } from 'grammy';
 import { isMenuVisible, HIDDEN_MESSAGE } from '../utils/menuVisibility';
-import { toPersianDigits } from '../utils/numbers';
 import { escapeHtml } from '../utils/htmlEscape';
 import { MyContext } from '../types/context';
 import type { IDataService } from '../services/types';
 import { pushMessage, popMessage, getActiveMessage } from '../utils/menuLifecycle';
-import { editOrSend } from '../utils/editOrSend';
 
 const DEFAULT_WELCOME_TEXT =
   'به روستری قهوه آزادی خوش آمدید! ☕\n\n' +
@@ -30,36 +28,6 @@ export const MAIN_MENU_TEXT = DEFAULT_WELCOME_TEXT;
 
 export const mainMenu = new Menu<MyContext>('main-menu')
   .submenu('🔍 کاوش', 'discover-menu')
-  .text('⭐ منوهای من', async (ctx: MyContext) => {
-    try {
-      if (!(await isMenuVisible(ctx.dataService, 'favorites'))) {
-        await ctx.reply(HIDDEN_MESSAGE, {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
-        return;
-      }
-      if (!ctx.from?.id) return;
-      const items = await ctx.dataService.list(String(ctx.from.id));
-      if (items.length === 0) {
-        await ctx.reply('📭 هنوز محصولی به علاقمندی‌ها اضافه نکرده‌اید.', {
-          reply_markup: new InlineKeyboard().text('🔙 بازگشت به منو', 'back:main'),
-        });
-        return;
-      }
-      const kb = new InlineKeyboard();
-      for (let i = 0; i < items.length; i++) {
-        kb.text(items[i].name, `product:${items[i].id}`);
-        if (i % 2 === 1 || i === items.length - 1) kb.row();
-      }
-      kb.row();
-      kb.text('🔙 بازگشت به منو', 'back:main');
-      const body = `<b>⭐ منوهای من</b> (${toPersianDigits(items.length)} مورد)\n\nبرای دیدن جزئیات هر مورد، روی آن بزنید.`;
-
-      await editOrSend(ctx, body, { parse_mode: 'HTML', reply_markup: kb }, 'favorites');
-    } catch (e) {
-      console.error(e);
-    }
-  })
   .row()
   .submenu('☕ نوشیدنی‌ها', 'drinks-nav-menu')
   .submenu('🌱 دانه‌های قهوه', 'products-menu-beans')

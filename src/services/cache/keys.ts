@@ -30,9 +30,6 @@ export const CACHE_KEYS = {
     key: (key: string) => `cache:settings:${key}`,
     all: 'cache:settings:all',
   },
-  favorites: {
-    byUser: (telegramId: string) => `cache:favorites:${telegramId}`,
-  },
   visibleCategories: 'cache:visible-categories',
 } as const;
 

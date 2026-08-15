@@ -15,13 +15,11 @@ import {
   SettingsRepository,
   AiLogRepository,
   MenuConfigRepository,
-  UserStateRepository,
-  FavoritesRepository,
   MessageRepository,
 } from '../../repositories';
 import type { D1Database } from '@cloudflare/workers-types';
 import { getDb } from '../../database/client';
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import {
   products,
   coffeeDetails,
@@ -31,7 +29,6 @@ import {
   menuConfig,
   settings,
   aiConversationLogs,
-  favorites,
 } from '../../database/schema';
 import type { ICacheService, IDataService, MenuSectionEntry } from '../types';
 import { CACHE_KEYS, DEFAULT_TTL } from '../cache/keys';
@@ -44,8 +41,6 @@ export class DataService implements IDataService {
   private _settingsRepo?: SettingsRepository;
   private _aiLogs?: AiLogRepository;
   private _menuConfigRepo?: MenuConfigRepository;
-  private _userState?: UserStateRepository;
-  private _favoritesRepo?: FavoritesRepository;
   private _messages?: MessageRepository;
   private db: ReturnType<typeof getDb>;
 
@@ -93,16 +88,6 @@ export class DataService implements IDataService {
   private get menuConfigRepo(): MenuConfigRepository {
     this._menuConfigRepo ??= new MenuConfigRepository(this.d1Binding);
     return this._menuConfigRepo;
-  }
-
-  private get userState(): UserStateRepository {
-    this._userState ??= new UserStateRepository(this.d1Binding);
-    return this._userState;
-  }
-
-  private get favoritesRepo(): FavoritesRepository {
-    this._favoritesRepo ??= new FavoritesRepository(this.d1Binding);
-    return this._favoritesRepo;
   }
 
   private get messages(): MessageRepository {
@@ -153,10 +138,6 @@ export class DataService implements IDataService {
     return this.cached(CACHE_KEYS.products.byCategory(categoryId), () =>
       this.products.getProductsByCategory(categoryId),
     );
-  }
-
-  async getPopularProducts(limit: number = 5) {
-    return this.cached(CACHE_KEYS.products.popular, () => this.products.getPopularProducts(limit));
   }
 
   async getByFlag(flag: 'featured' | 'isSeasonal') {
@@ -265,57 +246,6 @@ export class DataService implements IDataService {
   }
 
   // ---------------------------------------------------------------------------
-  // Favorites
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Return the user's favorited product *names* (as strings) for the AI
-   * context personalization section.
-   */
-  async getUserFavorites(telegramId: string): Promise<string[]> {
-    const list = await this.favoritesRepo.list(telegramId);
-    return list.map((f) => f.name);
-  }
-
-  async toggleFavorite(telegramId: string, productId: number): Promise<boolean> {
-    const isFav = await this.favoritesRepo.isFavorited(telegramId, productId);
-    if (isFav) {
-      await this.favoritesRepo.remove(telegramId, productId);
-    } else {
-      await this.favoritesRepo.add(telegramId, productId);
-    }
-    // Bust the user's favorites cache
-    if (this.cache) {
-      await this.cache.delete(CACHE_KEYS.favorites.byUser(telegramId));
-    }
-    return !isFav; // returns new state: true = now favorited
-  }
-
-  async isFavorited(telegramId: string, productId: number): Promise<boolean> {
-    return this.favoritesRepo.isFavorited(telegramId, productId);
-  }
-
-  async list(telegramId: string) {
-    return this.favoritesRepo.list(telegramId);
-  }
-
-  // ---------------------------------------------------------------------------
-  // User State
-  // ---------------------------------------------------------------------------
-
-  async getUserState(telegramId: string) {
-    return this.userState.getByTelegramId(telegramId);
-  }
-
-  async upsertVisit(telegramId: string) {
-    const result = await this.userState.upsertVisit(telegramId);
-    return {
-      streakDays: result.streakDays,
-      isNewStreak: result.isNewStreak,
-    };
-  }
-
-  // ---------------------------------------------------------------------------
   // Messages
   // ---------------------------------------------------------------------------
 
@@ -366,28 +296,6 @@ export class DataService implements IDataService {
         .where(eq(aiConversationLogs.userId, userId))
         .orderBy(desc(aiConversationLogs.timestamp))
         .limit(5),
-
-      // [6] User favorites (joined with products to get names)
-      this.db
-        .select({ name: products.name })
-        .from(favorites)
-        .innerJoin(products, eq(favorites.productId, products.id))
-        .where(eq(favorites.telegramId, userId))
-        .orderBy(desc(favorites.createdAt)),
-
-      // [7] Popular products (most-favorited across all users)
-      this.db
-        .select({
-          name: products.name,
-          category: sql<string>`coalesce(${categories.name}, 'Uncategorized')`,
-          favoritedCount: sql<number>`cast(count(*) as int)`,
-        })
-        .from(favorites)
-        .innerJoin(products, eq(favorites.productId, products.id))
-        .leftJoin(categories, eq(products.categoryId, categories.id))
-        .groupBy(products.id, categories.name)
-        .orderBy(desc(sql`count(*)`))
-        .limit(5),
     ]);
 
     return {
@@ -397,8 +305,6 @@ export class DataService implements IDataService {
       menuConfig: batch[3],
       about: (batch[4] as Array<{ value?: string }>)[0]?.value,
       recentLogs: batch[5],
-      favorites: batch[6],
-      popularProducts: batch[7],
     };
   }
 
@@ -434,12 +340,6 @@ export class DataService implements IDataService {
   async invalidateSettings(): Promise<void> {
     if (this.cache) {
       await this.cache.deleteByPrefix('cache:settings:');
-    }
-  }
-
-  async invalidateFavorites(telegramId: string): Promise<void> {
-    if (this.cache) {
-      await this.cache.delete(CACHE_KEYS.favorites.byUser(telegramId));
     }
   }
 }

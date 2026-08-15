@@ -107,14 +107,6 @@ export interface AiLog {
   timestamp: string;
 }
 
-export interface UserState {
-  telegramId: string;
-  firstSeenAt: string;
-  lastSeenAt: string;
-  visitsTotal: number;
-  streakDays: number;
-}
-
 export interface Message {
   id: number;
   telegramId: string;
@@ -128,13 +120,6 @@ export interface Message {
   replyText: string | null;
   repliedAt: string | null;
   createdAt: string;
-}
-
-export interface Favorite {
-  telegramId: string;
-  productId: number;
-  productName: string | null;
-  favoritedAt: number | string;
 }
 
 // ---------------------------------------------------------------------------
@@ -172,19 +157,6 @@ export interface SettingsResponse {
 
 export interface AiLogsResponse {
   logs: AiLog[];
-}
-
-export interface StreaksResponse {
-  users: UserState[];
-}
-
-export interface StreakConfig {
-  streakMessages: boolean;
-  streakCronEnabled: boolean;
-}
-
-export interface FavoritesResponse {
-  favorites: Favorite[];
 }
 
 export interface MessagesResponse {

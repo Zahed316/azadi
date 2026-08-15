@@ -16,7 +16,6 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 - [boolean-null-after-any-removal](memory/boolean-null-after-any-removal.md) — replacing `any` surfaces `boolean|null` errors; use `?? false`
 - [prettier-checks-yaml-too](memory/prettier-checks-yaml-too.md) — run prettier on `deploy.yml` after manual edits; YAML is in `format:check`
 - [wrangler-action-v4-needs-version-pin](memory/wrangler-action-v4-needs-version-pin.md) — `wrangler-action` v4 defaults to Wrangler v4; pin `wranglerVersion`
-- [favorites-toggle-pattern](memory/favorites-toggle-pattern.md) — IDataService has `toggleFavorite()`, not add/remove; use `isFavorited()` pre-check for guard messages
 - [plan-file-enumeration-incomplete](memory/plan-file-enumeration-incomplete.md) — plans under-enumerate files; typecheck catches missed call sites, not the plan text
 - [npm-termux-promotes-arm64-optional-deps](memory/npm-termux-promotes-arm64-optional-deps.md) — npm install on ARM64 Termux can add platform-specific optional deps to package.json, breaking x64 CI
 - [grammy-menu-plugin-conflicts-with-lifecycle](memory/grammy-menu-plugin-conflicts-with-lifecycle.md) — grammY menu plugin edits messages outside our lifecycle; use delete+recreate for back navigation
@@ -106,20 +105,17 @@ Worker `fetch` routes:
 
 `setRequestContext(env, ctx)` is called per-request and stores them in module globals (`src/requestContext.ts`). Works because Workers isolate each request, but **breaks in tests** — mock `env` directly.
 
-Worker `scheduled` handler: runs `sweepStreaks(env)` on the daily cron (`0 21 * * *` in `wrangler.toml`). Gated by `env.STREAK_CRON_ENABLED` — inert if not set.
-
 ### Bot (`src/bot.ts`, `src/types/context.ts`)
 
 - `createBot(env)` returns a `Bot<MyContext>`. `botInstance` is cached at module scope in `src/index.ts`.
 - Middleware order matters:
   1. Inject `ctx.env` / `ctx.execCtx` from request context
   2. **DataService injection** — creates `DataService(env.DB, env.CACHE ? new CacheService(env.CACHE) : undefined)` per-request, attached to `ctx.dataService`. All bot handlers and menus use this for data access (read-through KV caching + D1 batch). Direct repository instantiation is eliminated from handlers/menus (except write-side operations like `AiLogRepository`).
-  3. **Streak counter** — gated by `env.STREAK_MESSAGES === 'true'` (off by default). Writes to `user_state` via `UserStateRepository.upsertVisit` on every non-`/` message; replies with the streak-increment message in `ctx.execCtx.waitUntil` so the rest of the chain isn't blocked. **Never re-throw** (the streak path must not break the bot chain — wrapped in `try/catch` with a `console.error` only).
-  4. `session({ storage: new D1SessionStorage(env.DB) })`
-  5. **Idempotency guard**: skip duplicate `update_id` (Telegram retry protection)
-  6. `conversations({ storage: { type: "key", prefix: "convo_", adapter: new D1SessionStorage(env.DB) } })` — gated by `env.USE_CONVERSATIONS === 'true'` (off by default; see Pitfalls). When on, must use persistent storage + `prefix: "convo_"` so session and conversation state don't overwrite each other in D1
-  7. `mainMenu` (grammY menu)
-  8. Command & handler registration
+  3. `session({ storage: new D1SessionStorage(env.DB) })`
+  4. **Idempotency guard**: skip duplicate `update_id` (Telegram retry protection)
+  5. `conversations({ storage: { type: "key", prefix: "convo_", adapter: new D1SessionStorage(env.DB) } })` — gated by `env.USE_CONVERSATIONS === 'true'` (off by default; see Pitfalls). When on, must use persistent storage + `prefix: "convo_"` so session and conversation state don't overwrite each other in D1
+  6. `mainMenu` (grammY menu)
+  7. Command & handler registration
 - `MyContext` = `Context & SessionFlavor<SessionData> & ConversationFlavor<Context> & { env, execCtx?, dataService: IDataService }`. **Always use this type** for handlers. `dataService` is the single data access layer with read-through KV caching.
 - **Product display**: `formatProduct()` in `src/utils/formatters.ts` shows nutritional info (calories, caffeine, allergens) when present. Bot uses `replyWithPhoto(url)` for products with images, falling back to `reply()` for text-only. Coffee details callback shows `brewGuide` for coffee beans.
 
@@ -128,10 +124,10 @@ Worker `scheduled` handler: runs `sweepStreaks(env)` on the daily cron (`0 21 * 
 - Drizzle schema in `src/database/schema.ts` (snake_case columns, explicit `text('name')` strings). Migrations in `drizzle/`.
 - **D1 migrations**: `npx drizzle-kit generate` creates SQL in `drizzle/`. Apply with `wrangler d1 execute azadi-db --remote --file=drizzle/XXXX_name.sql`. **Never use `drizzle-kit push`** — D1 doesn't have a URL. See [[d1-migrations-use-wrangler]].
 - `getDb(d1Binding)` (`src/database/client.ts`) is the only Drizzle factory. Repositories call it in their constructor.
-- **Repository pattern**: one class per table group (`ProductRepository`, `CategoryRepository`, `BranchRepository`, `FaqRepository`, `SettingsRepository`, `AiLogRepository`, `MenuConfigRepository`, `UserStateRepository`, `FavoritesRepository`, `MessageRepository`). All take `d1Binding: D1Database` in the constructor. Add new data access as a new repository class.
-- **DataService** (`src/services/data/index.ts`, interface at `src/services/types.ts`): the single data access layer for bot handlers. Implements `IDataService` with read-through KV caching via `CacheService` and a `buildAIContextBatch()` method that collapses 8 D1 queries into 1 batch call. **All bot data access goes through `ctx.dataService`** — do not instantiate repositories directly in handlers or menus.
+- **Repository pattern**: one class per table group (`ProductRepository`, `CategoryRepository`, `BranchRepository`, `FaqRepository`, `SettingsRepository`, `AiLogRepository`, `MenuConfigRepository`, `MessageRepository`). All take `d1Binding: D1Database` in the constructor. Add new data access as a new repository class.
+- **DataService** (`src/services/data/index.ts`, interface at `src/services/types.ts`): the single data access layer for bot handlers. Implements `IDataService` with read-through KV caching via `CacheService` and a `buildAIContextBatch()` method that collapses 6 D1 queries into 1 batch call. **All bot data access goes through `ctx.dataService`** — do not instantiate repositories directly in handlers or menus.
 - `D1SessionStorage` (`src/database/sessionStorage.ts`) is a grammY `StorageAdapter` that reads/writes the `sessions` table (key/value JSON).
-- **Schema tables** (13): `branches`, `categories`, `products`, `coffee_details`, `faq`, `settings`, `ai_conversation_logs`, `sessions`, `admins`, `menu_config`, `user_state`, `favorites`, `messages`.
+- **Schema tables** (11): `branches`, `categories`, `products`, `coffee_details`, `faq`, `settings`, `ai_conversation_logs`, `sessions`, `admins`, `menu_config`, `messages`.
 
 ### Admin REST API (`src/api/router.ts`)
 
@@ -146,8 +142,8 @@ Worker `scheduled` handler: runs `sweepStreaks(env)` on the daily cron (`0 21 * 
 ### AI fallback (`src/services/aiService.ts`, `src/handlers/message.ts`)
 
 - `message:text` handler skips when text starts with `/` (commands are handled upstream). When `USE_CONVERSATIONS` is enabled and a wizard is active, you must add a `ctx.hasActiveConversation` skip here — see Pitfalls.
-- Loads context via `ctx.dataService.buildAIContextBatch(userId)` — a single D1 batch call that collapses 8 queries (products, branches, faqs, menu config, about, recent logs, favorites, popular products) into 1 round-trip. Builds enriched context via `buildMinimalContext` (options object form in `src/utils/menuContext.ts`), then calls OpenCode API (`mimo-v2.5` model via `OPENCODE_API_KEY` secret).
-- **Context enrichment**: `buildMinimalContext` now includes shop identity (about text), enriched product details (farm, altitude, processing, brew guide, nutritional info), product flags (⭐ Featured, 🌿 Seasonal), and popular items (most-favorited across all users). The AI system prompt (`AiService`) has a comprehensive personality, language rules, and personalization section that includes the user's favorited products for tailored recommendations.
+- Loads context via `ctx.dataService.buildAIContextBatch(userId)` — a single D1 batch call that collapses 6 queries (products, branches, faqs, menu config, about, recent logs) into 1 round-trip. Builds enriched context via `buildMinimalContext` (options object form in `src/utils/menuContext.ts`), then calls OpenCode API (`mimo-v2.5` model via `OPENCODE_API_KEY` secret).
+- **Context enrichment**: `buildMinimalContext` includes shop identity (about text), enriched product details (farm, altitude, processing, brew guide, nutritional info), and product flags (⭐ Featured, 🌿 Seasonal). The AI system prompt (`AiService`) has a comprehensive personality and language rules.
 - 20s timeout via `Promise.race`. Logs to `ai_conversation_logs` after replying (in `ctx.execCtx.waitUntil` if available so the response isn't blocked).
 - `PERF_LOG === 'true'` env var emits per-request timing JSON to stdout.
 
@@ -210,8 +206,6 @@ Filtering rules:
 - **Admin conversational wizards were removed from the chat interface** to avoid a webhook-retry / AI-fallback race condition (conversations stored state per-request, so retries fell through to the AI handler). All multi-step admin data entry now goes through the Mini App + REST API. The `conversations()` middleware itself is **gated by `env.USE_CONVERSATIONS === 'true'`** in `src/bot.ts` so re-introduction is a config flip — not a code change. If you flip it on, you MUST also add a `ctx.hasActiveConversation` snapshot middleware (BEFORE any `createConversation()` enter) AND a `if (ctx.hasActiveConversation) return;` skip at the top of `src/handlers/message.ts:9` — otherwise a wizard's final message will be answered by the AI rather than by the wizard. See `src/bot.ts` for the place-marker comment.
 - **Drinks don't show stock in `formatProduct`**: stock is intentionally hidden when `p.unit === 'cup'` (drinks are made-to-order). Don't add stock display to `cup` units — it would imply per-drink inventory that doesn't exist.
 - **`PERF_LOG` is a per-request env flag**, not a build-time one. Set it on the Worker (`wrangler secret put PERF_LOG` or in dashboard) to enable JSON timing lines on stdout. Off by default.
-- **`STREAK_MESSAGES` is a per-request env flag** that gates the streak middleware (`src/bot.ts:44-61`). Off by default. Set with `echo "true" | wrangler secret put STREAK_MESSAGES` to enable consecutive-day tracking and the `🔥 N روز متوالی` reply. **Phase 5 verified end-to-end 2026-08-06**: with the flag set, `user_state` rows are created on first non-`/` message and `visits_total` increments per message; without the flag the middleware is inert (the empty-table behavior the prior session observed is _expected_, not a bug).
-- **Favorites (Phase 5.2)** — callback handlers `fav:add:${id}` and `fav:remove:${id}` are in `src/handlers/callbackQuery.ts` (~lines 313 and 332). **Phase 5 verified end-to-end 2026-08-06**: 3 rows appeared in `favorites` after the user tapped the toggle on three product detail pages in a single smoke-test session, confirming the toggle works through the cached reply_markup. If a future smoke test sees an empty `favorites` table, the most likely causes are (a) the user never navigated to a product detail page, or (b) a stale keyboard from a pre-Phase-5 build is still cached in their Telegram client (fix: close and reopen the chat).
 - **ESLint/Prettier is blocking in CI.** Both `deploy-admin-app` and `deploy-menu-app` jobs run lint and format checks as hard gates (no `continue-on-error`). The root `test-and-deploy` job also runs lint and format checks before deploy. Fix any lint/format failures before pushing to `main`. Lint config: `eslint.config.mjs` (root, governs `src/`) and `admin-app/eslint.config.mjs` (React + Vite). Prettier config: `.prettierrc.json` (root) + `.prettierignore`. Both packages use `node ./node_modules/...` shebang-free script invocations to avoid the Termux `/usr/bin/env` gap (see [[android-arm64-platform-binary-gaps]]).
 - **Unused npm dependencies**: None currently. Previously removed: `@grammyjs/auto-retry`, `@grammyjs/parse-mode`, `@grammyjs/router`, `tsx`.
 - **Stack trace leakage**: `src/index.ts` error handler previously included `err.stack` in 500 JSON responses — information disclosure. Current code sanitizes this but be aware if modifying error handling.
