@@ -23,6 +23,8 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 - [handleeditfailure-must-pop-before-push](memory/handleeditfailure-must-pop-before-push.md) — handleEditFailure must pop the active message before creating a fallback
 - [worktrees-lack-node-modules](memory/worktrees-lack-node-modules.md) — SDD worktrees don't have node_modules; run typecheck/lint/format from main repo before merge
 - [dead-helper-extraction-risk](memory/dead-helper-extraction-risk.md) — extracted helpers must be integrated in the same task; dead helpers create false dedup confidence
+- [subagent-prettier-skips-docs](memory/subagent-prettier-skips-docs.md) — subagents may not format docs files with Prettier, causing CI format:check to fail
+- [mimo-v25-no-function-calling](memory/mimo-v25-no-function-calling.md) — OpenCode mimo-v2.5 rejects or garbles OpenAI function calling; don't send tools
 
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 
@@ -218,6 +220,8 @@ Filtering rules:
 ## Memory (project-scoped only — global rules live in `~/.claude/CLAUDE.md` and are loaded automatically)
 
 This project has session memory at `~/.claude/projects/-data-data-com-termux-files-home-repo-azadi/memory/`. The index in `MEMORY.md` there points to lessons about the local environment (Termux android-arm64 specifics, zsh managed-block convention) that affect how tooling around this repo is set up. Load those memories when bootstrapping a new toolchain, debugging shebang/binary errors, or appending to `~/.zshrc`. The earlier "## Memory" section at the top of this file covers the global memory + global rules paths.
+
+- [ai-chat-two-round-execution](memory/ai-chat-two-round-execution.md) — when model reads data but doesn't generate writes, feed results back in second API call
 
 ```
 
