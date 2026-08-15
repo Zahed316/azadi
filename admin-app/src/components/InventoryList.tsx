@@ -8,7 +8,7 @@ import type {
   BranchesResponse,
   ProductRow,
 } from '../api/types';
-import { useToggleProductField } from '../hooks/useProductMutations';
+import { useToggleProductField, useSaveProduct } from '../hooks/useProductMutations';
 import { useTelegramHaptics } from '../hooks/useTelegramHaptics';
 import { useAppContext } from '../AppContext';
 import EmptyState from './EmptyState';
@@ -16,12 +16,10 @@ import { ProductSkeleton } from './SkeletonLoader';
 import { SegmentedControl } from './SegmentedControl';
 import BranchSelector from './BranchSelector';
 import InlineStockEditor from './InlineStockEditor';
+import ProductFormDrawer from './ProductFormDrawer';
+import type { ProductFormData } from './ProductFormDrawer';
 
-interface InventoryListProps {
-  onEdit: (p: ProductRow) => void;
-}
-
-export default function InventoryList({ onEdit }: InventoryListProps) {
+export default function InventoryList() {
   const { isSuperAdmin, allowedCatId, setError, showToast, confirm } = useAppContext();
   const haptics = useTelegramHaptics();
   const queryClient = useQueryClient();
@@ -74,6 +72,29 @@ export default function InventoryList({ onEdit }: InventoryListProps) {
   const deleteProduct = async (id: number) => {
     if (!(await confirm('مطمئن هستید این محصول حذف شود؟'))) return;
     deleteProductMutation.mutate(id);
+  };
+
+  // ── Editing drawer ──────────────────────────────────────────────────
+  const [editingProduct, setEditingProduct] = useState<ProductRow | null>(null);
+
+  const saveProductMutation = useSaveProduct({
+    onSuccess: (msg) => {
+      setEditingProduct(null);
+      showToast(msg);
+    },
+    onError: (msg) => {
+      setError(msg);
+      showToast(msg, 'error');
+    },
+  });
+
+  const handleDrawerSubmit = (data: ProductFormData) => {
+    saveProductMutation.mutate({
+      method: editingProduct ? 'PUT' : 'POST',
+      id: editingProduct?.id,
+      body: data,
+      imageUrl: editingProduct?.id ? data.imageUrl : undefined,
+    });
   };
 
   // ── Batch ─────────────────────────────────────────────────────────
@@ -148,6 +169,18 @@ export default function InventoryList({ onEdit }: InventoryListProps) {
         ))}
       </div>
 
+      {/* Add product button (opens drawer in create mode) */}
+      {(isSuperAdmin || allowedCatId) && (
+        <button
+          type="button"
+          className="primary"
+          style={{ marginBottom: 12 }}
+          onClick={() => setEditingProduct(null)}
+        >
+          + افزودن محصول
+        </button>
+      )}
+
       {/* Product list */}
       <div className="product-list">
         {filteredProducts.length === 0 ? (
@@ -164,7 +197,11 @@ export default function InventoryList({ onEdit }: InventoryListProps) {
               {p.imageUrl && <img src={p.imageUrl} alt={p.name} className="product-thumb" />}
               <div className="product-info">
                 <div className="product-name-row">
-                  <button type="button" className="product-name-btn" onClick={() => onEdit(p)}>
+                  <button
+                    type="button"
+                    className="product-name-btn"
+                    onClick={() => setEditingProduct(p)}
+                  >
                     <span dir="auto">{p.name}</span>
                   </button>
                   {p.featured && <span title="پیشنهاد ویژه">⭐</span>}
@@ -278,6 +315,14 @@ export default function InventoryList({ onEdit }: InventoryListProps) {
           </button>
         </div>
       )}
+
+      {/* Product form drawer (add/edit) */}
+      <ProductFormDrawer
+        product={editingProduct}
+        onClose={() => setEditingProduct(null)}
+        onSubmit={handleDrawerSubmit}
+        isPending={saveProductMutation.isPending}
+      />
     </>
   );
 }
