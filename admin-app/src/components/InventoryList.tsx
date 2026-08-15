@@ -9,6 +9,7 @@ import type {
   ProductRow,
 } from '../api/types';
 import { useToggleProductField } from '../hooks/useProductMutations';
+import { useTelegramHaptics } from '../hooks/useTelegramHaptics';
 import { useAppContext } from '../AppContext';
 import EmptyState from './EmptyState';
 import { ProductSkeleton } from './SkeletonLoader';
@@ -22,6 +23,7 @@ interface InventoryListProps {
 
 export default function InventoryList({ onEdit }: InventoryListProps) {
   const { isSuperAdmin, allowedCatId, setError, showToast, confirm } = useAppContext();
+  const haptics = useTelegramHaptics();
   const queryClient = useQueryClient();
 
   // ── Data ──────────────────────────────────────────────────────────
@@ -188,6 +190,11 @@ export default function InventoryList({ onEdit }: InventoryListProps) {
                   onChange={(newStock) =>
                     toggleProductField.mutate({ id: p.id, field: 'stock', value: newStock })
                   }
+                  onZero={() => {
+                    toggleProductField.mutate({ id: p.id, field: 'stock', value: 0 });
+                    toggleProductField.mutate({ id: p.id, field: 'available', value: false });
+                    haptics.error();
+                  }}
                 />
               )}
 
