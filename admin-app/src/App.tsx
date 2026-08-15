@@ -17,6 +17,7 @@ const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 const InsightsPage = lazy(() => import('./pages/InsightsPage'));
 const ConfigurePage = lazy(() => import('./pages/ConfigurePage'));
 const InfoPage = lazy(() => import('./pages/InfoPage'));
+const CounterPage = lazy(() => import('./pages/CounterPage'));
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,7 @@ function AppInner() {
             <Suspense fallback={<LoadingScreen />}>
               <ErrorBoundary>
                 <Routes>
+                  <Route path="/counter" element={<CounterPage />} />
                   <Route path="/inventory" element={<InventoryPage />} />
                   {/* Legacy routes redirect to inventory with appropriate sub-tab */}
                   <Route
@@ -123,7 +125,10 @@ function AppInner() {
                   <Route path="/ai-logs" element={<Navigate to="/insights" replace />} />
                   <Route path="/ai-test" element={<Navigate to="/insights" replace />} />
                   <Route path="/messages" element={<Navigate to="/info" replace />} />
-                  <Route path="*" element={<Navigate to="/inventory" replace />} />
+                  <Route
+                    path="*"
+                    element={<Navigate to={isSuperAdmin ? '/inventory' : '/counter'} replace />}
+                  />
                 </Routes>
               </ErrorBoundary>
             </Suspense>
