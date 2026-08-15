@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { backButton, mainButton } from '@telegram-apps/sdk';
+import { backButton, mainButton } from '@tma.js/sdk';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';

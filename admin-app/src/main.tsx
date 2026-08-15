@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { init } from '@telegram-apps/sdk';
+import { init } from '@tma.js/sdk';
 
 try {
   init();

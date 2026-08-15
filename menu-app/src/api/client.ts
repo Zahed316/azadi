@@ -1,6 +1,17 @@
-export const API_BASE =
-  (import.meta.env.VITE_API_BASE as string) ||
-  'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api/public';
+const PROD_API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api/public';
+
+if (
+  !import.meta.env.VITE_API_BASE &&
+  !import.meta.env.PROD &&
+  !import.meta.env.MODE // vitest sets MODE to 'test'
+) {
+  throw new Error(
+    'Missing VITE_API_BASE environment variable. ' +
+      'Copy .env.example to .env and set the API base URL.',
+  );
+}
+
+export const API_BASE = (import.meta.env.VITE_API_BASE as string) || PROD_API_BASE;
 
 /**
  * Fetch from the public API and unwrap the response envelope.

@@ -1,13 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { ThemeParams } from '@telegram-apps/bridge';
 
-type MockThemeParamsState = ReturnType<typeof vi.fn<() => ThemeParams>> & {
-  sub: ReturnType<typeof vi.fn>;
-};
-
-vi.mock('@telegram-apps/sdk', () => {
+vi.mock('@tma.js/sdk', () => {
   const unsubFn = vi.fn();
-  const state = vi.fn(() => ({
+  const state = {
     bg_color: '#ffffff',
     text_color: '#000000',
     hint_color: '#999999',
@@ -15,49 +10,45 @@ vi.mock('@telegram-apps/sdk', () => {
     button_color: '#3399ec',
     button_text_color: '#ffffff',
     secondary_bg_color: '#f0f0f0',
-  })) as MockThemeParamsState;
-  state.sub = vi.fn(() => unsubFn);
+  };
+  const stateObj = Object.assign(
+    vi.fn(() => state),
+    { sub: vi.fn(() => unsubFn) },
+  );
 
   return {
-    themeParamsState: state,
-    mountThemeParams: vi.fn(),
-    bindThemeParamsCssVars: vi.fn(() => unsubFn),
+    themeParams: {
+      state: stateObj,
+      mount: vi.fn(),
+      bindCssVars: vi.fn(() => unsubFn),
+    },
   };
 });
 
-import { themeParamsState, mountThemeParams, bindThemeParamsCssVars } from '@telegram-apps/sdk';
+import { themeParams } from '@tma.js/sdk';
 import { renderHook } from '@testing-library/react';
 import { useTelegramTheme } from './useTelegramTheme';
 
-const mockThemeParamsState = themeParamsState as unknown as MockThemeParamsState;
-const mockMountThemeParams = vi.mocked(mountThemeParams);
-const mockBindThemeParamsCssVars = vi.mocked(bindThemeParamsCssVars);
+const mockThemeParams = vi.mocked(themeParams);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any -- mock
+const mockState: { sub: ReturnType<typeof vi.fn> } = mockThemeParams.state as any;
 
 describe('useTelegramTheme', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockThemeParamsState.mockReturnValue({
-      bg_color: '#ffffff',
-      text_color: '#000000',
-      hint_color: '#999999',
-      link_color: '#3399ec',
-      button_color: '#3399ec',
-      button_text_color: '#ffffff',
-      secondary_bg_color: '#f0f0f0',
-    });
   });
 
-  it('calls mountThemeParams on mount', () => {
+  it('calls mount on mount', () => {
     renderHook(() => useTelegramTheme());
-    expect(mockMountThemeParams).toHaveBeenCalledTimes(1);
+    expect(mockThemeParams.mount).toHaveBeenCalledTimes(1);
   });
 
-  it('calls bindThemeParamsCssVars on mount', () => {
+  it('calls bindCssVars on mount', () => {
     renderHook(() => useTelegramTheme());
-    expect(mockBindThemeParamsCssVars).toHaveBeenCalledTimes(1);
+    expect(mockThemeParams.bindCssVars).toHaveBeenCalledTimes(1);
   });
 
-  it('returns current theme params from themeParamsState', () => {
+  it('returns current theme params from state', () => {
     const { result } = renderHook(() => useTelegramTheme());
     expect(result.current).toEqual({
       bg_color: '#ffffff',
@@ -70,14 +61,14 @@ describe('useTelegramTheme', () => {
     });
   });
 
-  it('subscribes to themeParamsState changes', () => {
+  it('subscribes to state changes', () => {
     renderHook(() => useTelegramTheme());
-    expect(mockThemeParamsState.sub).toHaveBeenCalledTimes(1);
+    expect(mockState.sub).toHaveBeenCalledTimes(1);
   });
 
   it('cleans up subscription on unmount', () => {
     const unsubFn = vi.fn();
-    mockThemeParamsState.sub.mockReturnValueOnce(unsubFn);
+    mockState.sub.mockReturnValueOnce(unsubFn);
 
     const { unmount } = renderHook(() => useTelegramTheme());
     unmount();
