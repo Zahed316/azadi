@@ -538,6 +538,48 @@ button.secondary:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
+/* Segmented Control */
+.segmented-control {
+  display: inline-flex;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.segmented-control-option {
+  position: relative;
+  z-index: 1;
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color var(--duration-tab) var(--ease-spring);
+  width: auto;
+}
+.segmented-control-option.active {
+  color: var(--primary);
+}
+.segmented-control-indicator {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  border-radius: 8px;
+  background: var(--primary);
+  opacity: 0.12;
+  transition:
+    left var(--duration-tab) var(--ease-spring),
+    width var(--duration-tab) var(--ease-spring);
+  pointer-events: none;
+}
+.segmented-control-option.active {
+  font-weight: 600;
+}
+
 /* Stat tiles */
 .stat-tile {
   flex: 1 1 0;
@@ -1288,6 +1330,230 @@ button.secondary:hover {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* BranchSelector — sticky branch picker pill                          */
+/* ------------------------------------------------------------------ */
+
+.branch-selector {
+  position: relative;
+  margin-bottom: 16px;
+  z-index: 50;
+}
+
+.branch-selector-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+  width: auto;
+  transition: all 0.2s ease;
+}
+
+.branch-selector-trigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.branch-selector-trigger:active {
+  transform: scale(0.97);
+}
+
+.branch-selector-arrow {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.branch-selector-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 160px;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 60;
+  overflow: hidden;
+  animation: branch-dropdown-in 0.15s var(--ease-spring);
+}
+
+@keyframes branch-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.branch-selector-option {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.branch-selector-option:last-child {
+  border-bottom: none;
+}
+
+.branch-selector-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.branch-selector-option:active {
+  background: rgba(79, 70, 229, 0.1);
+}
+
+.branch-selector-option.active {
+  background: var(--primary);
+  color: white;
+}
+
+.branch-selector-option.active:hover {
+  background: var(--primary-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-selector-dropdown {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* InlineStockEditor                                                  */
+/* ------------------------------------------------------------------ */
+
+.inline-stock-editor {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+}
+
+.inline-stock-btn {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(79, 70, 229, 0.12);
+  color: var(--primary);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.inline-stock-btn:active {
+  transform: scale(0.92);
+}
+
+.inline-stock-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.inline-stock-value {
+  min-width: 44px;
+  height: 32px;
+  padding: 0 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: background 0.15s ease;
+}
+
+.inline-stock-value:active {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.inline-stock-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  min-width: 100px;
+  overflow: hidden;
+  animation: inline-stock-menu-in 0.15s ease;
+}
+
+@keyframes inline-stock-menu-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.inline-stock-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.inline-stock-menu-item:last-child {
+  border-bottom: none;
+}
+
+.inline-stock-menu-item:active {
+  background: rgba(79, 70, 229, 0.1);
+}
+
 /* Reduced motion — override durations to zero, keep transitions functional */
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -1296,5 +1562,9 @@ button.secondary:hover {
     --duration-toggle: 0ms;
     --duration-thumb: 0ms;
     --duration-tab: 0ms;
+  }
+
+  .inline-stock-menu {
+    animation: none;
   }
 }
