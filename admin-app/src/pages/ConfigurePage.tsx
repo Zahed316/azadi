@@ -1,4 +1,4 @@
-import SettingsPage from './SettingsPage';
+import SettingsForm from './SettingsForm';
 import MenuConfigPage from './MenuConfigPage';
 import AdminsPage from './AdminsPage';
 
@@ -7,7 +7,7 @@ export default function ConfigurePage() {
     <>
       <div className="card">
         <h2>⚙️ تنظیمات</h2>
-        <SettingsPage />
+        <SettingsForm />
       </div>
       <div className="card">
         <h2>📋 تنظیمات منو</h2>
