@@ -1,36 +1,20 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiFetch } from '../api/client';
 import { queryKeys } from '../api/keys';
-import type { ProductsResponse, CategoriesResponse, ProductRow } from '../api/types';
-import { useToggleProductField } from '../hooks/useProductMutations';
+import type { CategoriesResponse, ProductRow } from '../api/types';
 import { useAppContext } from '../AppContext';
 import Field from './Field';
-import EmptyState from './EmptyState';
-import { ProductSkeleton } from './SkeletonLoader';
+import InventoryList from './InventoryList';
 
 export default function ProductsSubTab() {
-  const { isSuperAdmin, allowedCatId, setError, showToast, confirm } = useAppContext();
+  const { isSuperAdmin, allowedCatId, setError, showToast } = useAppContext();
   const queryClient = useQueryClient();
-
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: queryKeys.products,
-    queryFn: () => apiFetch<ProductsResponse>('/products').then((r) => r.products),
-  });
 
   const { data: categories = [] } = useQuery({
     queryKey: queryKeys.categories,
     queryFn: () => apiFetch<CategoriesResponse>('/categories').then((r) => r.categories),
   });
-
-  // Category filter (chip picker)
-  const [filterCatId, setFilterCatId] = useState<number | null>(null);
-
-  // Batch
-  const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
-  const [batchAction, setBatchAction] = useState<'move' | 'toggle' | 'delete' | ''>('');
-  const [batchTargetCatId, setBatchTargetCatId] = useState('');
-  const [batchToggleValue, setBatchToggleValue] = useState('true');
 
   // Editing
   const [editingProduct, setEditingProduct] = useState<ProductRow | null>(null);
@@ -85,20 +69,6 @@ export default function ProductsSubTab() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Filtered products
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      if (filterCatId !== null && p.categoryId !== filterCatId) return false;
-      return true;
-    });
-  }, [products, filterCatId]);
-
-  const toggleProductSelect = (id: number) => {
-    setSelectedProductIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
   // Mutations
   const saveProductMutation = useMutation({
     mutationFn: async (data: {
@@ -148,35 +118,6 @@ export default function ProductsSubTab() {
     },
   });
 
-  const deleteProductMutation = useMutation({
-    mutationFn: (id: number) => apiFetch(`/products/${id}`, { method: 'DELETE' }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
-      showToast('محصول حذف شد ✓');
-    },
-    onError: (err: Error) => {
-      setError(err.message);
-      showToast(err.message, 'error');
-    },
-  });
-
-  const toggleProductField = useToggleProductField();
-
-  const batchMutation = useMutation({
-    mutationFn: (data: { ids: number[]; action: string; updateData?: Record<string, unknown> }) =>
-      apiFetch('/products/batch', { method: 'POST', body: data }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
-      setSelectedProductIds([]);
-      setBatchAction('');
-      showToast('عملیات گروهی انجام شد ✓');
-    },
-    onError: (err: Error) => {
-      setError(err.message);
-      showToast(err.message, 'error');
-    },
-  });
-
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     saveProductMutation.mutate({
@@ -201,134 +142,10 @@ export default function ProductsSubTab() {
     });
   };
 
-  const deleteProduct = async (id: number) => {
-    if (!(await confirm('مطمئن هستید این محصول حذف شود؟'))) return;
-    deleteProductMutation.mutate(id);
-  };
-
-  const handleBatchExecute = async () => {
-    if (!batchAction || selectedProductIds.length === 0) return;
-    if (!(await confirm(`عملیات روی ${selectedProductIds.length} محصول اعمال شود؟`))) return;
-    let updateData = undefined;
-    if (batchAction === 'move') updateData = { categoryId: parseInt(batchTargetCatId) };
-    if (batchAction === 'toggle') updateData = { available: batchToggleValue === 'true' };
-    batchMutation.mutate({
-      ids: selectedProductIds,
-      action: batchAction === 'delete' ? 'delete' : 'update',
-      updateData,
-    });
-  };
-
-  if (isLoading) return <ProductSkeleton />;
-
   return (
     <>
-      {/* Category picker */}
-      <div className="category-picker">
-        <button
-          type="button"
-          className={`category-chip${filterCatId === null ? ' active' : ''}`}
-          onClick={() => setFilterCatId(null)}
-        >
-          همه
-        </button>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            className={`category-chip${filterCatId === c.id ? ' active' : ''}`}
-            onClick={() => setFilterCatId(c.id)}
-          >
-            {c.emoji && `${c.emoji} `}
-            {c.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Product list */}
-      <div className="product-list">
-        {filteredProducts.length === 0 ? (
-          <EmptyState
-            message={
-              filterCatId !== null
-                ? 'محصولی در این دسته‌بندی وجود ندارد.'
-                : 'هنوز محصولی وجود ندارد. برای شروع اولین محصول را اضافه کنید.'
-            }
-          />
-        ) : (
-          filteredProducts.map((p) => (
-            <div key={p.id} className="product-item">
-              {p.imageUrl && <img src={p.imageUrl} alt={p.name} className="product-thumb" />}
-              <div className="product-info">
-                <div className="product-name-row">
-                  <span dir="auto">{p.name}</span>
-                  {p.featured && <span title="پیشنهاد ویژه">⭐</span>}
-                  {p.isSeasonal && <span title="مخصوص فصل">🌿</span>}
-                </div>
-                <span className="list-item-meta">
-                  {p.price}
-                  {p.unit && p.unit !== 'item' && (
-                    <span style={{ marginLeft: 4, fontSize: '0.85em', opacity: 0.7 }}>
-                      /{p.unit}
-                    </span>
-                  )}
-                </span>
-              </div>
-              {(isSuperAdmin || allowedCatId) && (
-                <>
-                  <input
-                    type="checkbox"
-                    checked={selectedProductIds.includes(p.id)}
-                    onChange={() => toggleProductSelect(p.id)}
-                  />
-                  <div className="list-item-actions">
-                    <button
-                      className="secondary"
-                      onClick={() =>
-                        toggleProductField.mutate({
-                          id: p.id,
-                          field: 'available',
-                          value: !p.available,
-                        })
-                      }
-                      disabled={toggleProductField.isPending}
-                      title={p.available ? 'موجود' : 'ناموجود'}
-                    >
-                      {p.available ? '✓' : '✗'}
-                    </button>
-                    <button
-                      className="secondary"
-                      onClick={() =>
-                        toggleProductField.mutate({
-                          id: p.id,
-                          field: 'featured',
-                          value: !p.featured,
-                        })
-                      }
-                      disabled={toggleProductField.isPending}
-                      title={p.featured ? 'پیشنهاد ویژه' : 'پیشنهاد ویژه نیست'}
-                    >
-                      ⭐
-                    </button>
-                    <button className="secondary" onClick={() => startEditProduct(p)}>
-                      ویرایش
-                    </button>
-                    <button
-                      className="danger"
-                      onClick={() => {
-                        void deleteProduct(p.id);
-                      }}
-                      disabled={deleteProductMutation.isPending}
-                    >
-                      حذف
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+      {/* Product list (self-contained) */}
+      <InventoryList onEdit={startEditProduct} />
 
       {/* Add/Edit form */}
       {(isSuperAdmin || allowedCatId) && (
@@ -439,45 +256,6 @@ export default function ProductsSubTab() {
               </button>
             )}
           </form>
-        </div>
-      )}
-
-      {/* Batch actions bar */}
-      {selectedProductIds.length > 0 && (
-        <div className="batch-bar">
-          <select
-            value={batchAction}
-            onChange={(e) => setBatchAction(e.target.value as 'move' | 'toggle' | 'delete' | '')}
-          >
-            <option value="">انتخاب عملیات...</option>
-            <option value="move">انتقال به دسته‌بندی</option>
-            <option value="toggle">تغییر وضعیت موجودی</option>
-            <option value="delete">حذف</option>
-          </select>
-          {batchAction === 'move' && (
-            <select value={batchTargetCatId} onChange={(e) => setBatchTargetCatId(e.target.value)}>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          )}
-          {batchAction === 'toggle' && (
-            <select value={batchToggleValue} onChange={(e) => setBatchToggleValue(e.target.value)}>
-              <option value="true">موجود</option>
-              <option value="false">ناموجود</option>
-            </select>
-          )}
-          <button
-            className="primary"
-            onClick={() => {
-              void handleBatchExecute();
-            }}
-            disabled={batchMutation.isPending}
-          >
-            {batchMutation.isPending ? '⏳...' : `اعمال روی ${selectedProductIds.length} محصول`}
-          </button>
         </div>
       )}
     </>
