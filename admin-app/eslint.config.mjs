@@ -12,6 +12,7 @@ export default [
       'dist/**',
       'eslint.config.mjs',
       'vite.config.ts', // not in tsconfig.app.json's include
+      'vitest.config.ts', // not in tsconfig.app.json's include
     ],
   },
 
