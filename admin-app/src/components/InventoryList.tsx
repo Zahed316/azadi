@@ -11,7 +11,6 @@ import type {
 import { useToggleProductField, useSaveProduct } from '../hooks/useProductMutations';
 import { useTelegramHaptics } from '../hooks/useTelegramHaptics';
 import { useAppContext } from '../AppContext';
-import EmptyState from './EmptyState';
 import { ProductSkeleton } from './SkeletonLoader';
 import { SegmentedControl } from './SegmentedControl';
 import BranchSelector from './BranchSelector';
@@ -209,13 +208,15 @@ export default function InventoryList() {
       {/* Product list */}
       <div className="product-list">
         {filteredProducts.length === 0 ? (
-          <EmptyState
-            message={
-              filterCatId !== null
-                ? 'محصولی در این دسته‌بندی وجود ندارد.'
-                : 'هنوز محصولی وجود ندارد. برای شروع اولین محصول را اضافه کنید.'
-            }
-          />
+          <div className="empty-state">
+            <div className="empty-state-emoji">{filterCatId !== null ? '🔍' : '📦'}</div>
+            <p className="empty-state-title">
+              {filterCatId !== null ? 'نتیجه‌ای یافت نشد' : 'هنوز محصولی اضافه نشده'}
+            </p>
+            <p className="empty-state-subtitle">
+              {filterCatId !== null ? 'عبارت جستجو را تغییر دهید' : 'اولین محصول خود را اضافه کنید'}
+            </p>
+          </div>
         ) : (
           filteredProducts.map((p) => (
             <div key={p.id} className="product-item">

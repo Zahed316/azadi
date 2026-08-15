@@ -370,10 +370,38 @@ button.secondary:hover {
     }
   }
 }
+/* ------------------------------------------------------------------ */
+/* Empty state illustrations                                          */
+/* ------------------------------------------------------------------ */
+
 .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
   text-align: center;
+}
+
+.empty-state-emoji {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.empty-state-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 8px;
+}
+
+.empty-state-subtitle {
+  font-size: 14px;
   color: var(--text-muted);
-  padding: 32px 16px;
+  margin: 0 0 20px;
+  max-width: 260px;
+  line-height: 1.5;
 }
 
 .field {

@@ -336,10 +336,11 @@ export default function ChatPanel({ onClose }: { onClose?: () => void } = {}) {
       {/* Messages area */}
       <div className="chat-messages">
         {messages.length === 0 && !isSending && (
-          <div className="chat-empty">
-            <p>سلام! چطور می‌توانم کمک کنم؟</p>
-            <p className="chat-empty-hint">
-              مثلاً: «وضعیت سفارش‌ها چطوره؟» یا «یک دسته‌بندی جدید اضافه کن»
+          <div className="empty-state">
+            <div className="empty-state-emoji">💬</div>
+            <p className="empty-state-title">پیامی نیست</p>
+            <p className="empty-state-subtitle">
+              وقتی کاربران پیام بفرستند اینجا نمایش داده می‌شود
             </p>
           </div>
         )}
