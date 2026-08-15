@@ -135,6 +135,40 @@ export class ProductRepository {
       .returning();
   }
 
+  async cloneProduct(
+    sourceId: number,
+    targetBranchId: number,
+  ): Promise<typeof products.$inferSelect | null> {
+    const source = await this.getProductById(sourceId);
+    if (!source) return null;
+
+    const now = new Date();
+    const { id: _id, createdAt: _created, ...rest } = source;
+    const newProduct = await this.db
+      .insert(products)
+      .values({
+        ...rest,
+        branchId: targetBranchId,
+        stock: 0,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+
+    if (newProduct[0]) {
+      const details = await this.getCoffeeDetails(sourceId);
+      if (details) {
+        const { productId: _pid, ...detailsRest } = details;
+        await this.db.insert(coffeeDetails).values({
+          productId: newProduct[0].id,
+          ...detailsRest,
+        });
+      }
+    }
+
+    return newProduct[0] ?? null;
+  }
+
   async setCoffeeDetails(
     productId: number,
     details: {

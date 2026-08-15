@@ -1,4 +1,4 @@
-import { ProductRepository } from '../../repositories';
+import { ProductRepository, BranchRepository } from '../../repositories';
 import { parseRequiredInt } from '../../utils/validation';
 import type { ResourceHandler } from './types';
 
@@ -247,6 +247,65 @@ export const handleProducts: ResourceHandler = async (method, path, ctx) => {
         headers: corsHeaders,
       });
     }
+  }
+
+  // POST /products/:id/clone (must be before general /products/:id handler)
+  if (path.startsWith('products/') && path.endsWith('/clone') && method === 'POST') {
+    const idResult = parseRequiredInt(path.split('/')[1], 'id');
+    if (idResult instanceof Response) return idResult;
+    const id = idResult;
+
+    const repo = new ProductRepository(db);
+    const source = await repo.getProductById(id);
+    if (!source) {
+      return new Response(JSON.stringify({ error: 'Source product not found' }), {
+        status: 404,
+        headers: corsHeaders,
+      });
+    }
+
+    // Role check
+    if (!isSuperAdmin && source.categoryId !== allowedCategoryId) {
+      return new Response(JSON.stringify({ error: 'Forbidden: Cannot clone this product' }), {
+        status: 403,
+        headers: corsHeaders,
+      });
+    }
+
+    const body = await request.json<{ targetBranchId?: number }>();
+    if (!body.targetBranchId) {
+      return new Response(JSON.stringify({ error: 'targetBranchId required' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
+
+    // Validate target branch exists
+    const branchRepo = new BranchRepository(db);
+    const targetBranch = await branchRepo.getBranchById(body.targetBranchId);
+    if (!targetBranch) {
+      return new Response(JSON.stringify({ error: 'Target branch not found' }), {
+        status: 404,
+        headers: corsHeaders,
+      });
+    }
+
+    const newProduct = await repo.cloneProduct(id, body.targetBranchId);
+    if (!newProduct) {
+      return new Response(JSON.stringify({ error: 'Clone failed' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
+    }
+
+    if (ctx.cache) {
+      await ctx.cache.deleteByPrefix('cache:products:');
+    }
+
+    return new Response(JSON.stringify({ product: newProduct }), {
+      status: 201,
+      headers: corsHeaders,
+    });
   }
 
   // PUT /products/:id/stock or /products/:id/toggle (path.split length === 3)

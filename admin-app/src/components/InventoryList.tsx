@@ -74,6 +74,31 @@ export default function InventoryList() {
     deleteProductMutation.mutate(id);
   };
 
+  // ── Clone ───────────────────────────────────────────────────────────
+  const [cloningProductId, setCloningProductId] = useState<number | null>(null);
+
+  const cloneMutation = useMutation({
+    mutationFn: (data: { sourceId: number; targetBranchId: number }) =>
+      apiFetch<{ product: ProductRow }>(`/products/${data.sourceId}/clone`, {
+        method: 'POST',
+        body: { targetBranchId: data.targetBranchId },
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      setCloningProductId(null);
+      showToast('محصول با موفقیت کپی شد ✓');
+    },
+    onError: (err: Error) => {
+      setError(err.message);
+      showToast(err.message, 'error');
+    },
+  });
+
+  const handleClone = (targetBranchId: number) => {
+    if (cloningProductId === null) return;
+    cloneMutation.mutate({ sourceId: cloningProductId, targetBranchId });
+  };
+
   // ── Editing drawer ──────────────────────────────────────────────────
   const [editingProduct, setEditingProduct] = useState<ProductRow | null>(null);
 
@@ -253,9 +278,19 @@ export default function InventoryList() {
                 />
               )}
 
-              {/* Batch select + delete */}
+              {/* Batch select + clone + delete */}
               {(isSuperAdmin || allowedCatId) && (
                 <>
+                  {isSuperAdmin && branches.length > 0 && (
+                    <button
+                      className="clone-btn"
+                      title="کپی به شعبه"
+                      onClick={() => setCloningProductId(p.id)}
+                      disabled={cloneMutation.isPending}
+                    >
+                      ⧉
+                    </button>
+                  )}
                   <input
                     type="checkbox"
                     checked={selectedProductIds.includes(p.id)}
@@ -323,6 +358,31 @@ export default function InventoryList() {
         onSubmit={handleDrawerSubmit}
         isPending={saveProductMutation.isPending}
       />
+
+      {/* Branch picker overlay for clone */}
+      {cloningProductId !== null && (
+        <div className="overlay" onClick={() => setCloningProductId(null)}>
+          <div className="branch-picker-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>شعبه مقصد را انتخاب کنید</h3>
+            <div className="branch-list">
+              {branches.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  className="branch-option"
+                  onClick={() => handleClone(b.id)}
+                  disabled={cloneMutation.isPending}
+                >
+                  {b.name}
+                </button>
+              ))}
+            </div>
+            <button type="button" className="secondary" onClick={() => setCloningProductId(null)}>
+              انصراف
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
