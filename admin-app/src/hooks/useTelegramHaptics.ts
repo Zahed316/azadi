@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { hapticFeedback } from '@telegram-apps/sdk';
+import { hapticFeedback } from '@tma.js/sdk';
 
 /**
  * Provides haptic feedback helpers backed by the Telegram Mini App SDK.

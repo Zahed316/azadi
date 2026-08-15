@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@telegram-apps/sdk', () => ({
+vi.mock('@tma.js/sdk', () => ({
   hapticFeedback: {
     isSupported: vi.fn(() => true),
     impactOccurred: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock('@telegram-apps/sdk', () => ({
   },
 }));
 
-import { hapticFeedback } from '@telegram-apps/sdk';
+import { hapticFeedback } from '@tma.js/sdk';
 
 const mockHaptic = vi.mocked(hapticFeedback);
 

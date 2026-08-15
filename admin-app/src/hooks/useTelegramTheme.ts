@@ -1,26 +1,26 @@
 import { useState, useEffect } from 'react';
-import { themeParamsState, mountThemeParams, bindThemeParamsCssVars } from '@telegram-apps/sdk';
+import { themeParams } from '@tma.js/sdk';
 
 /**
  * Subscribes to Telegram theme parameters and binds --tg-theme-* CSS variables.
  *
- * Returns the current theme params object (bg_color, text_color, etc.).
+ * Returns the current theme params object (bgColor, textColor, etc.).
  * Automatically mounts and binds on first render; cleans up on unmount.
  *
  * @example
  * ```tsx
  * const theme = useTelegramTheme();
- * <div style={{ color: theme?.text_color }}>Hello</div>
+ * <div style={{ color: theme?.textColor }}>Hello</div>
  * ```
  */
-export function useTelegramTheme(): ReturnType<typeof themeParamsState> {
-  const [theme, setTheme] = useState(themeParamsState);
+export function useTelegramTheme() {
+  const [theme, setTheme] = useState(themeParams.state);
 
   useEffect(() => {
-    mountThemeParams();
-    bindThemeParamsCssVars();
+    themeParams.mount();
+    themeParams.bindCssVars();
 
-    return themeParamsState.sub((current) => {
+    return themeParams.state.sub((current) => {
       setTheme(current);
     });
   }, []);

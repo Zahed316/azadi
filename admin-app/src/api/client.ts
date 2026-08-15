@@ -1,8 +1,19 @@
-import { retrieveLaunchParams } from '@telegram-apps/sdk';
+import { retrieveLaunchParams } from '@tma.js/sdk';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- import.meta.env is typed as any by Vite
-export const API_BASE =
-  import.meta.env.VITE_API_BASE || 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
+const PROD_API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
+
+if (
+  !import.meta.env.VITE_API_BASE &&
+  !import.meta.env.PROD &&
+  !import.meta.env.MODE // vitest sets MODE to 'test'
+) {
+  throw new Error(
+    'Missing VITE_API_BASE environment variable. ' +
+      'Copy .env.example to .env and set the API base URL.',
+  );
+}
+
+export const API_BASE = (import.meta.env.VITE_API_BASE as string) || PROD_API_BASE;
 
 function getAuthHeader(): Record<string, string> {
   try {

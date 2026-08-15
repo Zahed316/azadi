@@ -24,6 +24,8 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 - [dead-helper-extraction-risk](memory/dead-helper-extraction-risk.md) — extracted helpers must be integrated in the same task; dead helpers create false dedup confidence
 - [subagent-prettier-skips-docs](memory/subagent-prettier-skips-docs.md) — subagents may not format docs files with Prettier, causing CI format:check to fail
 - [mimo-v25-no-function-calling](memory/mimo-v25-no-function-calling.md) — OpenCode mimo-v2.5 rejects or garbles OpenAI function calling; don't send tools
+- [d1-migrations-drop-tables-not-auto-generated](memory/d1-migrations-drop-tables-not-auto-generated.md) — Drizzle `generate` does not create DROP TABLE migrations; write manual SQL
+- [feature-removal-audit-interface-methods](memory/feature-removal-audit-interface-methods.md) — removing a feature can orphan interface methods; typecheck immediately and verify shared utility usage
 
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 
@@ -210,6 +212,9 @@ Filtering rules:
 - **Unused npm dependencies**: None currently. Previously removed: `@grammyjs/auto-retry`, `@grammyjs/parse-mode`, `@grammyjs/router`, `tsx`.
 - **Stack trace leakage**: `src/index.ts` error handler previously included `err.stack` in 500 JSON responses — information disclosure. Current code sanitizes this but be aware if modifying error handling.
 - **Menu-app API envelope**: Every public API endpoint wraps its response in `{key: [...]}`. Forgetting to pass the `envelopeKey` to `apiFetch` means the page gets the wrapper object instead of the data array, causing `.map()` to silently produce nothing (empty page) or crash (white page). When adding new pages, always check `src/api/public.ts` for the envelope key.
+- **`check` scripts must include tests.** Both `admin-app/package.json` and `menu-app/package.json` have `"check"` scripts that run typecheck + lint + format:check + test. If you add a new check step, add it to the `check` script too — a person running `npm run check` must see all checks, including tests.
+- **Telegram SDK: `@tma.js/sdk` replaces `@telegram-apps/sdk`.** The old `@telegram-apps/*` packages are deprecated. All imports use `@tma.js/sdk` now. The API surface changed: `themeParamsState` → `themeParams.state`, `mountThemeParams` → `themeParams.mount()`, `bindThemeParamsCssVars` → `themeParams.bindCssVars()`. The `vite.config.ts` manualChunks also references `@tma.js/sdk`. Both apps' `check` scripts catch stale imports via typecheck.
+- **API base URL must be set in local dev.** Both `admin-app/src/api/client.ts` and `menu-app/src/api/client.ts` throw a clear error when `VITE_API_BASE` is missing in development mode. Production builds fall back to the hardcoded Worker URL. Copy `.env.example` to `.env` and set the URL for local dev (`http://localhost:8787/api` for admin, `http://localhost:8787/api/public` for menu).
 
 ## Memory (project-scoped only — global rules live in `~/.claude/CLAUDE.md` and are loaded automatically)
 

@@ -10,7 +10,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           query: ['@tanstack/react-query'],
-          telegram: ['@telegram-apps/sdk'],
+          telegram: ['@tma.js/sdk'],
         },
       },
     },
