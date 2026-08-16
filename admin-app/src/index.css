@@ -2317,16 +2317,21 @@ button.secondary:hover {
 .chat-panel-wrapper {
   position: fixed;
   inset: 0;
-  bottom: 60px; /* leave room for bottom nav */
-  z-index: 1050; /* above nav (1000), below chat FAB panel (1501) */
+  bottom: 60px;
+  z-index: 1050;
   display: flex;
   flex-direction: column;
   background: var(--bg-dark);
+  /* Use dynamic viewport height when available, fall back to fixed */
+  height: calc(100dvh - 60px);
+  height: calc(100svh - 60px); /* Safari fallback */
 }
 
 @media (max-height: 500px) {
   .chat-panel-wrapper {
     bottom: 0;
+    height: 100dvh;
+    height: 100svh;
   }
 }
 
