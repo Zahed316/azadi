@@ -65,15 +65,20 @@ export default function ProductFormDrawer({
 
   // Wire Telegram mainButton
   useEffect(() => {
+    mainButton.mount();
     mainButton.setParams({
       text: product ? 'ذخیره' : 'افزودن',
       isEnabled: !isPending && isFormValid,
       isVisible: true,
     });
+    return () => {
+      mainButton.unmount();
+    };
   }, [product, isPending, isFormValid]);
 
   // Wire Telegram backButton
   useEffect(() => {
+    backButton.mount();
     backButton.show();
     const off = backButton.onClick(() => {
       haptics.tap();
@@ -82,6 +87,7 @@ export default function ProductFormDrawer({
     return () => {
       off();
       backButton.hide();
+      backButton.unmount();
     };
   }, [onClose, haptics]);
 
