@@ -75,7 +75,7 @@ function AppInner() {
     <AppContext.Provider value={ctxValue}>
       <HashRouter>
         <IconSprite />
-        <div className="container" style={{ paddingBottom: '80px' }}>
+        <div className="container">
           {error && (
             <div className="error" role="alert" aria-live="assertive">
               {error}
@@ -179,9 +179,11 @@ function AppInner() {
             </button>
           </nav>
           {isChatOpen && (
-            <Suspense fallback={null}>
-              <ChatPanel onClose={closeChat} />
-            </Suspense>
+            <div className="chat-panel-wrapper">
+              <Suspense fallback={null}>
+                <ChatPanel onClose={closeChat} />
+              </Suspense>
+            </div>
           )}
         </div>
       </HashRouter>

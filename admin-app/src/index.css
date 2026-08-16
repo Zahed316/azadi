@@ -839,8 +839,8 @@ button.secondary:hover {
 .chat-panel {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 160px);
-  min-height: 300px;
+  height: 100%;
+  min-height: 0;
 }
 
 .chat-header {
@@ -2308,4 +2308,24 @@ button.secondary:hover {
 .section-tabs .tab:hover:not(.active) {
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.05);
+}
+
+/* ------------------------------------------------------------------ */
+/* ChatPanel wrapper — fixed overlay above bottom nav                  */
+/* ------------------------------------------------------------------ */
+
+.chat-panel-wrapper {
+  position: fixed;
+  inset: 0;
+  bottom: 60px; /* leave room for bottom nav */
+  z-index: 1050; /* above nav (1000), below chat FAB panel (1501) */
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-dark);
+}
+
+@media (max-height: 500px) {
+  .chat-panel-wrapper {
+    bottom: 0;
+  }
 }
