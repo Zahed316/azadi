@@ -26,6 +26,7 @@ Project-scoped memory lives in `~/.claude/projects/-data-data-com-termux-files-h
 - [mimo-v25-no-function-calling](memory/mimo-v25-no-function-calling.md) — OpenCode mimo-v2.5 rejects or garbles OpenAI function calling; don't send tools
 - [d1-migrations-drop-tables-not-auto-generated](memory/d1-migrations-drop-tables-not-auto-generated.md) — Drizzle `generate` does not create DROP TABLE migrations; write manual SQL
 - [feature-removal-audit-interface-methods](memory/feature-removal-audit-interface-methods.md) — removing a feature can orphan interface methods; typecheck immediately and verify shared utility usage
+- [tma-sdk-retrieverawinitdata](memory/tma-sdk-retrieverawinitdata.md) — @tma.js/sdk v3 removed initDataRaw from retrieveLaunchParams(); use retrieveRawInitData()
 
 **Global memory** lives in `~/.claude/memory/` (index in `~/.claude/memory/MEMORY.md`) and applies to any project. Load it whenever a slug matches (e.g. Termux toolchain lessons when touching shebangs/binary paths; `permissive-where-parsers-mask-sql-bugs` and `rest-api-target-user-idor-and-nan-bypass` when reviewing REST handlers or test SQL). Treat entries as hypotheses — verify a specific behavioral claim (exit code, error message, version-specific behavior) in the current session before citing it as a diagnosis.
 
