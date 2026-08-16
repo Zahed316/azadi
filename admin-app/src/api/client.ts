@@ -1,4 +1,4 @@
-import { retrieveLaunchParams } from '@tma.js/sdk';
+import { retrieveRawInitData } from '@tma.js/sdk';
 
 const PROD_API_BASE = 'https://azadi-coffee-bot.zahedrastgar316.workers.dev/api';
 
@@ -17,8 +17,9 @@ export const API_BASE = (import.meta.env.VITE_API_BASE as string) || PROD_API_BA
 
 function getAuthHeader(): Record<string, string> {
   try {
-    // retrieveLaunchParams() returns `any` from the Telegram SDK — narrow manually
-    const { initDataRaw } = retrieveLaunchParams() as { initDataRaw?: string };
+    // @tma.js/sdk v3 uses retrieveRawInitData() — the old retrieveLaunchParams().initDataRaw
+    // property was removed in the SDK migration from @telegram-apps/sdk → @tma.js/sdk.
+    const initDataRaw = retrieveRawInitData();
     return { Authorization: `Telegram ${initDataRaw || ''}` };
   } catch {
     return { Authorization: '' };
