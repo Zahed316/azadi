@@ -32,7 +32,7 @@ export default function AITestPage() {
     <>
       <div className="card">
         <h2>تست چت هوش مصنوعی</h2>
-        <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
+        <p className="text-sm text-muted mb-8">
           یک سوال آزمایشی به دستیار هوش مصنوعی ارسال کنید. از همان متن ربات استفاده می‌کند.
         </p>
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
@@ -68,7 +68,7 @@ export default function AITestPage() {
                   <div style={{ marginTop: 4, fontSize: '0.9em' }}>
                     ج: <span dir="auto">{item.a}</span>
                   </div>
-                  <div style={{ fontSize: '0.75em', color: '#aaa', marginTop: 2 }}>
+                  <div className="text-xs text-muted mt-2">
                     {item.ts.toLocaleTimeString()}
                   </div>
                 </div>

@@ -166,7 +166,7 @@ export default function MenuConfigPage() {
     <>
       <div className="card">
         <h2>تنظیمات منو</h2>
-        <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 12 }}>
+        <p className="text-sm text-muted" style={{ marginBottom: 12 }}>
           ترتیب منو در اینجا چیدمان دکمه‌های ربات را کنترل می‌کند. بخش‌ها: ☕ نوشیدنی‌ها، 🌱
           دانه‌های قهوه، 🍰 کیک و کوکی، 📍 شعب. برای پیش‌نمایش نتیجه از دستور <code>/start</code>{' '}
           ربات استفاده کنید.

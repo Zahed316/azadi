@@ -161,7 +161,7 @@ export default function SettingsForm() {
     <>
       <div className="card">
         <h2>🔘 نمایش منو</h2>
-        <p style={{ fontSize: '0.85em', color: '#888', marginBottom: 8 }}>
+        <p className="text-sm text-muted mb-8">
           نمایش یا پنهان کردن بخش‌های منوی اصلی ربات. بخش‌های پنهان پیام «غیرفعال» به کاربر نمایش
           می‌دهند.
         </p>

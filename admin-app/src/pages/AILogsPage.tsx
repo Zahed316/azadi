@@ -69,10 +69,10 @@ export default function AILogsPage() {
                   <span className="list-item-meta">{formatTime(log.timestamp)}</span>
                 </div>
                 <div style={{ width: '100%' }}>
-                  <div style={{ fontSize: '0.85em', color: '#888' }}>
+                  <div className="text-sm text-muted">
                     س: <span dir="auto">{log.question}</span>
                   </div>
-                  <div style={{ fontSize: '0.85em', marginTop: 4 }}>
+                  <div className="text-sm mt-4">
                     ج: <span dir="auto">{log.response}</span>
                   </div>
                 </div>
