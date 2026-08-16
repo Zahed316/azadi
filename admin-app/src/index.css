@@ -2196,3 +2196,116 @@ button.secondary:hover {
   /* already handled by global button styles — just ensure width: auto */
   width: auto;
 }
+
+/* ------------------------------------------------------------------ */
+/* Clone branch modal (InventoryList)                                  */
+/* ------------------------------------------------------------------ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.branch-picker-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  width: calc(100% - 32px);
+  max-width: 360px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.branch-picker-modal h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+}
+
+.branch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.branch-option {
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: none;
+  color: var(--text-main);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  text-align: right;
+}
+
+.branch-option:hover {
+  background: rgba(79, 70, 229, 0.08);
+  border-color: var(--primary);
+}
+
+/* ------------------------------------------------------------------ */
+/* Special message / button label form (MenuConfigPage)                */
+/* ------------------------------------------------------------------ */
+
+.special-msg-form {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Section tabs (MenuConfigPage)                                       */
+/* ------------------------------------------------------------------ */
+
+.section-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.section-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.section-tabs .tab {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  width: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.section-tabs .tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+.section-tabs .tab:hover:not(.active) {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
