@@ -68,9 +68,7 @@ export default function AITestPage() {
                   <div style={{ marginTop: 4, fontSize: '0.9em' }}>
                     ج: <span dir="auto">{item.a}</span>
                   </div>
-                  <div className="text-xs text-muted mt-2">
-                    {item.ts.toLocaleTimeString()}
-                  </div>
+                  <div className="text-xs text-muted mt-2">{item.ts.toLocaleTimeString()}</div>
                 </div>
               </li>
             ))}
