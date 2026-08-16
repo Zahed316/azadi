@@ -99,11 +99,12 @@ export default function InventoryList() {
   };
 
   // ── Editing drawer ──────────────────────────────────────────────────
-  const [editingProduct, setEditingProduct] = useState<ProductRow | null>(null);
+  // undefined = closed, null = adding new, ProductRow = editing existing
+  const [editingProduct, setEditingProduct] = useState<ProductRow | null | undefined>(undefined);
 
   const saveProductMutation = useSaveProduct({
     onSuccess: (msg) => {
-      setEditingProduct(null);
+      setEditingProduct(undefined);
       showToast(msg);
     },
     onError: (msg) => {
@@ -353,12 +354,14 @@ export default function InventoryList() {
       )}
 
       {/* Product form drawer (add/edit) */}
-      <ProductFormDrawer
-        product={editingProduct}
-        onClose={() => setEditingProduct(null)}
-        onSubmit={handleDrawerSubmit}
-        isPending={saveProductMutation.isPending}
-      />
+      {editingProduct !== undefined && (
+        <ProductFormDrawer
+          product={editingProduct}
+          onClose={() => setEditingProduct(undefined)}
+          onSubmit={handleDrawerSubmit}
+          isPending={saveProductMutation.isPending}
+        />
+      )}
 
       {/* Branch picker overlay for clone */}
       {cloningProductId !== null && (
