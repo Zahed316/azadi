@@ -14,6 +14,7 @@ import {
 import { buildMinimalContext } from '../utils/menuContext';
 import { checkAndSetCooldown } from '../utils/rateLimit';
 import { getActiveMessage, handleEditFailure, pushMessage } from '../utils/menuLifecycle';
+import { escapeHtml } from '../utils/htmlEscape';
 
 /**
  * Run an AI query against the Azadi context without bot-specific plumbing.
@@ -188,8 +189,8 @@ export function setupMessageHandlers(bot: Bot<MyContext>, _env: Env): void {
         }
         flow.step = 'confirm';
         const stars = flow.rating ? '⭐'.repeat(flow.rating) : 'بدون امتیاز';
-        const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
-        const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`;
+        const nameLine = flow.isAnonymous ? 'ناشناس' : (flow.name ?? '');
+        const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${escapeHtml(nameLine)}\n⭐ ${stars}\n\n📝 ${escapeHtml(flow.content ?? '')}`;
         const confirmKb = new InlineKeyboard()
           .text('✅ ارسال', 'msg:confirm')
           .text('❌ انصراف', 'msg:cancel');

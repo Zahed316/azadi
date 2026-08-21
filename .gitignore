@@ -11,3 +11,15 @@ wrangler-dry/
 screenshot-analysis.jpg
 .commandcode/
 
+
+
+# Davia
+.davia/
+
+# Strix scan output
+strix_runs/
+
+# Generated / temp docs
+docs/temp/
+docs/*_module_tree.json
+docs/module_tree.json

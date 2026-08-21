@@ -566,8 +566,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
     // Otherwise (rating step), skip means "no rating"
     flow.rating = undefined;
     flow.step = 'confirm';
-    const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
-    const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ بدون امتیاز\n\n📝 ${flow.content}`;
+    const nameLine = flow.isAnonymous ? 'ناشناس' : (flow.name ?? '');
+    const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${escapeHtml(nameLine)}\n⭐ بدون امتیاز\n\n📝 ${escapeHtml(flow.content ?? '')}`;
     const kb = new InlineKeyboard().text('✅ ارسال', 'msg:confirm').text('❌ انصراف', 'msg:cancel');
     const active = getActiveMessage(ctx.session);
     if (active) {
@@ -600,8 +600,8 @@ export function setupCallbackHandlers(bot: Bot<MyContext>): void {
       ctx.session.messageFlow.step = 'confirm';
       const flow = ctx.session.messageFlow;
       const stars = '⭐'.repeat(num);
-      const nameLine = flow.isAnonymous ? 'ناشناس' : flow.name;
-      const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${nameLine}\n⭐ ${stars}\n\n📝 ${flow.content}`;
+      const nameLine = flow.isAnonymous ? 'ناشناس' : (flow.name ?? '');
+      const preview = `<b>پیش‌نمایش پیام:</b>\n\n👤 ${escapeHtml(nameLine)}\n⭐ ${stars}\n\n📝 ${escapeHtml(flow.content ?? '')}`;
       const kb = new InlineKeyboard()
         .text('✅ ارسال', 'msg:confirm')
         .text('❌ انصراف', 'msg:cancel');
