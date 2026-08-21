@@ -13,6 +13,7 @@ Every pitfall in this project, expanded with WHY it matters and WHAT goes wrong 
 **What goes wrong**: Users see broken functionality because the frontend code references API endpoints or data shapes that changed in the Worker deployment. The admin app shows a blank page or JavaScript errors.
 
 **Verification**:
+
 ```bash
 curl -s https://azadi-admin.pages.dev | grep -o '/assets/index-[^"]*\.css'
 # Compare with ls admin-app/dist/assets/
@@ -99,6 +100,7 @@ curl -s https://azadi-admin.pages.dev | grep -o '/assets/index-[^"]*\.css'
 ### Conversations Middleware Gate
 
 **What**: The `conversations()` middleware is gated by `env.USE_CONVERSATIONS === 'true'` (off by default). Re-introducing it requires:
+
 1. `ctx.hasActiveConversation` snapshot middleware **before** `createConversation()` enter
 2. A `if (ctx.hasActiveConversation) return;` skip in `src/handlers/message.ts`
 
@@ -149,6 +151,7 @@ curl -s https://azadi-admin.pages.dev | grep -o '/assets/index-[^"]*\.css'
 **Why it matters**: The API surface changed significantly between packages.
 
 **Key changes**:
+
 - `themeParamsState` → `themeParams.state`
 - `mountThemeParams` → `themeParams.mount()`
 - `bindThemeParamsCssVars` → `themeParams.bindCssVars()`
@@ -184,6 +187,7 @@ curl -s https://azadi-admin.pages.dev | grep -o '/assets/index-[^"]*\.css'
 ### Mini App Two URLs
 
 **What**: Two URLs must stay in sync:
+
 1. Mini App URL (opened by bot): hardcoded in `src/commands/admin.ts` as `https://azadi-admin.pages.dev`
 2. API base URL (called by app): hardcoded in `admin-app/src/App.tsx` as `https://azadi-coffee-bot.zahedrastgar316.workers.dev/api`
 

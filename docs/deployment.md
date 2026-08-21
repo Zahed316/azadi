@@ -17,13 +17,14 @@ graph LR
 
 ### Three Parallel Jobs
 
-| Job | What it does | Deploy command |
-|-----|-------------|----------------|
-| `test-and-deploy` | `npm ci` → `npm test` → `npm run lint` → `npm run format:check` → `tsc --noEmit` → deploy | `wrangler deploy` |
-| `deploy-admin-app` | `npm ci` in `admin-app/` → typecheck → lint → format:check → build | `wrangler pages deploy admin-app/dist --project-name=azadi-admin` |
-| `deploy-menu-app` | `npm ci` in `menu-app/` → typecheck → lint → format:check → build | `wrangler pages deploy menu-app/dist --project-name=azadi-menu` |
+| Job                | What it does                                                                              | Deploy command                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `test-and-deploy`  | `npm ci` → `npm test` → `npm run lint` → `npm run format:check` → `tsc --noEmit` → deploy | `wrangler deploy`                                                 |
+| `deploy-admin-app` | `npm ci` in `admin-app/` → typecheck → lint → format:check → build                        | `wrangler pages deploy admin-app/dist --project-name=azadi-admin` |
+| `deploy-menu-app`  | `npm ci` in `menu-app/` → typecheck → lint → format:check → build                         | `wrangler pages deploy menu-app/dist --project-name=azadi-menu`   |
 
 **Shared configuration**:
+
 - Runner: `ubuntu-latest`
 - Timeout: 15 minutes per job
 - Node.js: 22
@@ -36,6 +37,7 @@ graph LR
 ### What CI Checks
 
 Every job runs these checks **before** deploying:
+
 1. **TypeScript type checking** (`tsc --noEmit`)
 2. **ESLint** (`npm run lint`)
 3. **Prettier format check** (`npm run format:check`)
@@ -46,10 +48,10 @@ All three are hard gates — any failure blocks deployment. There is no `continu
 
 Defined in `wrangler.toml` at the project root:
 
-| Binding | Type | Name | ID |
-|---------|------|------|-----|
-| `DB` | D1 Database | `azadi-db` | `2c020279-a453-4105-984d-c09bdda89819` |
-| `CACHE` | KV Namespace | — | `cf01f801bdae488b9196782f2541d288` |
+| Binding | Type         | Name       | ID                                     |
+| ------- | ------------ | ---------- | -------------------------------------- |
+| `DB`    | D1 Database  | `azadi-db` | `2c020279-a453-4105-984d-c09bdda89819` |
+| `CACHE` | KV Namespace | —          | `cf01f801bdae488b9196782f2541d288`     |
 
 **Worker name**: `azadi-coffee-bot`
 **Entry point**: `src/index.ts`
@@ -64,23 +66,23 @@ Wrangler validates **all bindings** in `wrangler.toml` during deploy — even if
 
 ### Worker Secrets (set via `wrangler secret put` or Cloudflare dashboard)
 
-| Secret | Purpose |
-|--------|---------|
+| Secret               | Purpose                                                                       |
+| -------------------- | ----------------------------------------------------------------------------- |
 | `TELEGRAM_BOT_TOKEN` | Bot token from BotFather — used for webhook validation and Telegram API calls |
-| `SECRET_TOKEN` | Secret token for `X-Telegram-Bot-Api-Secret-Token` header validation |
-| `OPENCODE_API_KEY` | API key for OpenCode (mimo-v2.5 model) used in AI fallback |
-| `PERF_LOG` | Set to `'true'` to enable per-request timing JSON on stdout (off by default) |
+| `SECRET_TOKEN`       | Secret token for `X-Telegram-Bot-Api-Secret-Token` header validation          |
+| `OPENCODE_API_KEY`   | API key for OpenCode (mimo-v2.5 model) used in AI fallback                    |
+| `PERF_LOG`           | Set to `'true'` to enable per-request timing JSON on stdout (off by default)  |
 
 ### Worker Environment Variables (in `wrangler.toml`)
 
-| Variable | Purpose |
-|----------|---------|
+| Variable            | Purpose                                                             |
+| ------------------- | ------------------------------------------------------------------- |
 | `USE_CONVERSATIONS` | Set to `'true'` to enable conversations middleware (off by default) |
 
 ### Frontend Environment Variables
 
-| Variable | Used by | Purpose |
-|----------|---------|---------|
+| Variable        | Used by   | Purpose                                                    |
+| --------------- | --------- | ---------------------------------------------------------- |
 | `VITE_API_BASE` | Both apps | API base URL for local dev (throws if missing in dev mode) |
 
 ## Local Development
@@ -105,6 +107,7 @@ npx wrangler dev
 ```
 
 The local dev server at `http://localhost:8787` handles all three routes:
+
 - `/webhook` — Telegram bot
 - `/api/*` — Admin API
 - `/api/public/*` — Public API

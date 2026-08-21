@@ -38,12 +38,12 @@ sequenceDiagram
 
 The Worker's `fetch` handler routes incoming requests:
 
-| Path | Handler | Auth |
-|------|---------|------|
-| `GET/POST /webhook` | grammY `webhookCallback` | `X-Telegram-Bot-Api-Secret-Token` (timing-safe comparison) |
-| `GET/POST /api/*` | `handleApiRequest()` | `Authorization: Telegram <initData>` header |
-| `GET/POST /api/public/*` | `handlePublicApiRequest()` | None |
-| Anything else | 404 | N/A |
+| Path                     | Handler                    | Auth                                                       |
+| ------------------------ | -------------------------- | ---------------------------------------------------------- |
+| `GET/POST /webhook`      | grammY `webhookCallback`   | `X-Telegram-Bot-Api-Secret-Token` (timing-safe comparison) |
+| `GET/POST /api/*`        | `handleApiRequest()`       | `Authorization: Telegram <initData>` header                |
+| `GET/POST /api/public/*` | `handlePublicApiRequest()` | None                                                       |
+| Anything else            | 404                        | N/A                                                        |
 
 All paths log structured JSON with timestamps, method, path, status, and duration.
 
@@ -116,6 +116,7 @@ grammY's `conversations()` framework is registered **only** when `env.USE_CONVER
 4. This caused wizard final messages to be answered by the AI instead of the wizard
 
 Re-introduction requires (see [pitfalls.md](pitfalls.md)):
+
 - Persistent D1 storage with `prefix: "convo_"` (avoids session key collisions)
 - A `ctx.hasActiveConversation` snapshot middleware registered **before** `createConversation()` enter
 - A skip guard in `src/handlers/message.ts` before the AI fallback
@@ -125,6 +126,7 @@ Re-introduction requires (see [pitfalls.md](pitfalls.md)):
 ### Worker (`src/`)
 
 The core backend. Handles three concerns:
+
 1. **Telegram webhook** — Receives updates, runs through grammY middleware, sends replies
 2. **Admin REST API** (`/api/*`) — CRUD for all shop data, role-based access
 3. **Public API** (`/api/public/*`) — Read-only menu data for the menu website

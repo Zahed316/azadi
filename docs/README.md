@@ -46,11 +46,11 @@ graph TB
 
 ## Three Deployable Units
 
-| Unit | Directory | Hosting | URL |
-|------|-----------|---------|-----|
-| **Worker** | `src/` | Cloudflare Workers | `azadi-coffee-bot.zahedrastgar316.workers.dev` |
-| **Admin Mini App** | `admin-app/` | Cloudflare Pages | `azadi-admin.pages.dev` |
-| **Menu Website** | `menu-app/` | Cloudflare Pages | `www.azadiroastery.ir` (fallback: `azadi-menu.pages.dev`) |
+| Unit               | Directory    | Hosting            | URL                                                       |
+| ------------------ | ------------ | ------------------ | --------------------------------------------------------- |
+| **Worker**         | `src/`       | Cloudflare Workers | `azadi-coffee-bot.zahedrastgar316.workers.dev`            |
+| **Admin Mini App** | `admin-app/` | Cloudflare Pages   | `azadi-admin.pages.dev`                                   |
+| **Menu Website**   | `menu-app/`  | Cloudflare Pages   | `www.azadiroastery.ir` (fallback: `azadi-menu.pages.dev`) |
 
 The Worker does **not** serve the admin or menu apps — they are separate Cloudflare Pages deployments.
 
@@ -64,17 +64,17 @@ The Worker does **not** serve the admin or menu apps — they are separate Cloud
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [architecture.md](architecture.md) | Request flow, middleware chain, session management, deployable unit relationships |
-| [database.md](database.md) | All 11 schema tables, migration workflow, repository pattern, DataService caching |
-| [api.md](api.md) | Admin REST API and Public API — endpoints, auth, request/response shapes |
-| [bot.md](bot.md) | Telegram bot commands, menus, product display, AI fallback, Persian text conventions |
-| [admin-app.md](admin-app.md) | Admin Mini App — auth, pages, role gating, UX conventions |
-| [menu-app.md](menu-app.md) | Menu website — routes, API consumption, caching, RTL layout |
-| [deployment.md](deployment.md) | CI/CD pipeline, Cloudflare bindings, secrets, local dev setup |
-| [conventions.md](conventions.md) | Coding patterns — Persian text, error handling, testing, lint/format rules |
-| [pitfalls.md](pitfalls.md) | Known pitfalls — deployment, data, bot, admin app, testing |
+| Document                           | Description                                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------ |
+| [architecture.md](architecture.md) | Request flow, middleware chain, session management, deployable unit relationships    |
+| [database.md](database.md)         | All 11 schema tables, migration workflow, repository pattern, DataService caching    |
+| [api.md](api.md)                   | Admin REST API and Public API — endpoints, auth, request/response shapes             |
+| [bot.md](bot.md)                   | Telegram bot commands, menus, product display, AI fallback, Persian text conventions |
+| [admin-app.md](admin-app.md)       | Admin Mini App — auth, pages, role gating, UX conventions                            |
+| [menu-app.md](menu-app.md)         | Menu website — routes, API consumption, caching, RTL layout                          |
+| [deployment.md](deployment.md)     | CI/CD pipeline, Cloudflare bindings, secrets, local dev setup                        |
+| [conventions.md](conventions.md)   | Coding patterns — Persian text, error handling, testing, lint/format rules           |
+| [pitfalls.md](pitfalls.md)         | Known pitfalls — deployment, data, bot, admin app, testing                           |
 
 ## Quick Start
 

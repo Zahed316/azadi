@@ -15,6 +15,7 @@ All bot UI text is in Persian (Farsi) using HTML parse mode. The conventions ens
 ### Price Display
 
 `formatPersianPrice(amount, unit)` from `src/utils/numbers.ts`:
+
 - Formats the price with Persian digits
 - Wraps the price run in **LRI/PDI isolates** (U+2066/U+2069) so the price stays LTR inside RTL sentences
 - Uses the configurable `price_unit` setting (default: `تومان`) read via `ctx.dataService.getSetting('price_unit')`
@@ -41,6 +42,7 @@ All error replies to users are in Persian. Catch blocks log to `console.error` a
 ### API Error Responses
 
 The admin API returns structured errors:
+
 - `401` — Missing or invalid `Authorization` header
 - `403` — Not an admin, or `category_admin` accessing resources outside their category
 - `404` — Resource not found
@@ -71,6 +73,7 @@ Tests are in `src/tests/*.test.ts`, using Vitest.
 ### Router Test Harness
 
 `src/tests/_helpers/routerHarness.ts` provides a shared test harness for the admin API:
+
 - Mocks Drizzle queries
 - Mocks `validateInitData` (auth)
 - Mocks `getAdminRole` (role-based access)
@@ -129,6 +132,7 @@ Both apps use `node ./node_modules/...` invocations instead of shebangs to avoid
 ## Registered Bot Commands
 
 Only these commands are registered via Telegram's `setMyCommands`:
+
 - `/start` — Welcome message and main menu
 - `/admin` — Opens admin Mini App (auth required)
 - `/menu` — Opens menu website

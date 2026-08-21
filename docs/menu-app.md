@@ -13,16 +13,16 @@ The public menu website for Azadi Coffee Roastery. A read-only, no-auth React ap
 
 Uses `BrowserRouter` (clean URLs, not hash-based).
 
-| Route | Page Component | Description |
-|-------|---------------|-------------|
-| `/` | `HomePage` | Home page with featured products and menu sections |
-| `/category/:id` | `CategoryPage` | Products in a specific category |
-| `/product/:id` | `ProductPage` | Single product detail (with coffee_details if applicable) |
-| `/featured` | `FeaturedPage` | Featured products |
-| `/seasonal` | `SeasonalPage` | Seasonal products |
-| `/branches` | `BranchesPage` | Active shop locations |
-| `/faq` | `FaqPage` | Frequently asked questions |
-| `*` (wildcard) | Redirect to `/` | |
+| Route           | Page Component  | Description                                               |
+| --------------- | --------------- | --------------------------------------------------------- |
+| `/`             | `HomePage`      | Home page with featured products and menu sections        |
+| `/category/:id` | `CategoryPage`  | Products in a specific category                           |
+| `/product/:id`  | `ProductPage`   | Single product detail (with coffee_details if applicable) |
+| `/featured`     | `FeaturedPage`  | Featured products                                         |
+| `/seasonal`     | `SeasonalPage`  | Seasonal products                                         |
+| `/branches`     | `BranchesPage`  | Active shop locations                                     |
+| `/faq`          | `FaqPage`       | Frequently asked questions                                |
+| `*` (wildcard)  | Redirect to `/` |                                                           |
 
 All pages are lazy-loaded via `React.lazy`.
 
@@ -61,6 +61,7 @@ const products = await apiFetch<Product[]>('/products', 'products');
 ```
 
 **Envelope keys** (must match exactly):
+
 - `/categories` → `categories`
 - `/products` → `products`
 - `/products/:id` → `product`
@@ -87,18 +88,19 @@ cp .env.example .env
 
 Uses TanStack Query with these settings:
 
-| Setting | Value | Rationale |
-|---------|-------|-----------|
-| `staleTime` | 5 minutes (300,000ms) | Menu data doesn't change frequently |
-| `gcTime` | 5 minutes (300,000ms) | Garbage collect unused cache after 5 min |
-| `refetchOnWindowFocus` | `false` | Prevent unnecessary refetches when tab regains focus |
-| `retry` | `1` | One retry on failure (public API should be reliable) |
+| Setting                | Value                 | Rationale                                            |
+| ---------------------- | --------------------- | ---------------------------------------------------- |
+| `staleTime`            | 5 minutes (300,000ms) | Menu data doesn't change frequently                  |
+| `gcTime`               | 5 minutes (300,000ms) | Garbage collect unused cache after 5 min             |
+| `refetchOnWindowFocus` | `false`               | Prevent unnecessary refetches when tab regains focus |
+| `retry`                | `1`                   | One retry on failure (public API should be reliable) |
 
 ## Pages
 
 ### Home Page (`HomePage`)
 
 The landing page showing:
+
 - Shop information (from `about` setting)
 - Menu sections (drinks, beans, cakes, extras)
 - Quick links to featured and seasonal products
@@ -110,6 +112,7 @@ Displays all products in a given category. Route: `/category/:id` where `:id` is
 ### Product Page (`ProductPage`)
 
 Detailed product view. Route: `/product/:id`. Shows:
+
 - Product name, description, price
 - Image (if `image_url` is set)
 - Nutritional info (calories, caffeine, allergens) when present
@@ -130,31 +133,31 @@ Displays all FAQ entries (question/answer pairs).
 
 ## Components
 
-| Component | Purpose |
-|-----------|---------|
-| `EmptyState` | Shown when no data is available |
-| `ErrorState` | Shown on API errors |
-| `Footer` | Site footer |
-| `Header` | Site header with branding |
-| `ProductImage` | Product image with fallback |
-| `ProductRow` | Product list item |
-| `Spinner` | Loading indicator |
-| `Skeleton` | Loading placeholder |
-| `skeletons/*` | Page-specific skeleton layouts (Home, Category, Product, Branches, FAQ) |
+| Component      | Purpose                                                                 |
+| -------------- | ----------------------------------------------------------------------- |
+| `EmptyState`   | Shown when no data is available                                         |
+| `ErrorState`   | Shown on API errors                                                     |
+| `Footer`       | Site footer                                                             |
+| `Header`       | Site header with branding                                               |
+| `ProductImage` | Product image with fallback                                             |
+| `ProductRow`   | Product list item                                                       |
+| `Spinner`      | Loading indicator                                                       |
+| `Skeleton`     | Loading placeholder                                                     |
+| `skeletons/*`  | Page-specific skeleton layouts (Home, Category, Product, Branches, FAQ) |
 
 ## Hooks
 
-| Hook | Purpose |
-|------|---------|
+| Hook        | Purpose                           |
+| ----------- | --------------------------------- |
 | `useReveal` | Scroll-triggered reveal animation |
 
 ## Dependencies
 
-| Package | Purpose |
-|---------|---------|
+| Package                 | Purpose                   |
+| ----------------------- | ------------------------- |
 | `@tanstack/react-query` | Server state with caching |
-| `react-router` | BrowserRouter routing |
-| `@fontsource/vazirmatn` | Persian font (Vazirmatn) |
-| `@fontsource/fraunces` | English display font |
+| `react-router`          | BrowserRouter routing     |
+| `@fontsource/vazirmatn` | Persian font (Vazirmatn)  |
+| `@fontsource/fraunces`  | English display font      |
 
 **No Telegram SDK** — this is a public-facing site, not a Mini App.

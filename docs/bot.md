@@ -4,12 +4,12 @@ Complete reference for the Azadi Coffee Roastery Telegram bot. See also: [archit
 
 ## Commands
 
-| Command | Auth | Description |
-|---------|------|-------------|
-| `/start` | None | Sends welcome text with main menu keyboard. Sets bot commands via Telegram API, sets chat menu button, exits any active conversations, manages menu message lifecycle. |
-| `/admin` | Admin required | Opens the admin Mini App via an `InlineKeyboardButton` with `web_app` pointing to `https://azadi-admin.pages.dev`. |
-| `/menu` | None | Opens the menu website via an `InlineKeyboardButton` with `web_app` pointing to `https://azadi-menu.pages.dev`. |
-| `/setup_bot` | Admin required | Re-registers bot commands and menu button via Telegram API. Used by the bot owner to push command updates. |
+| Command      | Auth           | Description                                                                                                                                                            |
+| ------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/start`     | None           | Sends welcome text with main menu keyboard. Sets bot commands via Telegram API, sets chat menu button, exits any active conversations, manages menu message lifecycle. |
+| `/admin`     | Admin required | Opens the admin Mini App via an `InlineKeyboardButton` with `web_app` pointing to `https://azadi-admin.pages.dev`.                                                     |
+| `/menu`      | None           | Opens the menu website via an `InlineKeyboardButton` with `web_app` pointing to `https://azadi-menu.pages.dev`.                                                        |
+| `/setup_bot` | Admin required | Re-registers bot commands and menu button via Telegram API. Used by the bot owner to push command updates.                                                             |
 
 **Registered commands**: Only `/start` and `/admin` (plus `/setup_bot` for the bot owner) are registered via `setMyCommands`. Do not add more without updating `src/commands/admin.ts`.
 
@@ -45,6 +45,7 @@ mainMenu
 ### Menu Visibility
 
 Each menu section can be toggled via `menu_visible_*` keys in the `settings` table:
+
 - `menu_visible_featured`, `menu_visible_seasonal`, `menu_visible_passport`
 - `menu_visible_search`, `menu_visible_favorites`, `menu_visible_about`
 - `menu_visible_drinks`, `menu_visible_beans`, `menu_visible_cakes`
@@ -56,6 +57,7 @@ Each menu section can be toggled via `menu_visible_*` keys in the `settings` tab
 ### Menu Lifecycle
 
 `src/utils/menuLifecycle.ts` manages the lifecycle of menu messages:
+
 - Push new messages to a stack
 - Evict old messages when the stack grows too large
 - The stack is stored in `SessionData.menuStack`
@@ -65,6 +67,7 @@ Each menu section can be toggled via `menu_visible_*` keys in the `settings` tab
 ### `formatProduct()` (`src/utils/formatters.ts`)
 
 Formats a product for display in the bot. Shows:
+
 - Product name and description
 - Price (formatted with `formatPersianPrice`)
 - Stock (hidden when `unit === 'cup'` — drinks are made-to-order)
@@ -81,6 +84,7 @@ Formats a product for display in the bot. Shows:
 ### Coffee Bean Details
 
 For products with `coffee_details`, the bot shows:
+
 - Origin, farm, altitude, processing method
 - Roast level, flavor notes
 - `brew_guide` — detailed brewing instructions
@@ -118,6 +122,7 @@ sequenceDiagram
 ### Context Building
 
 `ctx.dataService.buildAIContextBatch(userId)` collapses 6 D1 queries into a single batch:
+
 1. Products with coffee_details (joined)
 2. Active branches
 3. FAQs
@@ -126,6 +131,7 @@ sequenceDiagram
 6. Recent AI logs for the user
 
 `buildMinimalContext()` (in `src/utils/menuContext.ts`) enriches this into the AI context with:
+
 - Shop identity (about text)
 - Enriched product details (farm, altitude, processing, brew guide, nutritional info)
 - Product flags (⭐ Featured, 🌿 Seasonal)
@@ -150,19 +156,20 @@ All bot UI text uses **HTML parse mode** (not Markdown).
 ```ts
 import { toPersianDigits, formatPersianPrice } from '../utils/numbers';
 
-toPersianDigits(12345);  // "۱۲۳۴۵"
-toPersianDigits("abc");  // "abc" (non-digits unchanged)
+toPersianDigits(12345); // "۱۲۳۴۵"
+toPersianDigits('abc'); // "abc" (non-digits unchanged)
 ```
 
 ### Price Display
 
 ```ts
-formatPersianPrice(45000, "تومان");
+formatPersianPrice(45000, 'تومان');
 // "۴۵,۰۰۰ ‏تومان"
 // Wrapped in LRI/PDI isolates (U+2066/U+2069) for proper RTL rendering
 ```
 
 **Rules**:
+
 - Prices and stock: Persian digits
 - Phone numbers and opening hours: Latin digits (for dial-ability)
 - Page numbers: Persian digits
@@ -174,6 +181,7 @@ formatPersianPrice(45000, "تومان");
 ### HTML Parse Mode
 
 Bot text uses HTML tags for formatting:
+
 - `<b>bold</b>`
 - `<i>italic</i>`
 - `<code>code</code>`
@@ -188,17 +196,21 @@ Use `htmlEscape()` from `src/utils/htmlEscape.ts` on user-provided text before e
 Handles all inline keyboard button presses:
 
 **Navigation**:
+
 - `back:main` — Pops current message from stack, deletes it from Telegram, sends fresh main menu
 
 **Paginated lists** (5 items per page, `◀️` / `▶️` nav buttons):
+
 - `faq:page:N`, `branches:page:N`, `beans:page:N`, `cakes:page:N`
 - `drinks:cat:CAT_ID:page:N`, `featured:page:N`, `seasonal:page:N`, `passport:page:N`
 
 **Detail views**:
+
 - `branch:ID` — Single branch with map link
 - `product:ID` — Product details with coffee_details when present, nutritional info, stock, VAT note
 
 **Message flow callbacks**:
+
 - `msg:confirm` — Saves the message + rating to `messages` table, notifies admins via Telegram
 - `msg:cancel` — Cancels the message flow, removes `messageFlow` from session
 - `rate:1` through `rate:5` — Sets rating on the message flow
@@ -230,6 +242,7 @@ A per-user cooldown (`checkAndSetCooldown` from `src/utils/rateLimit.ts`) thrott
 All bot data access goes through `ctx.dataService` — the `IDataService` instance injected per-request. **Never instantiate repositories directly in handlers or menus.** The DataService provides read-through KV caching via `CacheService`.
 
 Key methods:
+
 - `ctx.dataService.getProducts()` — cached product list
 - `ctx.dataService.getCategories()` — cached categories
 - `ctx.dataService.getBranches()` — cached branches
