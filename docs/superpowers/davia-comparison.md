@@ -8,37 +8,37 @@
 
 ## Summary
 
-| Aspect | Davia (`davia docs`) | `docs/` (hand-written) |
-|---|---|---|
-| **Files** | 6 HTML pages + 6 Excalidraw diagrams | 10 Markdown files |
-| **Total lines** | ~241 lines of HTML | ~2,000 lines of Markdown |
-| **Depth** | Mid-level overview per topic | Deep reference per topic |
-| **Diagrams** | 6 Excalidraw interactive diagrams | Mermaid diagrams inline in Markdown |
-| **Code examples** | 1 (local dev commands) | 50+ (API payloads, auth flows, middleware, SQL, config) |
-| **Schema detail** | Table names + one-line description | Full column-level schema for all 11 tables |
-| **API detail** | Auth flow + envelope pattern | Every endpoint, method, request/response shape, role enforcement |
-| **Bot detail** | Middleware chain + command list | Menu hierarchy, 15 callback patterns, message flow state machine |
-| **Pitfalls** | 4 deployment pitfalls | 15+ pitfalls with WHY / WHAT GOES WRONG / PREVENTION |
-| **Conventions** | Not covered | Full file (Persian text, error handling, test patterns, naming) |
-| **Cross-linking** | Internal `<a href>` between 5 pages | Cross-linked via `[file.md](file.md)` at section tops |
-| **Format** | HTML (requires Davia web viewer) | Markdown (GitHub-renderable, CLI-readable) |
+| Aspect            | Davia (`davia docs`)                 | `docs/` (hand-written)                                           |
+| ----------------- | ------------------------------------ | ---------------------------------------------------------------- |
+| **Files**         | 6 HTML pages + 6 Excalidraw diagrams | 10 Markdown files                                                |
+| **Total lines**   | ~241 lines of HTML                   | ~2,000 lines of Markdown                                         |
+| **Depth**         | Mid-level overview per topic         | Deep reference per topic                                         |
+| **Diagrams**      | 6 Excalidraw interactive diagrams    | Mermaid diagrams inline in Markdown                              |
+| **Code examples** | 1 (local dev commands)               | 50+ (API payloads, auth flows, middleware, SQL, config)          |
+| **Schema detail** | Table names + one-line description   | Full column-level schema for all 11 tables                       |
+| **API detail**    | Auth flow + envelope pattern         | Every endpoint, method, request/response shape, role enforcement |
+| **Bot detail**    | Middleware chain + command list      | Menu hierarchy, 15 callback patterns, message flow state machine |
+| **Pitfalls**      | 4 deployment pitfalls                | 15+ pitfalls with WHY / WHAT GOES WRONG / PREVENTION             |
+| **Conventions**   | Not covered                          | Full file (Persian text, error handling, test patterns, naming)  |
+| **Cross-linking** | Internal `<a href>` between 5 pages  | Cross-linked via `[file.md](file.md)` at section tops            |
+| **Format**        | HTML (requires Davia web viewer)     | Markdown (GitHub-renderable, CLI-readable)                       |
 
 ---
 
 ## File-by-File Coverage Matrix
 
-| `docs/` file | Davia covers it? | Davia file(s) | What's missing in Davia |
-|---|---|---|---|
-| **README.md** | ✅ Partial | Root page | Mermaid architecture diagram (Davia has Excalidraw), no table of contents |
-| **architecture.md** | ✅ Partial | `architecture.html` | No sequence diagrams, no middleware injection detail, no error handling flow |
-| **database.md** | ⚠️ Minimal | `architecture.html` (list only) | No column types, constraints, or relationships — just table names |
-| **api.md** | ⚠️ Minimal | `backend-flows.html` | No endpoint-by-endpoint reference, no request/response shapes, no role enforcement |
-| **bot.md** | ⚠️ Partial | `backend-flows.html`, `frontend-flows.html` | No menu hierarchy, no callback patterns, no message handler detail |
-| **admin-app.md** | ✅ Partial | `frontend-flows.html` | No page-by-page reference, no component inventory, no SDK migration detail |
-| **menu-app.md** | ✅ Partial | `frontend-flows.html` | No route table, no component names, no API client signature |
-| **deployment.md** | ✅ Good | `deployment.html` | Missing env vars table, missing `wrangler.toml` binding reference, missing `deploy.sh` flags |
-| **conventions.md** | ❌ None | — | Not covered at all |
-| **pitfalls.md** | ⚠️ Partial | `deployment.html` | Only 4 deployment pitfalls; no code-level pitfalls (sessions, SDK, auth, bot behavior) |
+| `docs/` file        | Davia covers it? | Davia file(s)                               | What's missing in Davia                                                                      |
+| ------------------- | ---------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **README.md**       | ✅ Partial       | Root page                                   | Mermaid architecture diagram (Davia has Excalidraw), no table of contents                    |
+| **architecture.md** | ✅ Partial       | `architecture.html`                         | No sequence diagrams, no middleware injection detail, no error handling flow                 |
+| **database.md**     | ⚠️ Minimal       | `architecture.html` (list only)             | No column types, constraints, or relationships — just table names                            |
+| **api.md**          | ⚠️ Minimal       | `backend-flows.html`                        | No endpoint-by-endpoint reference, no request/response shapes, no role enforcement           |
+| **bot.md**          | ⚠️ Partial       | `backend-flows.html`, `frontend-flows.html` | No menu hierarchy, no callback patterns, no message handler detail                           |
+| **admin-app.md**    | ✅ Partial       | `frontend-flows.html`                       | No page-by-page reference, no component inventory, no SDK migration detail                   |
+| **menu-app.md**     | ✅ Partial       | `frontend-flows.html`                       | No route table, no component names, no API client signature                                  |
+| **deployment.md**   | ✅ Good          | `deployment.html`                           | Missing env vars table, missing `wrangler.toml` binding reference, missing `deploy.sh` flags |
+| **conventions.md**  | ❌ None          | —                                           | Not covered at all                                                                           |
+| **pitfalls.md**     | ⚠️ Partial       | `deployment.html`                           | Only 4 deployment pitfalls; no code-level pitfalls (sessions, SDK, auth, bot behavior)       |
 
 ---
 
@@ -124,12 +124,12 @@
 
 ## Verdict
 
-| | Davia | docs/ |
-|---|---|---|
-| **Onboarding** | ✅ Better — visual, scannable, 5-min read | ⚠️ Dense — requires reading 10 files |
-| **Reference** | ❌ Insufficient — no endpoint/schema detail | ✅ Complete — every field documented |
-| **Portability** | ❌ HTML only — requires Davia viewer | ✅ Markdown — GitHub, terminal, editors |
+|                 | Davia                                         | docs/                                     |
+| --------------- | --------------------------------------------- | ----------------------------------------- |
+| **Onboarding**  | ✅ Better — visual, scannable, 5-min read     | ⚠️ Dense — requires reading 10 files      |
+| **Reference**   | ❌ Insufficient — no endpoint/schema detail   | ✅ Complete — every field documented      |
+| **Portability** | ❌ HTML only — requires Davia viewer          | ✅ Markdown — GitHub, terminal, editors   |
 | **Maintenance** | ⚠️ Auto-generated — regenerate on code change | ⚠️ Manual — must update when code changes |
-| **Accuracy** | ⚠️ Mostly accurate, some hallucinated details | ✅ Verified against codebase |
+| **Accuracy**    | ⚠️ Mostly accurate, some hallucinated details | ✅ Verified against codebase              |
 
 **Bottom line**: Davia produces a good visual overview with diagrams, but it's not a replacement for hand-written reference documentation. Use it as a supplement, not a substitute.
